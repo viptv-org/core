@@ -61,3 +61,33 @@ fn subtitles_are_not_audio_evidence() {
     );
     assert!(sub["rank"].as_f64().unwrap() > dub["rank"].as_f64().unwrap());
 }
+
+#[test]
+fn home_hero_primary_matches_each_contract_state() {
+    for (item, action, label) in [
+        (
+            json!({"type":"live","position":50,"queueStatus":"next"}),
+            "play",
+            "Watch live",
+        ),
+        (
+            json!({"type":"series","episode":2,"queueStatus":"next","position":50}),
+            "next",
+            "Play next episode",
+        ),
+        (json!({"type":"movie","position":50}), "resume", "Resume"),
+        (
+            json!({"type":"series","episode":2,"position":50}),
+            "resume",
+            "Resume",
+        ),
+        (json!({"type":"series"}), "episodes", "Episodes"),
+        (json!({"type":"series","episode":2}), "sources", "Play"),
+        (json!({"type":"episode","episode":2}), "sources", "Play"),
+        (json!({"type":"movie"}), "sources", "Play"),
+    ] {
+        let view = call("presentation", item);
+        assert_eq!(view["primaryAction"], action);
+        assert_eq!(view["primaryActionLabel"], label);
+    }
+}

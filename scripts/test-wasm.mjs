@@ -39,3 +39,7 @@ assert.equal(domain('guide',{items:[{start_time:10,end_time:20,display_time:'Now
 assert.equal(domain('live',{items:[{id:'c',name:'Channel',logo:'logo.png'}]}).channels[0].poster,'logo.png');
 assert.equal(domain('request',{operation:'playback',profileId:'must-not-send',playback:{streamId:'opaque',capabilities:{directPlay:true}}}).body.profile_id,undefined);
 console.log('WASM: presentation, enrichment, Android compatibility and playback request policy passed');
+for (const [item,label] of [[{type:'live'},'Watch live'],[{type:'series',episode:2,queueStatus:'next'},'Play next episode'],[{type:'movie',position:2},'Resume'],[{type:'series'},'Episodes'],[{type:'movie'},'Play']]) {
+  assert.equal(domain('presentation',item).primaryActionLabel,label);
+}
+console.log('WASM: Home hero action labels match the shared contract');
