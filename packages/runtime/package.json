@@ -1,0 +1,28 @@
+{
+  "name": "@viptv/core-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test *.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./driver": "./src/driver.ts",
+    "./tauri": "./src/tauri.ts"
+  },
+  "peerDependencies": {
+    "@tauri-apps/plugin-http": "2.6.0"
+  },
+  "peerDependenciesMeta": {
+    "@tauri-apps/plugin-http": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "typescript": "5.7.3",
+    "@types/node": "22.19.15",
+    "@tauri-apps/plugin-http": "2.6.0"
+  }
+}

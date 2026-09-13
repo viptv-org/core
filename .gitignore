@@ -1,0 +1,7 @@
+/target/
+**/node_modules/
+**/build/
+**/.gradle/
+.env
+DEV.local.md
+*.log

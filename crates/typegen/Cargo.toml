@@ -1,0 +1,9 @@
+[package]
+name = "viptv-typegen"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+[dependencies]
+viptv-core = { path = "../viptv-core", features = ["typegen"] }
+crux_core = { workspace = true, features = ["facet_typegen"] }
+facet_generate = "0.19"
