@@ -2,6 +2,7 @@
 pub mod app;
 pub mod domain;
 pub mod dto;
+pub mod policy;
 pub use app::*;
 use crux_core::{
     Core,

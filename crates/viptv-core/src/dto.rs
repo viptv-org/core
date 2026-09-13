@@ -23,6 +23,7 @@ pub enum MediaKind {
     Movie,
     Series,
     Live,
+    Episode,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
@@ -42,6 +43,7 @@ pub struct Catalog {
     pub name: String,
     pub r#type: MediaKind,
     pub addon_id: Option<f64>,
+    pub addon_key: Option<String>,
     pub supports_search: bool,
     pub supports_skip: bool,
     pub extras: Vec<CatalogExtra>,
@@ -58,6 +60,14 @@ pub struct MediaItem {
     pub title: String,
     pub poster: Option<String>,
     pub background: Option<String>,
+    pub thumbnail: Option<String>,
+    pub imdb_rating: Option<String>,
+    pub credits: Option<String>,
+    pub poster_shape: Option<String>,
+    pub updated_at_millis: Option<f64>,
+    pub released_at_millis: Option<f64>,
+    #[serde(default)]
+    pub episodes: Vec<MediaItem>,
     pub description: Option<String>,
     pub year: Option<f64>,
     pub runtime: Option<String>,
@@ -84,6 +94,9 @@ pub struct MediaItem {
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
 pub struct MediaSource {
+    pub provider: Option<String>,
+    pub description: Option<String>,
+    pub source_fingerprint: Option<String>,
     pub id: String,
     pub name: String,
     pub title: Option<String>,
@@ -111,6 +124,8 @@ pub struct MediaTrack {
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackSession {
+    #[serde(default)]
+    pub headers: BTreeMap<String, String>,
     pub id: String,
     pub url: String,
     pub format: String,
@@ -131,4 +146,26 @@ pub struct DiscoverPage {
     pub items: Vec<MediaItem>,
     pub has_more: bool,
     pub next_skip: Option<f64>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct MediaPresentation {
+    pub hero_image: Option<String>,
+    pub poster_image: Option<String>,
+    pub episode_image: Option<String>,
+    pub title: String,
+    pub episode_label: String,
+    pub progress: f64,
+    pub primary_action: String,
+    pub primary_action_label: String,
+    pub resume_eligible: bool,
+    pub can_auto_next: bool,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+pub struct ApiRequest {
+    pub method: String,
+    pub path: String,
+    pub body: Option<JsonObject>,
 }

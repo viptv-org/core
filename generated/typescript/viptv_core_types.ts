@@ -12,8 +12,13 @@ export class Account {
     }
 }
 
+export class ApiRequest {
+    constructor (public method: str, public path: str, public body: Optional<Map<str,JsonValue>>) {
+    }
+}
+
 export class Catalog {
-    constructor (public id: str, public name: str, public type: MediaKind, public addonId: Optional<float64>, public supportsSearch: bool, public supportsSkip: bool, public extras: Seq<CatalogExtra>, public genres: Seq<str>, public raw: Map<str,JsonValue>) {
+    constructor (public id: str, public name: str, public type: MediaKind, public addonId: Optional<float64>, public addonKey: Optional<str>, public supportsSearch: bool, public supportsSkip: bool, public extras: Seq<CatalogExtra>, public genres: Seq<str>, public raw: Map<str,JsonValue>) {
     }
 }
 
@@ -245,14 +250,15 @@ export function matchJsonValue<R>(value: JsonValue, cases: {
 }
 
 export class MediaItem {
-    constructor (public id: str, public type: MediaKind, public name: str, public title: str, public poster: Optional<str>, public background: Optional<str>, public description: Optional<str>, public year: Optional<float64>, public runtime: Optional<str>, public genres: Seq<str>, public position: Optional<float64>, public duration: Optional<float64>, public watched: Optional<bool>, public season: Optional<float64>, public episode: Optional<float64>, public episodeTitle: Optional<str>, public seriesId: Optional<str>, public queueStatus: Optional<str>, public previousEpisode: Optional<MediaItem>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public sourceFingerprint: Optional<str>, public sourceBingeGroup: Optional<str>, public sourceReleaseGroup: Optional<str>, public sourceQuality: Optional<str>, public sourceAudio: Optional<str>, public raw: Map<str,JsonValue>) {
+    constructor (public id: str, public type: MediaKind, public name: str, public title: str, public poster: Optional<str>, public background: Optional<str>, public thumbnail: Optional<str>, public imdbRating: Optional<str>, public credits: Optional<str>, public posterShape: Optional<str>, public updatedAtMillis: Optional<float64>, public releasedAtMillis: Optional<float64>, public episodes: Seq<MediaItem>, public description: Optional<str>, public year: Optional<float64>, public runtime: Optional<str>, public genres: Seq<str>, public position: Optional<float64>, public duration: Optional<float64>, public watched: Optional<bool>, public season: Optional<float64>, public episode: Optional<float64>, public episodeTitle: Optional<str>, public seriesId: Optional<str>, public queueStatus: Optional<str>, public previousEpisode: Optional<MediaItem>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public sourceFingerprint: Optional<str>, public sourceBingeGroup: Optional<str>, public sourceReleaseGroup: Optional<str>, public sourceQuality: Optional<str>, public sourceAudio: Optional<str>, public raw: Map<str,JsonValue>) {
     }
 }
 
 export type MediaKind =
     | { kind: "movie" }
     | { kind: "series" }
-    | { kind: "live" };
+    | { kind: "live" }
+    | { kind: "episode" };
 
 export const mediaKindMovie = (): MediaKind => ({ kind: "movie" });
 
@@ -260,16 +266,24 @@ export const mediaKindSeries = (): MediaKind => ({ kind: "series" });
 
 export const mediaKindLive = (): MediaKind => ({ kind: "live" });
 
+export const mediaKindEpisode = (): MediaKind => ({ kind: "episode" });
+
 export function matchMediaKind<R>(value: MediaKind, cases: {
     movie: (v: Extract<MediaKind, { kind: "movie" }>) => R;
     series: (v: Extract<MediaKind, { kind: "series" }>) => R;
     live: (v: Extract<MediaKind, { kind: "live" }>) => R;
+    episode: (v: Extract<MediaKind, { kind: "episode" }>) => R;
 }): R {
     return cases[value.kind as MediaKind["kind"]](value as never);
 }
 
+export class MediaPresentation {
+    constructor (public heroImage: Optional<str>, public posterImage: Optional<str>, public episodeImage: Optional<str>, public title: str, public episodeLabel: str, public progress: float64, public primaryAction: str, public primaryActionLabel: str, public resumeEligible: bool, public canAutoNext: bool) {
+    }
+}
+
 export class MediaSource {
-    constructor (public id: str, public name: str, public title: Optional<str>, public filename: Optional<str>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public quality: Optional<str>, public audio: Optional<str>, public raw: Map<str,JsonValue>) {
+    constructor (public provider: Optional<str>, public description: Optional<str>, public sourceFingerprint: Optional<str>, public id: str, public name: str, public title: Optional<str>, public filename: Optional<str>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public quality: Optional<str>, public audio: Optional<str>, public raw: Map<str,JsonValue>) {
     }
 }
 
@@ -318,12 +332,12 @@ export function matchPhase<R>(value: Phase, cases: {
 }
 
 export class PlaybackSession {
-    constructor (public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool) {
+    constructor (public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool) {
     }
 }
 
 export class Profile {
-    constructor (public raw: Map<str,JsonValue>, public id: str, public name: str, public avatar: Optional<str>, public kid: Optional<bool>, public setupComplete: Optional<bool>) {
+    constructor (public raw: Map<str,JsonValue>, public id: str, public name: str, public avatar: Optional<str>, public primary: Optional<bool>, public avatarStyle: Optional<str>, public avatarChoice: Optional<float64>, public kid: Optional<bool>, public setupComplete: Optional<bool>) {
     }
 }
 
@@ -399,6 +413,6 @@ export function matchStorageResult<R>(value: StorageResult, cases: {
 }
 
 export class ViewModel {
-    constructor (public phase: Phase, public identity: Optional<Identity>, public selectedProfileId: Optional<str>, public error: Optional<str>) {
+    constructor (public phase: Phase, public identity: Optional<Identity>, public selectedProfileId: Optional<str>, public error: Optional<str>, public errorStatus: Optional<uint16>) {
     }
 }

@@ -7,11 +7,18 @@ data class Account(
     val role: String,
 )
 
+data class ApiRequest(
+    val method: String,
+    val path: String,
+    val body: Map<String, org.viptv.core.types.JsonValue>? = null,
+)
+
 data class Catalog(
     val id: String,
     val name: String,
     val type: org.viptv.core.types.MediaKind,
     val addonId: Double? = null,
+    val addonKey: String? = null,
     val supportsSearch: Boolean,
     val supportsSkip: Boolean,
     val extras: List<org.viptv.core.types.CatalogExtra>,
@@ -238,6 +245,13 @@ data class MediaItem(
     val title: String,
     val poster: String? = null,
     val background: String? = null,
+    val thumbnail: String? = null,
+    val imdbRating: String? = null,
+    val credits: String? = null,
+    val posterShape: String? = null,
+    val updatedAtMillis: Double? = null,
+    val releasedAtMillis: Double? = null,
+    val episodes: List<org.viptv.core.types.MediaItem>,
     val description: String? = null,
     val year: Double? = null,
     val runtime: String? = null,
@@ -264,10 +278,27 @@ data class MediaItem(
 enum class MediaKind {
     MOVIE,
     SERIES,
-    LIVE;
+    LIVE,
+    EPISODE;
 }
 
+data class MediaPresentation(
+    val heroImage: String? = null,
+    val posterImage: String? = null,
+    val episodeImage: String? = null,
+    val title: String,
+    val episodeLabel: String,
+    val progress: Double,
+    val primaryAction: String,
+    val primaryActionLabel: String,
+    val resumeEligible: Boolean,
+    val canAutoNext: Boolean,
+)
+
 data class MediaSource(
+    val provider: String? = null,
+    val description: String? = null,
+    val sourceFingerprint: String? = null,
     val id: String,
     val name: String,
     val title: String? = null,
@@ -302,6 +333,7 @@ enum class Phase {
 }
 
 data class PlaybackSession(
+    val headers: Map<String, String>,
     val id: String,
     val url: String,
     val format: String,
@@ -321,6 +353,9 @@ data class Profile(
     val id: String,
     val name: String,
     val avatar: String? = null,
+    val primary: Boolean? = null,
+    val avatarStyle: String? = null,
+    val avatarChoice: Double? = null,
     val kid: Boolean? = null,
     val setupComplete: Boolean? = null,
 )
@@ -387,4 +422,5 @@ data class ViewModel(
     val identity: org.viptv.core.types.Identity? = null,
     val selectedProfileId: String? = null,
     val error: String? = null,
+    val errorStatus: UShort? = null,
 )

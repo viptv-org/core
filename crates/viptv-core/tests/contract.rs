@@ -136,6 +136,7 @@ fn rejected_logout_retains_grant() {
     http(&c, &request, 200, me(json!("profile-1")));
     let logout = effect(&event(&c, json!("SignOut")), "Http");
     let effects = http(&c, &logout, 403, json!({}));
+    assert_eq!(view(&c)["errorStatus"], 403);
     assert!(effects.iter().all(|r| r["effect"].get("Storage").is_none()));
 }
 #[test]

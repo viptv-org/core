@@ -26,7 +26,7 @@ jobs:
       - run: cargo run --locked -p viptv-typegen
       - run: bash scripts/build-native-bindings.sh
       - name: Check generated source interfaces
-        run: git diff --exit-code -- generated/typescript generated/kotlin generated/native-kotlin
+        run: git diff --exit-code -- generated/typescript generated/kotlin generated/kotlin-wire generated/native-kotlin
       - name: Install matching WASM generator
         run: |
           version=$(python3 -c 'import tomllib; print(next(p["version"] for p in tomllib.load(open("Cargo.lock", "rb"))["package"] if p["name"] == "wasm-bindgen"))')

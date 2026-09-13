@@ -1,3 +1,4 @@
+mod kotlin;
 mod wire;
 use crux_core::type_generation::facet::TypeRegistry;
 use facet_generate::reflection::format::{Format, FormatHolder};
@@ -6,6 +7,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let generator = TypeRegistry::new()
         .register_app::<viptv_core::Viptv>()?
         .register_type::<viptv_core::Session>()?
+        .register_type::<viptv_core::dto::MediaPresentation>()?
+        .register_type::<viptv_core::dto::ApiRequest>()?
         .register_type::<viptv_core::dto::Catalog>()?
         .register_type::<viptv_core::dto::MediaItem>()?
         .register_type::<viptv_core::dto::MediaSource>()?
@@ -15,6 +18,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let registry = generator.registry();
     std::fs::create_dir_all(root.join("typescript"))?;
     std::fs::write(root.join("typescript/wire.ts"), wire::generate(&registry))?;
+    std::fs::create_dir_all(root.join("kotlin-wire"))?;
+    std::fs::write(
+        root.join("kotlin-wire/Wire.kt"),
+        kotlin::generate(&registry),
+    )?;
     // Declaration-only foreign types; live Kotlin uses the UniFFI JSON string API.
     let mut kotlin_registry = registry.clone();
     for container in kotlin_registry.values_mut() {

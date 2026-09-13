@@ -95,7 +95,7 @@ class HttpTransport(
                         .put("value", response.headers.value(i)))
                 }
                 val output = ByteArrayOutputStream()
-                response.body.byteStream().use { stream ->
+                response.body?.byteStream()?.use { stream ->
                     val buffer = ByteArray(8192)
                     while (true) {
                         if (call.cancelled.get()) return error("Io", "Request cancelled")

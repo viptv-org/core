@@ -16,6 +16,8 @@ native = ["dep:uniffi"]
 bindgen = ["native", "uniffi/cli"]
 
 [dependencies]
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+regex = "1"
 crux_core.workspace = true
 crux_http.workspace = true
 facet.workspace = true

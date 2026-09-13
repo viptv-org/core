@@ -30,6 +30,9 @@ pub struct Profile {
     pub id: String,
     pub name: String,
     pub avatar: Option<String>,
+    pub primary: Option<bool>,
+    pub avatar_style: Option<String>,
+    pub avatar_choice: Option<f64>,
     pub kid: Option<bool>,
     pub setup_complete: Option<bool>,
 }
@@ -71,6 +74,7 @@ pub struct ViewModel {
     pub identity: Option<Identity>,
     pub selected_profile_id: Option<String>,
     pub error: Option<String>,
+    pub error_status: Option<u16>,
 }
 #[derive(Serialize, Deserialize, Facet)]
 #[repr(C)]
@@ -206,6 +210,7 @@ fn me(model: &Model, refreshed: bool) -> Command<Effect, Event> {
 fn fail(model: &mut Model, message: &str) -> Command<Effect, Event> {
     model.view.phase = Phase::Error;
     model.view.error = Some(message.into());
+    model.view.error_status = None;
     render()
 }
 fn save(model: &Model, purpose: StoragePurpose) -> Command<Effect, Event> {
@@ -303,6 +308,7 @@ impl App for Viptv {
                 model.epoch += 1;
                 model.refresh_attempted = false;
                 model.view.error = None;
+                model.view.error_status = None;
                 if model.tokens.is_some() {
                     model.view.phase = Phase::Checking;
                     me(model, false).and(render())
@@ -342,9 +348,12 @@ impl App for Viptv {
                 model.epoch += 1;
                 model.refresh_attempted = false;
                 model.view.error = None;
+                model.view.error_status = None;
                 select(model, profile_id)
             }
             Event::SignOut => {
+                model.view.error = None;
+                model.view.error_status = None;
                 if model.tokens.is_none() {
                     return Command::done();
                 }
@@ -440,7 +449,7 @@ impl App for Viptv {
                     );
                 }
                 if !(200..300).contains(&response.status) {
-                    return fail(
+                    let command = fail(
                         model,
                         match response.status {
                             403 => "This action needs parent authorization",
@@ -448,6 +457,8 @@ impl App for Viptv {
                             _ => "The server could not complete the request",
                         },
                     );
+                    model.view.error_status = Some(response.status);
+                    return command;
                 }
                 if response.body.len() > 2 * 1024 * 1024 {
                     return fail(model, "Invalid server response");
