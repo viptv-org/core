@@ -38,6 +38,23 @@ fn playback_request_never_introduces_profile_identity() {
     assert!(out["body"].get("profile_id").is_none());
     assert_eq!(out["body"]["capabilities"]["direct_play"], true);
 }
+
+#[test]
+fn episode_metadata_request_targets_its_parent_series() {
+    let out = call(
+        "request",
+        json!({
+            "operation":"metadata",
+            "item":{
+                "id":"bleach:1:3",
+                "type":"episode",
+                "seriesId":"bleach"
+            }
+        }),
+    );
+    assert_eq!(out["method"], "GET");
+    assert_eq!(out["path"], "/api/meta/series/bleach");
+}
 #[test]
 fn exact_resume_does_not_cross_provider() {
     let sources = json!([{"id":"bad","sourceAddonId":"iptv:2","sourceFingerprint":"same"},{"id":"good","sourceAddonId":"iptv:1","sourceFingerprint":"same"}]);

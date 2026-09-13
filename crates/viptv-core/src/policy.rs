@@ -129,12 +129,19 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                 }
                 "metadata" => {
                     body = Value::Null;
+                    let item = &v["item"];
+                    let series_id = text(item, "seriesId");
+                    let (media_type, media_id) = if series_id.is_empty() {
+                        (text(item, "type"), text(item, "id"))
+                    } else {
+                        ("series", series_id)
+                    };
                     (
                         "GET",
                         format!(
                             "/api/meta/{}/{}",
-                            enc(text(&v["item"], "type")),
-                            enc(text(&v["item"], "id"))
+                            enc(media_type),
+                            enc(media_id)
                         ),
                     )
                 }
