@@ -724,22 +724,54 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
-// N.B. the name of the extension is very misleading, since it is 
-// rather `InterfaceTooLargeException`, caused by too many methods 
+// N.B. the name of the extension is very misleading, since it is
+// rather `InterfaceTooLargeException`, caused by too many methods
 // in the interface for large crates.
 //
 // By splitting the otherwise huge interface into two parts
-// * UniffiLib 
+// * UniffiLib
 // * IntegrityCheckingUniffiLib (this)
 // we allow for ~2x as many methods in the UniffiLib interface.
-// 
-// The `ffi_uniffi_contract_version` method and all checksum methods are put 
+//
+// The `ffi_uniffi_contract_version` method and all checksum methods are put
 // into `IntegrityCheckingUniffiLib` and these methods are called only once,
 // when the library is loaded.
 internal interface IntegrityCheckingUniffiLib : Library {
     // Integrity check functions only
     fun uniffi_viptv_core_checksum_func_normalize(
+): Short
+fun uniffi_viptv_core_checksum_func_vizio_discovery_candidates(
+): Short
+fun uniffi_viptv_core_checksum_func_vizio_platform_support(
+): Short
+fun uniffi_viptv_core_checksum_func_vizio_request(
+): Short
+fun uniffi_viptv_core_checksum_func_vizio_response(
 ): Short
 fun uniffi_viptv_core_checksum_method_corebridge_resolve(
 ): Short
@@ -747,7 +779,21 @@ fun uniffi_viptv_core_checksum_method_corebridge_update(
 ): Short
 fun uniffi_viptv_core_checksum_method_corebridge_view(
 ): Short
+fun uniffi_viptv_core_checksum_method_smartcastbridge_cancel(
+): Short
+fun uniffi_viptv_core_checksum_method_smartcastbridge_clear_credential(
+): Short
+fun uniffi_viptv_core_checksum_method_smartcastbridge_credential(
+): Short
+fun uniffi_viptv_core_checksum_method_smartcastbridge_reject(
+): Short
+fun uniffi_viptv_core_checksum_method_smartcastbridge_resolve(
+): Short
+fun uniffi_viptv_core_checksum_method_smartcastbridge_start(
+): Short
 fun uniffi_viptv_core_checksum_constructor_corebridge_new(
+): Short
+fun uniffi_viptv_core_checksum_constructor_smartcastbridge_new(
 ): Short
 fun ffi_viptv_core_uniffi_contract_version(
 ): Int
@@ -761,8 +807,8 @@ internal interface UniffiLib : Library {
         internal val INSTANCE: UniffiLib by lazy {
             val componentName = "viptv_core"
             // For large crates we prevent `MethodTooLargeException` (see #2340)
-            // N.B. the name of the extension is very misleading, since it is 
-            // rather `InterfaceTooLargeException`, caused by too many methods 
+            // N.B. the name of the extension is very misleading, since it is
+            // rather `InterfaceTooLargeException`, caused by too many methods
             // in the interface for large crates.
             //
             // By splitting the otherwise huge interface into two parts
@@ -770,7 +816,7 @@ internal interface UniffiLib : Library {
             // * IntegrityCheckingUniffiLib
             // And all checksum methods are put into `IntegrityCheckingUniffiLib`
             // we allow for ~2x as many methods in the UniffiLib interface.
-            // 
+            //
             // Thus we first load the library with `loadIndirect` as `IntegrityCheckingUniffiLib`
             // so that we can (optionally!) call `uniffiCheckApiChecksums`...
             loadIndirect<IntegrityCheckingUniffiLib>(componentName)
@@ -785,12 +831,12 @@ internal interface UniffiLib : Library {
             // to trigger this issue, the performance impact is negligible, running on
             // a macOS M1 machine the `loadIndirect` call takes ~50ms.
             val lib = loadIndirect<UniffiLib>(componentName)
-            // No need to check the contract version and checksums, since 
+            // No need to check the contract version and checksums, since
             // we already did that with `IntegrityCheckingUniffiLib` above.
             // Loading of library with integrity check done.
             lib
         }
-        
+
         // The Cleaner for the whole library
         internal val CLEANER: UniffiCleaner by lazy {
             UniffiCleaner.create()
@@ -798,27 +844,53 @@ internal interface UniffiLib : Library {
     }
 
     // FFI functions
-    fun uniffi_viptv_core_fn_clone_corebridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+    fun uniffi_viptv_core_fn_clone_corebridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
-fun uniffi_viptv_core_fn_free_corebridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_viptv_core_fn_free_corebridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
-fun uniffi_viptv_core_fn_constructor_corebridge_new(uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_viptv_core_fn_constructor_corebridge_new(uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
-fun uniffi_viptv_core_fn_method_corebridge_resolve(`ptr`: Pointer,`id`: Int,`result`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_viptv_core_fn_method_corebridge_resolve(`ptr`: Pointer,`id`: Int,`result`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
-fun uniffi_viptv_core_fn_method_corebridge_update(`ptr`: Pointer,`event`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_viptv_core_fn_method_corebridge_update(`ptr`: Pointer,`event`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
-fun uniffi_viptv_core_fn_method_corebridge_view(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_viptv_core_fn_method_corebridge_view(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
-fun uniffi_viptv_core_fn_func_normalize(`kind`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,`origin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-): RustBuffer.ByValue
-fun ffi_viptv_core_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus, 
-): RustBuffer.ByValue
-fun ffi_viptv_core_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus, 
-): RustBuffer.ByValue
-fun ffi_viptv_core_rustbuffer_free(`buf`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_viptv_core_fn_clone_smartcastbridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): Pointer
+fun uniffi_viptv_core_fn_free_smartcastbridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
-fun ffi_viptv_core_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun uniffi_viptv_core_fn_constructor_smartcastbridge_new(`config`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Pointer
+fun uniffi_viptv_core_fn_method_smartcastbridge_cancel(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): Unit
+fun uniffi_viptv_core_fn_method_smartcastbridge_clear_credential(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): Unit
+fun uniffi_viptv_core_fn_method_smartcastbridge_credential(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_smartcastbridge_reject(`ptr`: Pointer,`requestId`: Int,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_smartcastbridge_resolve(`ptr`: Pointer,`requestId`: Int,`status`: Short,`body`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_smartcastbridge_start(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_normalize(`kind`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,`origin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_vizio_discovery_candidates(`subnet`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_vizio_platform_support(`platform`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_vizio_request(`operation`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_vizio_response(`status`: Short,`body`: RustBuffer.ByValue,`allowStatusless`: Byte,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun ffi_viptv_core_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun ffi_viptv_core_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun ffi_viptv_core_rustbuffer_free(`buf`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Unit
+fun ffi_viptv_core_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun ffi_viptv_core_rust_future_poll_u8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -826,7 +898,7 @@ fun ffi_viptv_core_rust_future_cancel_u8(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_u8(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_u8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_u8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Byte
 fun ffi_viptv_core_rust_future_poll_i8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -834,7 +906,7 @@ fun ffi_viptv_core_rust_future_cancel_i8(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_i8(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_i8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_i8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Byte
 fun ffi_viptv_core_rust_future_poll_u16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -842,7 +914,7 @@ fun ffi_viptv_core_rust_future_cancel_u16(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_u16(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_u16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_u16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Short
 fun ffi_viptv_core_rust_future_poll_i16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -850,7 +922,7 @@ fun ffi_viptv_core_rust_future_cancel_i16(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_i16(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_i16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_i16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Short
 fun ffi_viptv_core_rust_future_poll_u32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -858,7 +930,7 @@ fun ffi_viptv_core_rust_future_cancel_u32(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_u32(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_u32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_u32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Int
 fun ffi_viptv_core_rust_future_poll_i32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -866,7 +938,7 @@ fun ffi_viptv_core_rust_future_cancel_i32(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_i32(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_i32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_i32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Int
 fun ffi_viptv_core_rust_future_poll_u64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -874,7 +946,7 @@ fun ffi_viptv_core_rust_future_cancel_u64(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_u64(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_u64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_u64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Long
 fun ffi_viptv_core_rust_future_poll_i64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -882,7 +954,7 @@ fun ffi_viptv_core_rust_future_cancel_i64(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_i64(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_i64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_i64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Long
 fun ffi_viptv_core_rust_future_poll_f32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -890,7 +962,7 @@ fun ffi_viptv_core_rust_future_cancel_f32(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_f32(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_f32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_f32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Float
 fun ffi_viptv_core_rust_future_poll_f64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -898,7 +970,7 @@ fun ffi_viptv_core_rust_future_cancel_f64(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_f64(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_f64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_f64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Double
 fun ffi_viptv_core_rust_future_poll_pointer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -906,7 +978,7 @@ fun ffi_viptv_core_rust_future_cancel_pointer(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_pointer(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_pointer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_pointer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
 fun ffi_viptv_core_rust_future_poll_rust_buffer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -914,7 +986,7 @@ fun ffi_viptv_core_rust_future_cancel_rust_buffer(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_rust_buffer(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_rust_buffer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_rust_buffer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun ffi_viptv_core_rust_future_poll_void(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
 ): Unit
@@ -922,7 +994,7 @@ fun ffi_viptv_core_rust_future_cancel_void(`handle`: Long,
 ): Unit
 fun ffi_viptv_core_rust_future_free_void(`handle`: Long,
 ): Unit
-fun ffi_viptv_core_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
+fun ffi_viptv_core_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
 
 }
@@ -941,6 +1013,18 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_func_normalize() != 57983.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_func_vizio_discovery_candidates() != 25938.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_vizio_platform_support() != 44815.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_vizio_request() != 36090.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_vizio_response() != 49043.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_method_corebridge_resolve() != 33405.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -950,7 +1034,28 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_method_corebridge_view() != 3339.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_cancel() != 30724.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_clear_credential() != 60259.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_credential() != 58942.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_reject() != 31883.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_resolve() != 64316.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_start() != 13924.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_constructor_corebridge_new() != 23242.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_constructor_smartcastbridge_new() != 25967.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
 }
@@ -1025,7 +1130,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
         }
     }
 
-/** 
+/**
  * Used to instantiate an interface without an actual pointer, for fakes in tests, mostly.
  *
  * @suppress
@@ -1099,6 +1204,29 @@ private class JavaLangRefCleanable(
 /**
  * @suppress
  */
+public object FfiConverterUShort: FfiConverter<UShort, Short> {
+    override fun lift(value: Short): UShort {
+        return value.toUShort()
+    }
+
+    override fun read(buf: ByteBuffer): UShort {
+        return lift(buf.getShort())
+    }
+
+    override fun lower(value: UShort): Short {
+        return value.toShort()
+    }
+
+    override fun allocationSize(value: UShort) = 2UL
+
+    override fun write(value: UShort, buf: ByteBuffer) {
+        buf.putShort(value.toShort())
+    }
+}
+
+/**
+ * @suppress
+ */
 public object FfiConverterUInt: FfiConverter<UInt, Int> {
     override fun lift(value: Int): UInt {
         return value.toUInt()
@@ -1116,6 +1244,29 @@ public object FfiConverterUInt: FfiConverter<UInt, Int> {
 
     override fun write(value: UInt, buf: ByteBuffer) {
         buf.putInt(value.toInt())
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterBoolean: FfiConverter<Boolean, Byte> {
+    override fun lift(value: Byte): Boolean {
+        return value.toInt() != 0
+    }
+
+    override fun read(buf: ByteBuffer): Boolean {
+        return lift(buf.get())
+    }
+
+    override fun lower(value: Boolean): Byte {
+        return if (value) 1.toByte() else 0.toByte()
+    }
+
+    override fun allocationSize(value: Boolean) = 1UL
+
+    override fun write(value: Boolean, buf: ByteBuffer) {
+        buf.put(lower(value))
     }
 }
 
@@ -1276,13 +1427,13 @@ public object FfiConverterString: FfiConverter<String, RustBuffer.ByValue> {
 
 
 public interface CoreBridgeInterface {
-    
+
     fun `resolve`(`id`: kotlin.UInt, `result`: kotlin.String): kotlin.String
-    
+
     fun `update`(`event`: kotlin.String): kotlin.String
-    
+
     fun `view`(): kotlin.String
-    
+
     companion object
 }
 
@@ -1375,7 +1526,7 @@ open class CoreBridge: Disposable, AutoCloseable, CoreBridgeInterface
         }
     }
 
-    
+
     @Throws(CoreException::class)override fun `resolve`(`id`: kotlin.UInt, `result`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
@@ -1386,9 +1537,9 @@ open class CoreBridge: Disposable, AutoCloseable, CoreBridgeInterface
     }
     )
     }
-    
 
-    
+
+
     @Throws(CoreException::class)override fun `update`(`event`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
@@ -1399,9 +1550,9 @@ open class CoreBridge: Disposable, AutoCloseable, CoreBridgeInterface
     }
     )
     }
-    
 
-    
+
+
     @Throws(CoreException::class)override fun `view`(): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
@@ -1412,14 +1563,14 @@ open class CoreBridge: Disposable, AutoCloseable, CoreBridgeInterface
     }
     )
     }
-    
 
-    
 
-    
-    
+
+
+
+
     companion object
-    
+
 }
 
 /**
@@ -1451,29 +1602,366 @@ public object FfiConverterTypeCoreBridge: FfiConverter<CoreBridge, Pointer> {
 }
 
 
+// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
+// to the live Rust struct on the other side of the FFI.
+//
+// Each instance implements core operations for working with the Rust `Arc<T>` and the
+// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque pointer to the underlying Rust struct.
+//     Method calls need to read this pointer from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its pointer should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the pointer, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
+//      before it can pass the pointer over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+/**
+ * Stateful SmartCast workflow used by Android mobile and Tauri desktop.
+ *
+ * The shell executes each returned request and resolves it by ID. The bridge
+ * keeps pairing credentials, fresh hash values, retry state, and command
+ * serialization out of UI code.
+ */
+public interface SmartCastBridgeInterface {
+
+    fun `cancel`()
+
+    fun `clearCredential`()
+
+    /**
+     * Return the in-memory pairing credential only to the native vault adapter.
+     */
+    fun `credential`(): kotlin.String?
+
+    fun `reject`(`requestId`: kotlin.UInt): kotlin.String
+
+    fun `resolve`(`requestId`: kotlin.UInt, `status`: kotlin.UShort, `body`: kotlin.String): kotlin.String
+
+    fun `start`(`operation`: kotlin.String, `input`: kotlin.String): kotlin.String
+
+    companion object
+}
+
+/**
+ * Stateful SmartCast workflow used by Android mobile and Tauri desktop.
+ *
+ * The shell executes each returned request and resolves it by ID. The bridge
+ * keeps pairing credentials, fresh hash values, retry state, and command
+ * serialization out of UI code.
+ */
+open class SmartCastBridge: Disposable, AutoCloseable, SmartCastBridgeInterface
+{
+
+    constructor(pointer: Pointer) {
+        this.pointer = pointer
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
+    }
+
+    /**
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noPointer: NoPointer) {
+        this.pointer = null
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
+    }
+    constructor(`config`: kotlin.String) :
+        this(
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_constructor_smartcastbridge_new(
+        FfiConverterString.lower(`config`),_status)
+}
+    )
+
+    protected val pointer: Pointer?
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the pointer being freed concurrently.
+        try {
+            return block(this.uniffiClonePointer())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
+        override fun run() {
+            pointer?.let { ptr ->
+                uniffiRustCall { status ->
+                    UniffiLib.INSTANCE.uniffi_viptv_core_fn_free_smartcastbridge(ptr, status)
+                }
+            }
+        }
+    }
+
+    fun uniffiClonePointer(): Pointer {
+        return uniffiRustCall() { status ->
+            UniffiLib.INSTANCE.uniffi_viptv_core_fn_clone_smartcastbridge(pointer!!, status)
+        }
+    }
+
+
+    @Throws(CoreException::class)override fun `cancel`()
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_smartcastbridge_cancel(
+        it, _status)
+}
+    }
+
+
+
+
+    @Throws(CoreException::class)override fun `clearCredential`()
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_smartcastbridge_clear_credential(
+        it, _status)
+}
+    }
+
+
+
+
+    /**
+     * Return the in-memory pairing credential only to the native vault adapter.
+     */
+    @Throws(CoreException::class)override fun `credential`(): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_smartcastbridge_credential(
+        it, _status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `reject`(`requestId`: kotlin.UInt): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_smartcastbridge_reject(
+        it, FfiConverterUInt.lower(`requestId`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `resolve`(`requestId`: kotlin.UInt, `status`: kotlin.UShort, `body`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_smartcastbridge_resolve(
+        it, FfiConverterUInt.lower(`requestId`),FfiConverterUShort.lower(`status`),FfiConverterString.lower(`body`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `start`(`operation`: kotlin.String, `input`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_smartcastbridge_start(
+        it, FfiConverterString.lower(`operation`),FfiConverterString.lower(`input`),_status)
+}
+    }
+    )
+    }
+
+
+
+
+
+
+    companion object
+
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSmartCastBridge: FfiConverter<SmartCastBridge, Pointer> {
+
+    override fun lower(value: SmartCastBridge): Pointer {
+        return value.uniffiClonePointer()
+    }
+
+    override fun lift(value: Pointer): SmartCastBridge {
+        return SmartCastBridge(value)
+    }
+
+    override fun read(buf: ByteBuffer): SmartCastBridge {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
+    }
+
+    override fun allocationSize(value: SmartCastBridge) = 8UL
+
+    override fun write(value: SmartCastBridge, buf: ByteBuffer) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
+    }
+}
+
+
 
 
 
 sealed class CoreException: kotlin.Exception() {
-    
+
     class InvalidInput(
         ) : CoreException() {
         override val message
             get() = ""
     }
-    
+
     class Bridge(
         ) : CoreException() {
         override val message
             get() = ""
     }
-    
+
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<CoreException> {
         override fun lift(error_buf: RustBuffer.ByValue): CoreException = FfiConverterTypeCoreError.lift(error_buf)
     }
 
-    
+
 }
 
 /**
@@ -1481,7 +1969,7 @@ sealed class CoreException: kotlin.Exception() {
  */
 public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> {
     override fun read(buf: ByteBuffer): CoreException {
-        
+
 
         return when(buf.getInt()) {
             1 -> CoreException.InvalidInput()
@@ -1517,6 +2005,38 @@ public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> 
     }
 
 }
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?> {
+    override fun read(buf: ByteBuffer): kotlin.String? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterString.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.String?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterString.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.String?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterString.write(value, buf)
+        }
+    }
+}
     @Throws(CoreException::class) fun `normalize`(`kind`: kotlin.String, `input`: kotlin.String, `origin`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
     uniffiRustCallWithError(CoreException) { _status ->
@@ -1525,6 +2045,54 @@ public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> 
 }
     )
     }
-    
+
+
+        /**
+         * Return the bounded modern/legacy host probe order for one caller-approved /24.
+         */ fun `vizioDiscoveryCandidates`(`subnet`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_vizio_discovery_candidates(
+        FfiConverterString.lower(`subnet`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Report whether this target can execute SmartCast directly or needs a LAN bridge.
+         */ fun `vizioPlatformSupport`(`platform`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_vizio_platform_support(
+        FfiConverterString.lower(`platform`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Plan one SmartCast request without performing network or credential I/O.
+         */ fun `vizioRequest`(`operation`: kotlin.String, `input`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_vizio_request(
+        FfiConverterString.lower(`operation`),FfiConverterString.lower(`input`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Interpret SmartCast HTTP and protocol status without exposing transport details.
+         */ fun `vizioResponse`(`status`: kotlin.UShort, `body`: kotlin.String, `allowStatusless`: kotlin.Boolean): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_vizio_response(
+        FfiConverterUShort.lower(`status`),FfiConverterString.lower(`body`),FfiConverterBoolean.lower(`allowStatusless`),_status)
+}
+    )
+    }
+
 
 

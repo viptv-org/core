@@ -10,6 +10,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::MediaPresentation>()?
         .register_type::<viptv_core::dto::SourcePresentation>()?
         .register_type::<viptv_core::dto::ApiRequest>()?
+        .register_type::<viptv_core::vizio::VizioHttpMethod>()?
+        .register_type::<viptv_core::vizio::VizioRequest>()?
+        .register_type::<viptv_core::vizio::VizioRequestResult>()?
+        .register_type::<viptv_core::vizio::VizioFailureKind>()?
+        .register_type::<viptv_core::vizio::VizioFailure>()?
+        .register_type::<viptv_core::vizio::VizioProtocolResponse>()?
+        .register_type::<viptv_core::vizio::VizioResponseResult>()?
+        .register_type::<viptv_core::vizio::VizioRemoteAction>()?
+        .register_type::<viptv_core::vizio::VizioRemoteEvent>()?
+        .register_type::<viptv_core::vizio::VizioRemoteKey>()?
+        .register_type::<viptv_core::vizio::VizioPairingChallenge>()?
+        .register_type::<viptv_core::vizio::VizioAppConfig>()?
+        .register_type::<viptv_core::vizio::VizioInputInfo>()?
+        .register_type::<viptv_core::vizio::VizioDiscoveryCandidate>()?
+        .register_type::<viptv_core::vizio::VizioTransportSupport>()?
+        .register_type::<viptv_core::vizio::VizioPlatformSupport>()?
+        .register_type::<viptv_core::vizio::VizioControllerOutputKind>()?
+        .register_type::<viptv_core::vizio::VizioControllerOutput>()?
         .register_type::<viptv_core::dto::Catalog>()?
         .register_type::<viptv_core::dto::MediaItem>()?
         .register_type::<viptv_core::dto::MediaSource>()?

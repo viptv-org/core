@@ -12,7 +12,7 @@ fn ty(f: &F) -> String {
         F::Seq(f) | F::Set(f) => format!("List<{}>", ty(f)),
         F::Map { value, .. } => format!("Map<String, {}>", ty(value)),
         F::F32 | F::F64 => "Double".into(),
-        F::I64 | F::U64 => "Long".into(),
+        F::I64 | F::U32 | F::U64 => "Long".into(),
         _ => "Int".into(),
     }
 }
@@ -56,6 +56,16 @@ pub fn generate(registry: &Registry) -> String {
                     | "CatalogExtra"
                     | "DiscoverPage"
                     | "ApiRequest"
+                    | "VizioRequest"
+                    | "VizioFailure"
+                    | "VizioProtocolResponse"
+                    | "VizioRemoteEvent"
+                    | "VizioPairingChallenge"
+                    | "VizioAppConfig"
+                    | "VizioInputInfo"
+                    | "VizioDiscoveryCandidate"
+                    | "VizioPlatformSupport"
+                    | "VizioControllerOutput"
                     | "Profile"
                     | "Identity"
                     | "Account"

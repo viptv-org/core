@@ -138,11 +138,7 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                     };
                     (
                         "GET",
-                        format!(
-                            "/api/meta/{}/{}",
-                            enc(media_type),
-                            enc(media_id)
-                        ),
+                        format!("/api/meta/{}/{}", enc(media_type), enc(media_id)),
                     )
                 }
                 _ => return Err(CoreError::InvalidInput),

@@ -3,6 +3,7 @@ pub mod app;
 pub mod domain;
 pub mod dto;
 pub mod policy;
+pub mod vizio;
 pub use app::*;
 use crux_core::{
     Core,
@@ -68,6 +69,109 @@ pub fn normalize(kind: String, input: String, origin: String) -> Result<String, 
     let normalized = domain::normalize_value(&kind, &value, &origin)?;
     validate_normalized(&kind, &normalized)?;
     serde_json::to_string(&normalized).map_err(|_| CoreError::InvalidInput)
+}
+
+/// Plan one SmartCast request without performing network or credential I/O.
+#[cfg_attr(feature = "native", uniffi::export)]
+pub fn vizio_request(operation: String, input: String) -> String {
+    serde_json::to_string(&vizio::plan_request(&operation, &input))
+        .expect("SmartCast request results are serializable")
+}
+
+/// Interpret SmartCast HTTP and protocol status without exposing transport details.
+#[cfg_attr(feature = "native", uniffi::export)]
+pub fn vizio_response(status: u16, body: String, allow_statusless: bool) -> String {
+    serde_json::to_string(&vizio::parse_response(status, &body, allow_statusless))
+        .expect("SmartCast response results are serializable")
+}
+
+/// Return the bounded modern/legacy host probe order for one caller-approved /24.
+#[cfg_attr(feature = "native", uniffi::export)]
+pub fn vizio_discovery_candidates(subnet: String) -> String {
+    let result = vizio::discovery_candidates(&subnet);
+    serde_json::to_string(&result).expect("SmartCast discovery results are serializable")
+}
+
+/// Report whether this target can execute SmartCast directly or needs a LAN bridge.
+#[cfg_attr(feature = "native", uniffi::export)]
+pub fn vizio_platform_support(platform: String) -> String {
+    serde_json::to_string(&vizio::platform_support(&platform))
+        .expect("SmartCast support is serializable")
+}
+
+/// Stateful SmartCast workflow used by Android mobile and Tauri desktop.
+///
+/// The shell executes each returned request and resolves it by ID. The bridge
+/// keeps pairing credentials, fresh hash values, retry state, and command
+/// serialization out of UI code.
+#[cfg_attr(feature = "native", derive(uniffi::Object))]
+pub struct SmartCastBridge {
+    inner: std::sync::Mutex<vizio::VizioController>,
+}
+
+#[cfg_attr(feature = "native", uniffi::export)]
+impl SmartCastBridge {
+    #[cfg_attr(feature = "native", uniffi::constructor)]
+    pub fn new(config: String) -> Result<Self, CoreError> {
+        Ok(Self {
+            inner: std::sync::Mutex::new(
+                vizio::VizioController::new(&config).map_err(|_| CoreError::InvalidInput)?,
+            ),
+        })
+    }
+
+    pub fn start(&self, operation: String, input: String) -> Result<String, CoreError> {
+        let output = self
+            .inner
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .start(&operation, &input);
+        serialize_smartcast(output)
+    }
+
+    pub fn resolve(&self, request_id: u32, status: u16, body: String) -> Result<String, CoreError> {
+        let output = self
+            .inner
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .resolve(request_id, status, &body);
+        serialize_smartcast(output)
+    }
+
+    pub fn reject(&self, request_id: u32) -> Result<String, CoreError> {
+        let output = self
+            .inner
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .reject(request_id);
+        serialize_smartcast(output)
+    }
+
+    pub fn cancel(&self) -> Result<(), CoreError> {
+        self.inner.lock().map_err(|_| CoreError::Bridge)?.cancel();
+        Ok(())
+    }
+
+    /// Return the in-memory pairing credential only to the native vault adapter.
+    pub fn credential(&self) -> Result<Option<String>, CoreError> {
+        Ok(self
+            .inner
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .auth_token())
+    }
+
+    pub fn clear_credential(&self) -> Result<(), CoreError> {
+        self.inner
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .clear_auth_token();
+        Ok(())
+    }
+}
+
+fn serialize_smartcast(output: vizio::VizioControllerOutput) -> Result<String, CoreError> {
+    serde_json::to_string(&output).map_err(|_| CoreError::Bridge)
 }
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen::prelude::wasm_bindgen]

@@ -1,11 +1,13 @@
 type bool = boolean;
 type bytes = Uint8Array;
 type float64 = number;
+type int64 = bigint;
 type Optional<T> = T | null;
 type Seq<T> = T[];
 type str = string;
 type uint16 = number;
 type uint32 = number;
+type uint64 = bigint;
 
 export class Account {
     constructor (public id: str, public username: str, public name: str, public role: str) {
@@ -421,4 +423,322 @@ export function matchStorageResult<R>(value: StorageResult, cases: {
 export class ViewModel {
     constructor (public phase: Phase, public identity: Optional<Identity>, public selectedProfileId: Optional<str>, public error: Optional<str>, public errorStatus: Optional<uint16>) {
     }
+}
+
+export class VizioAppConfig {
+    constructor (public appId: str, public nameSpace: uint16, public message: Optional<str>) {
+    }
+}
+
+export class VizioControllerOutput {
+    constructor (public kind: VizioControllerOutputKind, public requestId: Optional<uint32>, public request: Optional<VizioRequest>, public result: Optional<Map<str,JsonValue>>, public error: Optional<VizioFailure>, public credentialChanged: bool) {
+    }
+}
+
+export type VizioControllerOutputKind =
+    | { kind: "request" }
+    | { kind: "complete" }
+    | { kind: "error" };
+
+export const vizioControllerOutputKindRequest = (): VizioControllerOutputKind => ({ kind: "request" });
+
+export const vizioControllerOutputKindComplete = (): VizioControllerOutputKind => ({ kind: "complete" });
+
+export const vizioControllerOutputKindError = (): VizioControllerOutputKind => ({ kind: "error" });
+
+export function matchVizioControllerOutputKind<R>(value: VizioControllerOutputKind, cases: {
+    request: (v: Extract<VizioControllerOutputKind, { kind: "request" }>) => R;
+    complete: (v: Extract<VizioControllerOutputKind, { kind: "complete" }>) => R;
+    error: (v: Extract<VizioControllerOutputKind, { kind: "error" }>) => R;
+}): R {
+    return cases[value.kind as VizioControllerOutputKind["kind"]](value as never);
+}
+
+export class VizioDiscoveryCandidate {
+    constructor (public host: str, public port: uint16) {
+    }
+}
+
+export class VizioFailure {
+    constructor (public kind: VizioFailureKind, public message: str, public retryable: bool, public protocolStatus: Optional<str>) {
+    }
+}
+
+export type VizioFailureKind =
+    | { kind: "invalidConfig" }
+    | { kind: "invalidInput" }
+    | { kind: "authentication" }
+    | { kind: "invalidParameter" }
+    | { kind: "endpointNotFound" }
+    | { kind: "busy" }
+    | { kind: "transport" }
+    | { kind: "invalidResponse" }
+    | { kind: "httpStatus" };
+
+export const vizioFailureKindInvalidConfig = (): VizioFailureKind => ({ kind: "invalidConfig" });
+
+export const vizioFailureKindInvalidInput = (): VizioFailureKind => ({ kind: "invalidInput" });
+
+export const vizioFailureKindAuthentication = (): VizioFailureKind => ({ kind: "authentication" });
+
+export const vizioFailureKindInvalidParameter = (): VizioFailureKind => ({ kind: "invalidParameter" });
+
+export const vizioFailureKindEndpointNotFound = (): VizioFailureKind => ({ kind: "endpointNotFound" });
+
+export const vizioFailureKindBusy = (): VizioFailureKind => ({ kind: "busy" });
+
+export const vizioFailureKindTransport = (): VizioFailureKind => ({ kind: "transport" });
+
+export const vizioFailureKindInvalidResponse = (): VizioFailureKind => ({ kind: "invalidResponse" });
+
+export const vizioFailureKindHttpStatus = (): VizioFailureKind => ({ kind: "httpStatus" });
+
+export function matchVizioFailureKind<R>(value: VizioFailureKind, cases: {
+    invalidConfig: (v: Extract<VizioFailureKind, { kind: "invalidConfig" }>) => R;
+    invalidInput: (v: Extract<VizioFailureKind, { kind: "invalidInput" }>) => R;
+    authentication: (v: Extract<VizioFailureKind, { kind: "authentication" }>) => R;
+    invalidParameter: (v: Extract<VizioFailureKind, { kind: "invalidParameter" }>) => R;
+    endpointNotFound: (v: Extract<VizioFailureKind, { kind: "endpointNotFound" }>) => R;
+    busy: (v: Extract<VizioFailureKind, { kind: "busy" }>) => R;
+    transport: (v: Extract<VizioFailureKind, { kind: "transport" }>) => R;
+    invalidResponse: (v: Extract<VizioFailureKind, { kind: "invalidResponse" }>) => R;
+    httpStatus: (v: Extract<VizioFailureKind, { kind: "httpStatus" }>) => R;
+}): R {
+    return cases[value.kind as VizioFailureKind["kind"]](value as never);
+}
+
+export type VizioHttpMethod =
+    | { kind: "GET" }
+    | { kind: "PUT" };
+
+export const vizioHttpMethodGet = (): VizioHttpMethod => ({ kind: "GET" });
+
+export const vizioHttpMethodPut = (): VizioHttpMethod => ({ kind: "PUT" });
+
+export function matchVizioHttpMethod<R>(value: VizioHttpMethod, cases: {
+    GET: (v: Extract<VizioHttpMethod, { kind: "GET" }>) => R;
+    PUT: (v: Extract<VizioHttpMethod, { kind: "PUT" }>) => R;
+}): R {
+    return cases[value.kind as VizioHttpMethod["kind"]](value as never);
+}
+
+export class VizioInputInfo {
+    constructor (public cname: str, public name: str, public metaName: str, public current: bool, public hashValue: Optional<int64>) {
+    }
+}
+
+export class VizioPairingChallenge {
+    constructor (public challengeType: uint16, public token: uint64) {
+    }
+}
+
+export class VizioPlatformSupport {
+    constructor (public protocolAvailable: bool, public transport: VizioTransportSupport, public reason: str) {
+    }
+}
+
+export class VizioProtocolResponse {
+    constructor (public status: str, public detail: str, public raw: Map<str,JsonValue>) {
+    }
+}
+
+export type VizioRemoteAction =
+    | { kind: "KEYPRESS" }
+    | { kind: "KEYDOWN" }
+    | { kind: "KEYUP" };
+
+export const vizioRemoteActionKeypress = (): VizioRemoteAction => ({ kind: "KEYPRESS" });
+
+export const vizioRemoteActionKeydown = (): VizioRemoteAction => ({ kind: "KEYDOWN" });
+
+export const vizioRemoteActionKeyup = (): VizioRemoteAction => ({ kind: "KEYUP" });
+
+export function matchVizioRemoteAction<R>(value: VizioRemoteAction, cases: {
+    KEYPRESS: (v: Extract<VizioRemoteAction, { kind: "KEYPRESS" }>) => R;
+    KEYDOWN: (v: Extract<VizioRemoteAction, { kind: "KEYDOWN" }>) => R;
+    KEYUP: (v: Extract<VizioRemoteAction, { kind: "KEYUP" }>) => R;
+}): R {
+    return cases[value.kind as VizioRemoteAction["kind"]](value as never);
+}
+
+export class VizioRemoteEvent {
+    constructor (public codeSet: uint16, public code: uint16, public action: VizioRemoteAction) {
+    }
+}
+
+export type VizioRemoteKey =
+    | { kind: "SEEK_FWD" }
+    | { kind: "SEEK_BACK" }
+    | { kind: "PAUSE" }
+    | { kind: "PLAY" }
+    | { kind: "DOWN" }
+    | { kind: "LEFT" }
+    | { kind: "OK" }
+    | { kind: "RIGHT" }
+    | { kind: "UP" }
+    | { kind: "BACK" }
+    | { kind: "SMARTCAST" }
+    | { kind: "CC_TOGGLE" }
+    | { kind: "INFO" }
+    | { kind: "MENU" }
+    | { kind: "HOME" }
+    | { kind: "VOL_DOWN" }
+    | { kind: "VOL_UP" }
+    | { kind: "MUTE_OFF" }
+    | { kind: "MUTE_ON" }
+    | { kind: "MUTE_TOGGLE" }
+    | { kind: "PIC_MODE" }
+    | { kind: "PIC_SIZE" }
+    | { kind: "INPUT_NEXT" }
+    | { kind: "CH_DOWN" }
+    | { kind: "CH_UP" }
+    | { kind: "CH_PREV" }
+    | { kind: "EXIT" }
+    | { kind: "POW_OFF" }
+    | { kind: "POW_ON" }
+    | { kind: "POW_TOGGLE" };
+
+export const vizioRemoteKeySeekFwd = (): VizioRemoteKey => ({ kind: "SEEK_FWD" });
+
+export const vizioRemoteKeySeekBack = (): VizioRemoteKey => ({ kind: "SEEK_BACK" });
+
+export const vizioRemoteKeyPause = (): VizioRemoteKey => ({ kind: "PAUSE" });
+
+export const vizioRemoteKeyPlay = (): VizioRemoteKey => ({ kind: "PLAY" });
+
+export const vizioRemoteKeyDown = (): VizioRemoteKey => ({ kind: "DOWN" });
+
+export const vizioRemoteKeyLeft = (): VizioRemoteKey => ({ kind: "LEFT" });
+
+export const vizioRemoteKeyOk = (): VizioRemoteKey => ({ kind: "OK" });
+
+export const vizioRemoteKeyRight = (): VizioRemoteKey => ({ kind: "RIGHT" });
+
+export const vizioRemoteKeyUp = (): VizioRemoteKey => ({ kind: "UP" });
+
+export const vizioRemoteKeyBack = (): VizioRemoteKey => ({ kind: "BACK" });
+
+export const vizioRemoteKeySmartcast = (): VizioRemoteKey => ({ kind: "SMARTCAST" });
+
+export const vizioRemoteKeyCcToggle = (): VizioRemoteKey => ({ kind: "CC_TOGGLE" });
+
+export const vizioRemoteKeyInfo = (): VizioRemoteKey => ({ kind: "INFO" });
+
+export const vizioRemoteKeyMenu = (): VizioRemoteKey => ({ kind: "MENU" });
+
+export const vizioRemoteKeyHome = (): VizioRemoteKey => ({ kind: "HOME" });
+
+export const vizioRemoteKeyVolDown = (): VizioRemoteKey => ({ kind: "VOL_DOWN" });
+
+export const vizioRemoteKeyVolUp = (): VizioRemoteKey => ({ kind: "VOL_UP" });
+
+export const vizioRemoteKeyMuteOff = (): VizioRemoteKey => ({ kind: "MUTE_OFF" });
+
+export const vizioRemoteKeyMuteOn = (): VizioRemoteKey => ({ kind: "MUTE_ON" });
+
+export const vizioRemoteKeyMuteToggle = (): VizioRemoteKey => ({ kind: "MUTE_TOGGLE" });
+
+export const vizioRemoteKeyPicMode = (): VizioRemoteKey => ({ kind: "PIC_MODE" });
+
+export const vizioRemoteKeyPicSize = (): VizioRemoteKey => ({ kind: "PIC_SIZE" });
+
+export const vizioRemoteKeyInputNext = (): VizioRemoteKey => ({ kind: "INPUT_NEXT" });
+
+export const vizioRemoteKeyChDown = (): VizioRemoteKey => ({ kind: "CH_DOWN" });
+
+export const vizioRemoteKeyChUp = (): VizioRemoteKey => ({ kind: "CH_UP" });
+
+export const vizioRemoteKeyChPrev = (): VizioRemoteKey => ({ kind: "CH_PREV" });
+
+export const vizioRemoteKeyExit = (): VizioRemoteKey => ({ kind: "EXIT" });
+
+export const vizioRemoteKeyPowOff = (): VizioRemoteKey => ({ kind: "POW_OFF" });
+
+export const vizioRemoteKeyPowOn = (): VizioRemoteKey => ({ kind: "POW_ON" });
+
+export const vizioRemoteKeyPowToggle = (): VizioRemoteKey => ({ kind: "POW_TOGGLE" });
+
+export function matchVizioRemoteKey<R>(value: VizioRemoteKey, cases: {
+    SEEK_FWD: (v: Extract<VizioRemoteKey, { kind: "SEEK_FWD" }>) => R;
+    SEEK_BACK: (v: Extract<VizioRemoteKey, { kind: "SEEK_BACK" }>) => R;
+    PAUSE: (v: Extract<VizioRemoteKey, { kind: "PAUSE" }>) => R;
+    PLAY: (v: Extract<VizioRemoteKey, { kind: "PLAY" }>) => R;
+    DOWN: (v: Extract<VizioRemoteKey, { kind: "DOWN" }>) => R;
+    LEFT: (v: Extract<VizioRemoteKey, { kind: "LEFT" }>) => R;
+    OK: (v: Extract<VizioRemoteKey, { kind: "OK" }>) => R;
+    RIGHT: (v: Extract<VizioRemoteKey, { kind: "RIGHT" }>) => R;
+    UP: (v: Extract<VizioRemoteKey, { kind: "UP" }>) => R;
+    BACK: (v: Extract<VizioRemoteKey, { kind: "BACK" }>) => R;
+    SMARTCAST: (v: Extract<VizioRemoteKey, { kind: "SMARTCAST" }>) => R;
+    CC_TOGGLE: (v: Extract<VizioRemoteKey, { kind: "CC_TOGGLE" }>) => R;
+    INFO: (v: Extract<VizioRemoteKey, { kind: "INFO" }>) => R;
+    MENU: (v: Extract<VizioRemoteKey, { kind: "MENU" }>) => R;
+    HOME: (v: Extract<VizioRemoteKey, { kind: "HOME" }>) => R;
+    VOL_DOWN: (v: Extract<VizioRemoteKey, { kind: "VOL_DOWN" }>) => R;
+    VOL_UP: (v: Extract<VizioRemoteKey, { kind: "VOL_UP" }>) => R;
+    MUTE_OFF: (v: Extract<VizioRemoteKey, { kind: "MUTE_OFF" }>) => R;
+    MUTE_ON: (v: Extract<VizioRemoteKey, { kind: "MUTE_ON" }>) => R;
+    MUTE_TOGGLE: (v: Extract<VizioRemoteKey, { kind: "MUTE_TOGGLE" }>) => R;
+    PIC_MODE: (v: Extract<VizioRemoteKey, { kind: "PIC_MODE" }>) => R;
+    PIC_SIZE: (v: Extract<VizioRemoteKey, { kind: "PIC_SIZE" }>) => R;
+    INPUT_NEXT: (v: Extract<VizioRemoteKey, { kind: "INPUT_NEXT" }>) => R;
+    CH_DOWN: (v: Extract<VizioRemoteKey, { kind: "CH_DOWN" }>) => R;
+    CH_UP: (v: Extract<VizioRemoteKey, { kind: "CH_UP" }>) => R;
+    CH_PREV: (v: Extract<VizioRemoteKey, { kind: "CH_PREV" }>) => R;
+    EXIT: (v: Extract<VizioRemoteKey, { kind: "EXIT" }>) => R;
+    POW_OFF: (v: Extract<VizioRemoteKey, { kind: "POW_OFF" }>) => R;
+    POW_ON: (v: Extract<VizioRemoteKey, { kind: "POW_ON" }>) => R;
+    POW_TOGGLE: (v: Extract<VizioRemoteKey, { kind: "POW_TOGGLE" }>) => R;
+}): R {
+    return cases[value.kind as VizioRemoteKey["kind"]](value as never);
+}
+
+export class VizioRequest {
+    constructor (public method: VizioHttpMethod, public url: str, public headers: Map<str,str>, public body: Optional<Map<str,JsonValue>>, public timeoutMillis: uint64, public maxResponseBytes: uint64) {
+    }
+}
+
+export type VizioRequestResult =
+    | { kind: "Ok"; value: VizioRequest }
+    | { kind: "Err"; value: VizioFailure };
+
+export const vizioRequestResultOk = (value: VizioRequest): VizioRequestResult => ({ kind: "Ok", value });
+
+export const vizioRequestResultErr = (value: VizioFailure): VizioRequestResult => ({ kind: "Err", value });
+
+export function matchVizioRequestResult<R>(value: VizioRequestResult, cases: {
+    Ok: (v: Extract<VizioRequestResult, { kind: "Ok" }>) => R;
+    Err: (v: Extract<VizioRequestResult, { kind: "Err" }>) => R;
+}): R {
+    return cases[value.kind as VizioRequestResult["kind"]](value as never);
+}
+
+export type VizioResponseResult =
+    | { kind: "Ok"; value: VizioProtocolResponse }
+    | { kind: "Err"; value: VizioFailure };
+
+export const vizioResponseResultOk = (value: VizioProtocolResponse): VizioResponseResult => ({ kind: "Ok", value });
+
+export const vizioResponseResultErr = (value: VizioFailure): VizioResponseResult => ({ kind: "Err", value });
+
+export function matchVizioResponseResult<R>(value: VizioResponseResult, cases: {
+    Ok: (v: Extract<VizioResponseResult, { kind: "Ok" }>) => R;
+    Err: (v: Extract<VizioResponseResult, { kind: "Err" }>) => R;
+}): R {
+    return cases[value.kind as VizioResponseResult["kind"]](value as never);
+}
+
+export type VizioTransportSupport =
+    | { kind: "native" }
+    | { kind: "unavailable" };
+
+export const vizioTransportSupportNative = (): VizioTransportSupport => ({ kind: "native" });
+
+export const vizioTransportSupportUnavailable = (): VizioTransportSupport => ({ kind: "unavailable" });
+
+export function matchVizioTransportSupport<R>(value: VizioTransportSupport, cases: {
+    native: (v: Extract<VizioTransportSupport, { kind: "native" }>) => R;
+    unavailable: (v: Extract<VizioTransportSupport, { kind: "unavailable" }>) => R;
+}): R {
+    return cases[value.kind as VizioTransportSupport["kind"]](value as never);
 }

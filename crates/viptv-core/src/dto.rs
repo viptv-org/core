@@ -2,7 +2,7 @@
 use facet::Facet;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[derive(Clone, Debug, Serialize, Deserialize, Facet, PartialEq)]
 #[serde(untagged)]
 #[facet(untagged)]
 #[repr(C)]

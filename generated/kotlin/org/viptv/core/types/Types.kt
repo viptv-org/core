@@ -430,3 +430,157 @@ data class ViewModel(
     val error: String? = null,
     val errorStatus: UShort? = null,
 )
+
+data class VizioAppConfig(
+    val appId: String,
+    val nameSpace: UShort,
+    val message: String? = null,
+)
+
+data class VizioControllerOutput(
+    val kind: org.viptv.core.types.VizioControllerOutputKind,
+    val requestId: UInt? = null,
+    val request: org.viptv.core.types.VizioRequest? = null,
+    val result: Map<String, org.viptv.core.types.JsonValue>? = null,
+    val error: org.viptv.core.types.VizioFailure? = null,
+    val credentialChanged: Boolean,
+)
+
+enum class VizioControllerOutputKind {
+    REQUEST,
+    COMPLETE,
+    ERROR;
+}
+
+data class VizioDiscoveryCandidate(
+    val host: String,
+    val port: UShort,
+)
+
+data class VizioFailure(
+    val kind: org.viptv.core.types.VizioFailureKind,
+    val message: String,
+    val retryable: Boolean,
+    val protocolStatus: String? = null,
+)
+
+enum class VizioFailureKind {
+    INVALIDCONFIG,
+    INVALIDINPUT,
+    AUTHENTICATION,
+    INVALIDPARAMETER,
+    ENDPOINTNOTFOUND,
+    BUSY,
+    TRANSPORT,
+    INVALIDRESPONSE,
+    HTTPSTATUS;
+}
+
+enum class VizioHttpMethod {
+    GET,
+    PUT;
+}
+
+data class VizioInputInfo(
+    val cname: String,
+    val name: String,
+    val metaName: String,
+    val current: Boolean,
+    val hashValue: Long? = null,
+)
+
+data class VizioPairingChallenge(
+    val challengeType: UShort,
+    val token: ULong,
+)
+
+data class VizioPlatformSupport(
+    val protocolAvailable: Boolean,
+    val transport: org.viptv.core.types.VizioTransportSupport,
+    val reason: String,
+)
+
+data class VizioProtocolResponse(
+    val status: String,
+    val detail: String,
+    val raw: Map<String, org.viptv.core.types.JsonValue>,
+)
+
+enum class VizioRemoteAction {
+    KEYPRESS,
+    KEYDOWN,
+    KEYUP;
+}
+
+data class VizioRemoteEvent(
+    val codeSet: UShort,
+    val code: UShort,
+    val action: org.viptv.core.types.VizioRemoteAction,
+)
+
+enum class VizioRemoteKey {
+    SEEK_FWD,
+    SEEK_BACK,
+    PAUSE,
+    PLAY,
+    DOWN,
+    LEFT,
+    OK,
+    RIGHT,
+    UP,
+    BACK,
+    SMARTCAST,
+    CC_TOGGLE,
+    INFO,
+    MENU,
+    HOME,
+    VOL_DOWN,
+    VOL_UP,
+    MUTE_OFF,
+    MUTE_ON,
+    MUTE_TOGGLE,
+    PIC_MODE,
+    PIC_SIZE,
+    INPUT_NEXT,
+    CH_DOWN,
+    CH_UP,
+    CH_PREV,
+    EXIT,
+    POW_OFF,
+    POW_ON,
+    POW_TOGGLE;
+}
+
+data class VizioRequest(
+    val method: org.viptv.core.types.VizioHttpMethod,
+    val url: String,
+    val headers: Map<String, String>,
+    val body: Map<String, org.viptv.core.types.JsonValue>? = null,
+    val timeoutMillis: ULong,
+    val maxResponseBytes: ULong,
+)
+
+sealed interface VizioRequestResult {
+    data class Ok(
+        val value: org.viptv.core.types.VizioRequest,
+    ) : VizioRequestResult
+
+    data class Err(
+        val value: org.viptv.core.types.VizioFailure,
+    ) : VizioRequestResult
+}
+
+sealed interface VizioResponseResult {
+    data class Ok(
+        val value: org.viptv.core.types.VizioProtocolResponse,
+    ) : VizioResponseResult
+
+    data class Err(
+        val value: org.viptv.core.types.VizioFailure,
+    ) : VizioResponseResult
+}
+
+enum class VizioTransportSupport {
+    NATIVE,
+    UNAVAILABLE;
+}

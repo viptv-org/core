@@ -1,10 +1,12 @@
 # viptv shared core
 
-Crux Rust application behavior and API normalization for browser, Android and Tauri. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/e821c297de2e81b47a6a1b22ed8aa0522cdd04e5/SHARED_CORE.md); this repository owns the implementation. Roku stays independent.
+Crux Rust application behavior and API normalization for browser, Android and Tauri. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/c58c9b91827a39442462797602bded35a83a9f64/SHARED_CORE.md); this repository owns the implementation. Roku stays independent.
 
 `crates/viptv-core` owns startup/session/profile state and normalization of backend identity, catalog, media, source and playback payloads. The Crux model requests HTTP, storage and rendering effects. The same library compiles to native code and browser WASM. Rust DTOs generate Kotlin/TypeScript interfaces and kotlinx.serialization JSON codecs in `generated/kotlin-wire`; `generated/typescript/wire.ts` describes the actual JSON bridge protocol. Native Kotlin calls use the generated UniFFI bridge, while browser JavaScript uses the generated wasm-bindgen bridge.
 
 `packages/runtime` owns the shared TypeScript effect dispatcher and bounded HTTP execution. Browser fetch and Tauri native plugin fetch implement the same HTTP effect. Tauri loads the native Rust core, exposes its three commands, and uses `@tauri-apps/plugin-http` for network work; see `adapters/tauri`. Android uses native Rust and OkHttp, including PATCH; see `adapters/android`. Platform storage must use the appropriate credential store. Actual codecs and rendering remain platform responsibilities.
+
+`crates/viptv-core::vizio` ports the MIT-licensed `get-air/vizio` SmartCast protocol into Rust. `SmartCastBridge` is a serialized native workflow for Android mobile and Tauri desktop: platform code executes one exact-TV-origin HTTPS request at a time and returns status/body, while Rust owns pairing-token adoption, input freshness, setting validation/retry and command payloads. Android adapter source includes a dedicated scoped-TLS OkHttp client and Android Keystore token store. Tauri adapter source includes a native reqwest client and OS keyring. SmartCast is not a playback backend and is not wired into browser, Android TV, Tizen, Vizio-hosted, or Roku applications.
 
 ## Build and adoption
 
