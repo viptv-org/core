@@ -168,6 +168,26 @@ pub fn catalog(v: &Value) -> Result<Value> {
 }
 pub fn media(v: &Value) -> Result<Value> {
     let mut out = json!({"id":id(v,"id")?,"type":kind(&v["type"])?,"name":fallback(v,&["name","title"],"Untitled"),"title":fallback(v,&["title","name"],"Untitled"),"genres":strings(v,"genres"),"raw":clean(v)});
+    // Generic provider logos describe title artwork for on-demand media, but
+    // live-channel logos are station identity and must not replace title text.
+    let logo_keys = [
+        "titleLogo",
+        "title_logo",
+        "clearLogo",
+        "clearlogo",
+        "clear_logo",
+    ];
+    let title_logo = logo_keys
+        .iter()
+        .find_map(|key| v[*key].as_str().filter(|s| !s.trim().is_empty()))
+        .or_else(|| {
+            (v["type"] != "live")
+                .then(|| v["logo"].as_str().filter(|s| !s.trim().is_empty()))
+                .flatten()
+        });
+    if let Some(logo) = title_logo {
+        out["titleLogo"] = json!(logo);
+    }
     for (from, to) in [
         ("poster", "poster"),
         ("runtime", "runtime"),
@@ -262,6 +282,9 @@ pub fn media(v: &Value) -> Result<Value> {
                         item["episodeTitle"] = item["name"].clone();
                     }
                     item["name"] = out["name"].clone();
+                    if item["titleLogo"].is_null() && !out["titleLogo"].is_null() {
+                        item["titleLogo"] = out["titleLogo"].clone();
+                    }
                     Some(item)
                 })
                 .collect(),

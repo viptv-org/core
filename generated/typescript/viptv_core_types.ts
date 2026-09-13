@@ -252,7 +252,7 @@ export function matchJsonValue<R>(value: JsonValue, cases: {
 }
 
 export class MediaItem {
-    constructor (public id: str, public type: MediaKind, public name: str, public title: str, public poster: Optional<str>, public background: Optional<str>, public thumbnail: Optional<str>, public imdbRating: Optional<str>, public credits: Optional<str>, public posterShape: Optional<str>, public updatedAtMillis: Optional<float64>, public releasedAtMillis: Optional<float64>, public episodes: Seq<MediaItem>, public description: Optional<str>, public year: Optional<float64>, public runtime: Optional<str>, public genres: Seq<str>, public position: Optional<float64>, public duration: Optional<float64>, public watched: Optional<bool>, public season: Optional<float64>, public episode: Optional<float64>, public episodeTitle: Optional<str>, public seriesId: Optional<str>, public queueStatus: Optional<str>, public previousEpisode: Optional<MediaItem>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public sourceFingerprint: Optional<str>, public sourceBingeGroup: Optional<str>, public sourceReleaseGroup: Optional<str>, public sourceQuality: Optional<str>, public sourceAudio: Optional<str>, public raw: Map<str,JsonValue>) {
+    constructor (public id: str, public type: MediaKind, public name: str, public title: str, public poster: Optional<str>, public background: Optional<str>, public thumbnail: Optional<str>, public titleLogo: Optional<str>, public imdbRating: Optional<str>, public credits: Optional<str>, public posterShape: Optional<str>, public updatedAtMillis: Optional<float64>, public releasedAtMillis: Optional<float64>, public episodes: Seq<MediaItem>, public description: Optional<str>, public year: Optional<float64>, public runtime: Optional<str>, public genres: Seq<str>, public position: Optional<float64>, public duration: Optional<float64>, public watched: Optional<bool>, public season: Optional<float64>, public episode: Optional<float64>, public episodeTitle: Optional<str>, public seriesId: Optional<str>, public queueStatus: Optional<str>, public previousEpisode: Optional<MediaItem>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public sourceFingerprint: Optional<str>, public sourceBingeGroup: Optional<str>, public sourceReleaseGroup: Optional<str>, public sourceQuality: Optional<str>, public sourceAudio: Optional<str>, public raw: Map<str,JsonValue>) {
     }
 }
 
@@ -280,7 +280,7 @@ export function matchMediaKind<R>(value: MediaKind, cases: {
 }
 
 export class MediaPresentation {
-    constructor (public heroImage: Optional<str>, public posterImage: Optional<str>, public episodeImage: Optional<str>, public title: str, public episodeLabel: str, public progress: float64, public primaryAction: str, public primaryActionLabel: str, public resumeEligible: bool, public canAutoNext: bool) {
+    constructor (public heroImage: Optional<str>, public posterImage: Optional<str>, public episodeImage: Optional<str>, public titleLogo: Optional<str>, public title: str, public episodeLabel: str, public progress: float64, public primaryAction: str, public primaryActionLabel: str, public resumeEligible: bool, public canAutoNext: bool) {
     }
 }
 

@@ -128,3 +128,76 @@ fn source_projection_preserves_identity_and_rich_native_labels() {
         "Same"
     );
 }
+
+#[test]
+fn title_logo_aliases_preserve_text_and_never_promote_other_artwork() {
+    for alias in [
+        "titleLogo",
+        "title_logo",
+        "clearLogo",
+        "clearlogo",
+        "clear_logo",
+        "logo",
+    ] {
+        let mut input = json!({"id":"movie","type":"movie","name":"Movie","poster":"poster.jpg","background":"backdrop.jpg"});
+        input[alias] = json!("transparent.png");
+        let item = call("media", input);
+        assert_eq!(item["titleLogo"], "transparent.png", "{alias}");
+        let view = call("presentation", item);
+        assert_eq!(view["titleLogo"], "transparent.png");
+        assert_eq!(view["title"], "Movie");
+        assert_eq!(view["heroImage"], "backdrop.jpg");
+    }
+    for input in [
+        json!({"id":"movie","type":"movie","name":"Movie","poster":"poster.jpg","background":"backdrop.jpg","titleLogo":"  ","logo":42}),
+        json!({"id":"channel","type":"live","name":"Channel","logo":"station.png"}),
+    ] {
+        let item = call("media", input.clone());
+        assert!(call("presentation", item)["titleLogo"].is_null());
+        assert_eq!(call("presentation", input.clone())["title"], input["name"]);
+    }
+    assert_eq!(
+        call(
+            "media",
+            json!({"id":"m","type":"movie","titleLogo":false,"clearlogo":"clear.png","logo":"other.png"})
+        )["titleLogo"],
+        "clear.png"
+    );
+    assert!(
+        call(
+            "presentation",
+            json!({"name":"Movie","raw":{"logo":"raw.png"}})
+        )["titleLogo"]
+            .is_null()
+    );
+}
+
+#[test]
+fn episodes_inherit_parent_logo_without_losing_playback_identity() {
+    let series = call(
+        "media",
+        json!({"id":"series","type":"series","name":"Series","logo":"series.png","videos":[{"id":"series:1:2","name":"Episode two","season":1,"episode":2,"position":42,"duration":100}]}),
+    );
+    let episode = &series["episodes"][0];
+    assert_eq!(episode["id"], "series:1:2");
+    assert_eq!(episode["seriesId"], "series");
+    assert_eq!(episode["episodeTitle"], "Episode two");
+    let view = call("presentation", episode.clone());
+    assert_eq!(view["titleLogo"], "series.png");
+    assert_eq!(view["title"], "Series");
+    assert_eq!(view["progress"], 0.42);
+    let enriched = call(
+        "enrichHome",
+        json!({"original":episode,"metadata":{"id":"series","titleLogo":"new.png","position":0}}),
+    );
+    assert_eq!(enriched["id"], "series:1:2");
+    assert_eq!(enriched["position"], 42);
+    assert_eq!(enriched["titleLogo"], "new.png");
+    assert_eq!(
+        call(
+            "enrichHome",
+            json!({"original":enriched,"metadata":{"titleLogo":" "}})
+        )["titleLogo"],
+        "new.png"
+    );
+}

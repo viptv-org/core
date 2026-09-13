@@ -69,3 +69,14 @@ console.log('WASM: inconsistent post-selection identity stops without another mu
  assert.equal(display.body,'HD broadcast\nevening-news.mkv');
 }
 console.log('WASM: source projection preserves normalized identity and native labels');
+const logoSeries = domain('media',{id:'series',type:'series',name:'Series',logo:'series.png',videos:[{id:'series:1:2',name:'Episode two',season:1,episode:2,position:42,duration:100}]});
+const logoEpisode = logoSeries.episodes[0];
+assert.equal(logoEpisode.id,'series:1:2');
+assert.equal(logoEpisode.seriesId,'series');
+assert.equal(domain('presentation',logoEpisode).title,'Series');
+assert.equal(domain('presentation',logoEpisode).titleLogo,'series.png');
+assert.equal(domain('presentation',logoEpisode).progress,0.42);
+assert.equal(domain('presentation',domain('media',{id:'channel',type:'live',name:'Channel',logo:'station.png'})).titleLogo,null);
+assert.equal(domain('presentation',portrait).titleLogo,null);
+assert.equal(domain('enrichHome',{original:logoEpisode,metadata:{titleLogo:'new.png',position:0}}).position,42);
+console.log('WASM: title logos retain text, episode identity and channel-logo distinction');

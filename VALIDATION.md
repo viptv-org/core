@@ -1,3 +1,11 @@
+# Transparent title artwork — 2026-09-13
+
+Rust media normalization and presentation now expose `titleLogo` separately from hero, poster and episode artwork. Explicit title/clear-logo aliases and on-demand provider `logo` metadata are supported; generic live-channel logos remain station artwork. Parent-series logos inherit into episodes without changing episode identity, title text or resume progress. Home metadata enrichment carries the normalized logo, and missing/blank logos retain text fallback.
+
+Regenerated TypeScript declarations, Kotlin declarations/JSON codecs and the release WASM module from this source. Formatting, strict workspace/all-target Clippy, all 36 Rust tests, the actual WASM contract suite (including title-logo assertions), and strict runtime TypeScript checking passed. Cargo used one build job. No native-library/UniFFI regeneration was needed because its JSON bridge signatures did not change; no Gradle, emulator or physical-device check was run. Consumer adoption requires updating its immutable core pin and artifact snapshot.
+
+---
+
 # SmartCast native controller — 2026-09-13
 
 Design pin: c58c9b91827a39442462797602bded35a83a9f64, CORE-003 in SHARED_CORE.md. Upstream protocol baseline: get-air/vizio@124b5fb8f2b2b04b3fb9237d4c72b1c4e1a19e3d.

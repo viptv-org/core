@@ -96,7 +96,7 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
             } else {
                 "sources"
             };
-            json!({"heroImage":image(m,"background"),"posterImage":image(m,"poster"),"episodeImage":image(m,"thumbnail"),"title":m["name"],"episodeLabel":label,"progress":if num(m,"duration")>0.0{(num(m,"position")/num(m,"duration")).clamp(0.0,1.0)}else{0.0},"primaryAction":action,"primaryActionLabel":match action{"next"=>"Play next episode","resume"=>"Resume","play"=>"Watch live","episodes"=>"Episodes",_=>"Play"},"resumeEligible":resume,"canAutoNext":!live&&episode>0.0&&num(m,"duration")>0.0&&num(m,"duration")-num(m,"position")<=10.0&&num(m,"position")>0.0})
+            json!({"heroImage":image(m,"background"),"posterImage":image(m,"poster"),"episodeImage":image(m,"thumbnail"),"titleLogo":image(m,"titleLogo"),"title":m["name"],"episodeLabel":label,"progress":if num(m,"duration")>0.0{(num(m,"position")/num(m,"duration")).clamp(0.0,1.0)}else{0.0},"primaryAction":action,"primaryActionLabel":match action{"next"=>"Play next episode","resume"=>"Resume","play"=>"Watch live","episodes"=>"Episodes",_=>"Play"},"resumeEligible":resume,"canAutoNext":!live&&episode>0.0&&num(m,"duration")>0.0&&num(m,"duration")-num(m,"position")<=10.0&&num(m,"position")>0.0})
         }
         "itemRequest" => item_request(v),
         "playbackRequest" | "preferencesRequest" => snake(v),
@@ -298,6 +298,9 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                 if !m[k].is_null() && !m[k].as_array().is_some_and(Vec::is_empty) {
                     out[k] = m[k].clone();
                 }
+            }
+            if !image(m, "titleLogo").is_null() {
+                out["titleLogo"] = m["titleLogo"].clone();
             }
             if text(&out, "name").is_empty() {
                 out["name"] = m["name"].clone();
