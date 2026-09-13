@@ -43,3 +43,21 @@ for (const [item,label] of [[{type:'live'},'Watch live'],[{type:'series',episode
   assert.equal(domain('presentation',item).primaryActionLabel,label);
 }
 console.log('WASM: Home hero action labels match the shared contract');
+{
+  const app = new core.CoreBridge();
+  const find = (requests, kind) => requests.find(r => kind in r.effect);
+  const resolve = (r, output) => JSON.parse(app.resolve(r.id, JSON.stringify(output)));
+  const http = (r, body) => resolve(r,{Ok:{status:200,headers:[],body:[...new TextEncoder().encode(JSON.stringify(body))]}});
+  const session = {sessionId:'s',accountId:'a',profileId:'p',accessToken:'fake',refreshToken:'fake',expiresIn:3600};
+  const identity = {account:{id:'a',username:'viewer',name:'Viewer',role:'member'},profiles:[{id:'p',name:'Main',setup_complete:true}],profile_id:null,restricted:false,profile_setup_required:false};
+  const load=find(JSON.parse(app.update(JSON.stringify({Begin:{origin:'https://example.test',allowInsecurePreview:false}}))),'Storage');
+  const me=find(resolve(load,{Ok:JSON.stringify(session)}),'Http');
+  const select=find(http(me,identity),'Http');
+  const save=find(http(select,{}),'Storage');
+  const refresh=find(resolve(save,{Ok:null}),'Http');
+  const effects=http(refresh,identity);
+  assert.equal(JSON.parse(app.view()).phase,'Error');
+  assert.equal(effects.some(r=>'Http' in r.effect || 'Storage' in r.effect),false);
+  app.free();
+}
+console.log('WASM: inconsistent post-selection identity stops without another mutation');

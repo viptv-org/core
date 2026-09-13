@@ -239,3 +239,40 @@ fn token_rotation_preserves_remembered_profile_until_server_selection() {
     );
     assert_eq!(view(&core)["phase"], "Selecting");
 }
+
+#[test]
+fn accepted_profile_selection_with_missing_echo_errors_once() {
+    let c = CoreBridge::new();
+    let identity = restored(&c, json!("profile-1"));
+    let select = effect(&http(&c, &identity, 200, me(Value::Null)), "Http");
+    assert!(
+        select["effect"]["Http"]["url"]
+            .as_str()
+            .unwrap()
+            .ends_with("/auth/profile")
+    );
+    let save = effect(&http(&c, &select, 200, json!({})), "Storage");
+    let refresh = effect(&resolve(&c, &save, json!({"Ok":null})), "Http");
+    let effects = http(&c, &refresh, 200, me(Value::Null));
+    assert_eq!(view(&c)["phase"], "Error");
+    assert!(view(&c)["selectedProfileId"].is_null());
+    assert!(effects.iter().all(|e| e["effect"].get("Http").is_none()));
+}
+#[test]
+fn post_selection_deleted_or_incomplete_profile_cannot_be_restored() {
+    for profiles in [
+        json!([]),
+        json!([{"id":"profile-1","name":"Main","setup_complete":false}]),
+    ] {
+        let c = CoreBridge::new();
+        let identity = restored(&c, json!("profile-1"));
+        let select = effect(&http(&c, &identity, 200, me(Value::Null)), "Http");
+        let save = effect(&http(&c, &select, 200, json!({})), "Storage");
+        let refresh = effect(&resolve(&c, &save, json!({"Ok":null})), "Http");
+        let mut response = me(Value::Null);
+        response["profiles"] = profiles;
+        let effects = http(&c, &refresh, 200, response);
+        assert_eq!(view(&c)["phase"], "Profiles");
+        assert!(effects.iter().all(|e| e["effect"].get("Http").is_none()));
+    }
+}

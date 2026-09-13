@@ -151,6 +151,9 @@ pub struct Model {
     epoch: u64,
     refresh_next: Option<HttpPurpose>,
     refresh_attempted: bool,
+    // Bound the post-selection refresh: an inconsistent identity must not
+    // silently repeat a successful profile mutation. Reset on external actions.
+    accepted_profile: Option<String>,
 }
 #[derive(Default)]
 pub struct Viptv;
@@ -234,6 +237,7 @@ fn select(model: &mut Model, id: String) -> Command<Effect, Event> {
     .and(render())
 }
 fn finish_identity(model: &mut Model, identity: Identity) -> Command<Effect, Event> {
+    let accepted_profile = model.accepted_profile.take();
     let server_profile = identity.profile_id.clone().filter(|id| {
         identity
             .profiles
@@ -261,6 +265,17 @@ fn finish_identity(model: &mut Model, identity: Identity) -> Command<Effect, Eve
             return save(model, StoragePurpose::Profile);
         }
         render()
+    } else if accepted_profile.is_some() {
+        model.view.selected_profile_id = None;
+        if remembered.is_some() {
+            fail(
+                model,
+                "The server did not confirm the selected profile. Please retry.",
+            )
+        } else {
+            model.view.phase = Phase::Profiles;
+            render()
+        }
     } else if let Some(id) = remembered {
         select(model, id)
     } else {
@@ -296,6 +311,7 @@ impl App for Viptv {
                     return fail(model, "Invalid server origin");
                 }
                 model.epoch += 1;
+                model.accepted_profile = None;
                 model.refresh_attempted = false;
                 model.origin = url.origin().ascii_serialization();
                 model.view = ViewModel {
@@ -306,6 +322,7 @@ impl App for Viptv {
             }
             Event::Retry => {
                 model.epoch += 1;
+                model.accepted_profile = None;
                 model.refresh_attempted = false;
                 model.view.error = None;
                 model.view.error_status = None;
@@ -325,6 +342,7 @@ impl App for Viptv {
                     return fail(model, "Invalid saved session");
                 }
                 model.epoch += 1;
+                model.accepted_profile = None;
                 model.refresh_attempted = false;
                 model.tokens = Some(tokens);
                 model.view = ViewModel {
@@ -346,6 +364,7 @@ impl App for Viptv {
                     return Command::done();
                 }
                 model.epoch += 1;
+                model.accepted_profile = None;
                 model.refresh_attempted = false;
                 model.view.error = None;
                 model.view.error_status = None;
@@ -358,6 +377,7 @@ impl App for Viptv {
                     return Command::done();
                 }
                 model.epoch += 1;
+                model.accepted_profile = None;
                 model.refresh_attempted = false;
                 request(
                     model,
@@ -504,6 +524,7 @@ impl App for Viptv {
                         }
                     }
                     HttpPurpose::Select(id) => {
+                        model.accepted_profile = Some(id.clone());
                         if let Some(tokens) = &mut model.tokens {
                             tokens.profile_id = Some(id);
                         }
