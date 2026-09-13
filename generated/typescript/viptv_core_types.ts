@@ -378,6 +378,12 @@ export class Session {
     }
 }
 
+/// Safe source labels shared by native and web renderers, separate from source identity.
+export class SourcePresentation {
+    constructor (public title: str, public body: str) {
+    }
+}
+
 export type StorageOperation =
     | { kind: "Load" }
     | { kind: "Save"; value: str }

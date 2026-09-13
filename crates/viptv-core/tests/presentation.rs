@@ -91,3 +91,23 @@ fn home_hero_primary_matches_each_contract_state() {
         assert_eq!(view["primaryActionLabel"], label);
     }
 }
+
+#[test]
+fn source_projection_preserves_identity_and_rich_native_labels() {
+    let source = call(
+        "source",
+        json!({"id":"stream-a","provider":"iptv:4","source_name":"Evening News","title":"HD broadcast","filename":"evening-news.mkv","source_addon_id":"addon:one","source_fingerprint":"fp-a"}),
+    );
+    assert_eq!(source["name"], "HD broadcast");
+    let display = call("sourceDisplay", source.clone());
+    assert_eq!(display["title"], "Evening News");
+    assert_eq!(display["body"], "HD broadcast\nevening-news.mkv");
+    assert_eq!(source["sourceFingerprint"], "fp-a");
+    assert_eq!(
+        call(
+            "sourceDisplay",
+            json!({"name":"Label","description":"Same","title":"Same","filename":"Same"})
+        )["body"],
+        "Same"
+    );
+}

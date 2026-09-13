@@ -8,6 +8,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_app::<viptv_core::Viptv>()?
         .register_type::<viptv_core::Session>()?
         .register_type::<viptv_core::dto::MediaPresentation>()?
+        .register_type::<viptv_core::dto::SourcePresentation>()?
         .register_type::<viptv_core::dto::ApiRequest>()?
         .register_type::<viptv_core::dto::Catalog>()?
         .register_type::<viptv_core::dto::MediaItem>()?

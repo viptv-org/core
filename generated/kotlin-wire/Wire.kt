@@ -157,6 +157,10 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `refreshToken`: String,
     val `expiresIn`: Double
 )
+@Serializable data class SourcePresentation(
+    val `title`: String,
+    val `body`: String
+)
 @Serializable data class ViewModel(
     val `phase`: Phase,
     val `identity`: Identity? = null,

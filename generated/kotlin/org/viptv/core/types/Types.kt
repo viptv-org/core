@@ -397,6 +397,12 @@ data class Session(
     val expiresIn: Double,
 )
 
+/// Safe source labels shared by native and web renderers, separate from source identity.
+data class SourcePresentation(
+    val title: String,
+    val body: String,
+)
+
 sealed interface StorageOperation {
     data object Load: StorageOperation
 

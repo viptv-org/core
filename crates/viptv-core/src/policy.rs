@@ -303,8 +303,20 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
         }
         "sourceDisplay" => {
             let opaque = |s: &str| matches(r"^[A-Za-z0-9._-]+:[0-9]+$", s);
-            let name = text(v, "name");
-            let description = text(v, "description");
+            let name = if text(v, "sourceName").trim().is_empty() {
+                text(v, "name")
+            } else {
+                text(v, "sourceName")
+            };
+            let mut parts = Vec::new();
+            for key in ["title", "description", "filename"] {
+                let value = text(v, key);
+                if !value.trim().is_empty() && !parts.contains(&value) {
+                    parts.push(value);
+                }
+            }
+            let description = parts.join("\n");
+            let description = description.as_str();
             let provider = text(v, "provider");
             let title = if !name.trim().is_empty() && !opaque(name) {
                 name.to_owned()

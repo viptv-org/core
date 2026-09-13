@@ -169,3 +169,10 @@ pub struct ApiRequest {
     pub path: String,
     pub body: Option<JsonObject>,
 }
+
+/// Safe source labels shared by native and web renderers, separate from source identity.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+pub struct SourcePresentation {
+    pub title: String,
+    pub body: String,
+}

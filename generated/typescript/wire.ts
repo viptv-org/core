@@ -25,6 +25,7 @@ export type RenderOperation = null;
 export type Request = { readonly id: number; readonly effect: Effect };
 export type Requests = ReadonlyArray<Request>;
 export type Session = { readonly sessionId: string; readonly accountId: string; readonly profileId: string | null; readonly accessToken: string; readonly refreshToken: string; readonly expiresIn: number };
+export type SourcePresentation = { readonly title: string; readonly body: string };
 export type StorageOperation = "Load" | { readonly Save: string } | "Clear";
 export type StorageResult = { readonly Ok: string | null } | { readonly Err: string };
 export type ViewModel = { readonly phase: Phase; readonly identity: Identity | null; readonly selectedProfileId: string | null; readonly error: string | null; readonly errorStatus: number | null };

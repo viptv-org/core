@@ -61,3 +61,11 @@ console.log('WASM: Home hero action labels match the shared contract');
   app.free();
 }
 console.log('WASM: inconsistent post-selection identity stops without another mutation');
+{
+ const source=domain('source',{id:'source',source_name:'Evening News',title:'HD broadcast',filename:'evening-news.mkv',source_fingerprint:'stable'});
+ const display=domain('sourceDisplay',source);
+ assert.equal(source.name,'HD broadcast');
+ assert.equal(display.title,'Evening News');
+ assert.equal(display.body,'HD broadcast\nevening-news.mkv');
+}
+console.log('WASM: source projection preserves normalized identity and native labels');
