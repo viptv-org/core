@@ -167,7 +167,16 @@ pub fn catalog(v: &Value) -> Result<Value> {
     Ok(out)
 }
 pub fn media(v: &Value) -> Result<Value> {
-    let mut out = json!({"id":id(v,"id")?,"type":kind(&v["type"])?,"name":fallback(v,&["name","title"],"Untitled"),"title":fallback(v,&["title","name"],"Untitled"),"genres":strings(v,"genres"),"raw":clean(v)});
+    let mut raw = clean(v);
+    if let Some(fields) = raw.as_object_mut() {
+        // These potentially large fields already have typed representations.
+        // Retaining them in raw duplicates entire series catalogs and synopses
+        // each time a normalized DTO crosses the bounded native/WASM bridge.
+        for key in ["videos", "episodes", "description", "overview"] {
+            fields.remove(key);
+        }
+    }
+    let mut out = json!({"id":id(v,"id")?,"type":kind(&v["type"])?,"name":fallback(v,&["name","title"],"Untitled"),"title":fallback(v,&["title","name"],"Untitled"),"genres":strings(v,"genres"),"raw":raw});
     // Generic provider logos describe title artwork for on-demand media, but
     // live-channel logos are station identity and must not replace title text.
     let logo_keys = [

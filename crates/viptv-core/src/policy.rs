@@ -381,7 +381,6 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                 "imdbRating",
                 "genres",
                 "credits",
-                "episodes",
             ] {
                 if !m[k].is_null() && !m[k].as_array().is_some_and(Vec::is_empty) {
                     out[k] = m[k].clone();
@@ -419,6 +418,9 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
             if text(&out, "name").is_empty() {
                 out["name"] = m["name"].clone();
             }
+            // A shelf occurrence needs its matched still, not every episode.
+            // Detail responses retain the full typed catalog independently.
+            out["episodes"] = json!([]);
             out
         }
         "sourceDisplay" => {

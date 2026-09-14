@@ -271,3 +271,26 @@ fn shared_cards_distinguish_catalog_live_and_continuation_intent() {
         assert_eq!(card["primaryAction"], action);
     }
 }
+
+#[test]
+fn large_series_queue_does_not_duplicate_episode_catalog_across_the_bridge() {
+    let videos: Vec<Value> = (1..=400).map(|episode| json!({
+        "id":format!("long-series:1:{episode}"), "season":1,"episode":episode,
+        "title":format!("Episode {episode}"),"overview":"Episode synopsis. ".repeat(70),"thumbnail":format!("episode-{episode}.jpg")
+    })).collect();
+    let detail = call(
+        "detailResponse",
+        json!({"response":{"meta":{"id":"long-series","type":"series","name":"Long Series","videos":videos}},"item":{"id":"long-series","type":"series"}}),
+    );
+    let queue = call(
+        "enrichHome",
+        json!({"original":{"id":"long-series:1:3","type":"series","name":"Long Series","season":1,"episode":3,"position":42},"metadata":detail["item"]}),
+    );
+    let combined = json!({"original":queue,"metadata":detail["item"]});
+    // The old normalization copied both the raw and normalized full catalog
+    // into a queue occurrence; this exceeded normalize()'s 2 MiB input limit.
+    assert!(combined.to_string().len() < 2 * 1024 * 1024);
+    let _ = call("enrichDetail", combined);
+    assert!(queue["episodes"].as_array().is_none_or(Vec::is_empty));
+    assert_eq!(queue["thumbnail"], "episode-3.jpg");
+}

@@ -46,3 +46,5 @@ Strict TypeScript validation also passed against the actual pinned Tauri HTTP pl
 ## 2026-09-14 shared card correction
 
 Added generated CardPresentation for Kotlin and TypeScript and rebuilt WASM. Native workspace tests pass (39 tests), including exact episode still vs parent/neighbor image, missing-art fallback, source/progress preservation and catalog/live/queue intent. Consumer browser and Android validation is recorded in their repositories; no Android device or emulator claim.
+
+Real populated Home exposed a2,305,123-byte enrichDetail bridge input: queue rows repeated the full episode catalog and metadata repeated it again in raw. A400-episode regression failed the2MiB bridge cap before correction and passes afterward. Shelf enrichment now retains the matched still rather than full episode lists; media raw omits already-typed episode arrays and synopsis fields. The2MiB input bound stays intact. Final native workspace:40 tests pass.
