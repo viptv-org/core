@@ -978,8 +978,6 @@ fn find_response_item<'a>(
         .into_iter()
         .chain(response_items(&response.raw))
         .find(|item| string(item, "CNAME").is_some_and(|value| value.eq_ignore_ascii_case(name)))
-        .or_else(|| response_item(&response.raw))
-        .or_else(|| response_items(&response.raw).into_iter().next())
 }
 
 fn validate_setting_snapshot(value: &Value, setting: &SettingSnapshot) -> Result<(), VizioFailure> {
@@ -1553,24 +1551,16 @@ fn repeated_key(
             false,
         ));
     }
-    Ok(key_request_events(
-        (0..steps)
-            .map(|_| key.event(VizioRemoteAction::Keypress))
-            .collect(),
-        key_events,
-    ))
-}
-
-fn key_request_events(
-    events: Vec<VizioRemoteEvent>,
-    key_events: impl FnOnce(Vec<VizioRemoteEvent>) -> Value,
-) -> (VizioHttpMethod, String, Option<Value>, bool) {
-    (
+    Ok((
         VizioHttpMethod::Put,
         "/key_command/".into(),
-        Some(key_events(events)),
+        Some(key_events(
+            (0..steps)
+                .map(|_| key.event(VizioRemoteAction::Keypress))
+                .collect(),
+        )),
         true,
-    )
+    ))
 }
 
 fn build_request(

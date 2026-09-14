@@ -24,8 +24,9 @@ for (const scenario of vectors) {
   app.free();
 }
 const catalogs = JSON.parse(core.normalize('catalogs', JSON.stringify([{ id: 'movie', type: 'movie' }, { id: 'other', type: 'unsupported' }]), 'https://example.test'));
-assert.equal(catalogs.length, 1);
-assert.equal(catalogs[0].type, 'movie');
+// Addon-defined catalog namespaces are preserved verbatim; only unsupported
+// media rows inside a catalog response are filtered.
+assert.deepEqual(catalogs.map(catalog => catalog.type), ['movie', 'unsupported']);
 assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url:'https://evil.test/media/s'}), 'https://example.test'));
 console.log(`WASM: ${vectors.length} shared native/WASM startup vectors and domain boundary checks passed`);
 const domain = (kind, value) => JSON.parse(core.normalize(kind, JSON.stringify(value), 'https://example.test'));

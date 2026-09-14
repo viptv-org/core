@@ -37,6 +37,7 @@ class HttpTransport(
         .retryOnConnectionFailure(false)
         .build()
 
+    /** Cancellable handle shared with SmartCastTransport; it must hold no transport state. */
     class Call internal constructor() {
         internal val cancelled = AtomicBoolean(false)
         internal val connection = AtomicReference<okhttp3.Call?>()

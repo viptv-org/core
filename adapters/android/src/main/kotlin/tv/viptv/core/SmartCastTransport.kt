@@ -6,8 +6,6 @@ import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -23,15 +21,6 @@ class SmartCastTransport(
     private val executor: Executor,
 ) {
     data class Response(val status: Int, val body: String)
-
-    class Call internal constructor() {
-        internal val cancelled = AtomicBoolean(false)
-        internal val connection = AtomicReference<okhttp3.Call?>()
-        fun cancel() {
-            cancelled.set(true)
-            connection.get()?.cancel()
-        }
-    }
 
     private val origin = configuredOrigin(selectedTvOrigin)
     private val trustManager = object : X509TrustManager {
@@ -53,17 +42,17 @@ class SmartCastTransport(
     /** Callback and transport errors contain no URL, headers, body, token, or certificate data. */
     fun execute(
         request: JSONObject,
-        started: (Call) -> Unit = {},
+        started: (HttpTransport.Call) -> Unit = {},
         complete: (Result<Response>) -> Unit,
-    ): Call {
-        val call = Call()
+    ): HttpTransport.Call {
+        val call = HttpTransport.Call()
         val snapshot = JSONObject(request.toString())
         started(call)
         executor.execute { complete(runCatching { exchange(snapshot, call) }) }
         return call
     }
 
-    private fun exchange(request: JSONObject, call: Call): Response {
+    private fun exchange(request: JSONObject, call: HttpTransport.Call): Response {
         check(!call.cancelled.get()) { "SmartCast request cancelled" }
         val uri = URI(request.getString("url"))
         require(exactOrigin(uri) == origin && uri.rawUserInfo == null && uri.rawFragment == null) {
