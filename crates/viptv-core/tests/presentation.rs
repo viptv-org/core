@@ -294,3 +294,32 @@ fn large_series_queue_does_not_duplicate_episode_catalog_across_the_bridge() {
     assert!(queue["episodes"].as_array().is_none_or(Vec::is_empty));
     assert_eq!(queue["thumbnail"], "episode-3.jpg");
 }
+
+#[test]
+fn failed_queue_still_uses_landscape_then_empty_without_changing_resume() {
+    let item = json!({"id":"series:1:3","type":"series","name":"Series","season":1,"episode":3,"thumbnail":"missing-still.jpg","background":"landscape.jpg","poster":"portrait.jpg","position":42,"duration":100});
+    let original = call("cardPresentation", json!({"item":item,"context":"queue"}));
+    assert_eq!(original["image"], "missing-still.jpg");
+    let mut failed = Vec::new();
+    for (url, expected, role) in [
+        ("missing-still.jpg", json!("landscape.jpg"), "landscape"),
+        ("landscape.jpg", Value::Null, "none"),
+    ] {
+        failed.push(url);
+        let card = call(
+            "cardPresentation",
+            json!({"item":item,"context":"queue","failedImages":failed}),
+        );
+        assert_eq!(card["image"], expected);
+        assert_eq!(card["imageRole"], role);
+        for field in [
+            "title",
+            "subtitle",
+            "progress",
+            "primaryAction",
+            "primaryActionLabel",
+        ] {
+            assert_eq!(card[field], original[field], "{field}");
+        }
+    }
+}

@@ -121,7 +121,10 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                 .iter()
                 .find_map(|(key, role)| {
                     let art = image(m, key);
-                    (!art.is_null()).then_some((art, *role))
+                    let failed = v["failedImages"]
+                        .as_array()
+                        .is_some_and(|urls| urls.contains(&art));
+                    (!art.is_null() && !failed).then_some((art, *role))
                 })
                 .unwrap_or((Value::Null, "none"));
             let status = match text(m, "queueStatus") {

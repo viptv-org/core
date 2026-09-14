@@ -80,3 +80,14 @@ assert.equal(domain('presentation',domain('media',{id:'channel',type:'live',name
 assert.equal(domain('presentation',portrait).titleLogo,null);
 assert.equal(domain('enrichHome',{original:logoEpisode,metadata:{titleLogo:'new.png',position:0}}).position,42);
 console.log('WASM: title logos retain text, episode identity and channel-logo distinction');
+
+const failedStillItem = {id:'series:1:3',type:'series',name:'Series',season:1,episode:3,thumbnail:'missing.jpg',background:'landscape.jpg',poster:'portrait.jpg',position:42,duration:100};
+const failedStillCard = domain('cardPresentation',{item:failedStillItem,context:'queue',failedImages:['missing.jpg']});
+assert.equal(failedStillCard.image,'landscape.jpg');
+assert.equal(failedStillCard.imageRole,'landscape');
+assert.equal(failedStillCard.progress,.42);
+assert.equal(failedStillCard.primaryAction,'resume');
+const failedLandscapeCard = domain('cardPresentation',{item:failedStillItem,context:'queue',failedImages:['missing.jpg','landscape.jpg']});
+assert.equal(failedLandscapeCard.image,null);
+assert.equal(failedLandscapeCard.imageRole,'none');
+console.log('WASM: failed episode artwork falls back through shared landscape policy');
