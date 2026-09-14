@@ -57,6 +57,7 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
 )
 @Serializable data class DiscoverPage(
     val `items`: List<MediaItem> = emptyList(),
+    val `unsupportedCount`: Long? = null,
     val `hasMore`: Boolean,
     val `nextSkip`: Double? = null
 )

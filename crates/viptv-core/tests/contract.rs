@@ -297,3 +297,27 @@ fn catalogs_preserve_addon_defined_types_and_names() {
     assert_eq!(output[4]["type"], "anime.movie");
     assert_eq!(output[1]["addonName"], "AIOMetadata");
 }
+
+#[test]
+fn addon_catalog_namespaces_use_returned_media_types_and_report_unsupported_rows() {
+    for (catalog_type, media_type) in [
+        ("anime", "series"),
+        ("anime.series", "series"),
+        ("anime.movie", "movie"),
+        ("collection", "movie"),
+    ] {
+        let input = json!({"type":catalog_type,"response":{"metas":[{"id":"fixture","name":"Example","type":media_type}],"has_more":false}});
+        let output: Value = serde_json::from_str(
+            &normalize("discoverResponse".into(), input.to_string(), "".into()).unwrap(),
+        )
+        .unwrap();
+        assert_eq!(output["items"][0]["type"], media_type);
+    }
+    let input = json!({"type":"custom","response":{"metas":[{"id":"unknown","type":"custom"},{"id":"known","type":"movie"}],"has_more":false}});
+    let output: Value = serde_json::from_str(
+        &normalize("discoverResponse".into(), input.to_string(), "".into()).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(output["items"].as_array().unwrap().len(), 1);
+    assert_eq!(output["unsupportedCount"], 1);
+}

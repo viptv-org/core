@@ -147,6 +147,7 @@ pub struct PlaybackSession {
 #[facet(rename_all = "camelCase")]
 pub struct DiscoverPage {
     pub items: Vec<MediaItem>,
+    pub unsupported_count: Option<u32>,
     pub has_more: bool,
     pub next_skip: Option<f64>,
 }

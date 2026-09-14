@@ -37,7 +37,7 @@ export class CatalogExtra {
 }
 
 export class DiscoverPage {
-    constructor (public items: Seq<MediaItem>, public hasMore: bool, public nextSkip: Optional<float64>) {
+    constructor (public items: Seq<MediaItem>, public unsupportedCount: Optional<uint32>, public hasMore: bool, public nextSkip: Optional<float64>) {
     }
 }
 

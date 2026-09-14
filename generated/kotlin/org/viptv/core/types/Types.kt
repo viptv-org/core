@@ -50,6 +50,7 @@ data class CatalogExtra(
 
 data class DiscoverPage(
     val items: List<org.viptv.core.types.MediaItem>,
+    val unsupportedCount: UInt? = null,
     val hasMore: Boolean,
     val nextSkip: Double? = null,
 )

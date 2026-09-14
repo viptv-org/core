@@ -421,8 +421,22 @@ pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value
                     media(&m).ok()
                 })
                 .collect::<Vec<_>>();
+            let unsupported_count = array(response, "metas")?
+                .iter()
+                .filter(|m| {
+                    let media_type = if m["type"].is_null() {
+                        &v["type"]
+                    } else {
+                        &m["type"]
+                    };
+                    m.is_object() && media_type.is_string() && kind(media_type).is_err()
+                })
+                .count();
             let mut out =
                 json!({"items":items,"hasMore":response["has_more"].as_bool().unwrap_or(false)});
+            if unsupported_count > 0 {
+                out["unsupportedCount"] = json!(unsupported_count);
+            }
             optional_number(response, &mut out, "next_skip", "nextSkip");
             Ok(out)
         }

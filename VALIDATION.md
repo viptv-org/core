@@ -52,3 +52,9 @@ Real populated Home exposed a2,305,123-byte enrichDetail bridge input: queue row
 ## Addon catalog namespaces — 2026-09-14
 
 Production read-only manifest counts showed 78 catalogs, including 15 AIOMetadata catalogs in anime, collection, anime.series and anime.movie namespaces. The previous MediaKind restriction discarded those catalogs. Catalog now preserves its bounded exact addon-defined type and optional addon name; playable media keeps its separate typed contract. The targeted regression reproduced 1 of 5 fixture catalogs retained before the fix. Type generation and WASM regeneration accompany this revision. All 42 Rust unit/integration tests pass after the fix; consumer pins update together. Hardware qualification remains separate.
+
+### Custom catalog response verification
+
+Bounded, read-only AIOMetadata GETs verified the configured catalog namespaces independently from their returned media types: anime returned 25 series, anime.series search returned 7 series, anime.movie search returned 1 movie, and collection search returned 5 movies. The latter three manifests require search. Following an anime result through its exact series metadata path returned 65 videos; a collection result through its exact movie metadata path returned 6 videos. No token, provider URL or account data was recorded. These are metadata checks, not playback qualification.
+
+The response contract retains returned movie/series identity and reports optional unsupportedCount for unknown media types instead of silently treating a nonempty unknown response as an empty catalog. Known rows in mixed responses remain available. Rust response fixtures cover all four observed namespace/type pairs.
