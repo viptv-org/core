@@ -27,7 +27,7 @@ export class CardPresentation {
 }
 
 export class Catalog {
-    constructor (public id: str, public name: str, public type: MediaKind, public addonId: Optional<float64>, public addonKey: Optional<str>, public supportsSearch: bool, public supportsSkip: bool, public extras: Seq<CatalogExtra>, public genres: Seq<str>, public raw: Map<str,JsonValue>) {
+    constructor (public id: str, public name: str, public type: str, public addonName: Optional<str>, public addonId: Optional<float64>, public addonKey: Optional<str>, public supportsSearch: bool, public supportsSkip: bool, public extras: Seq<CatalogExtra>, public genres: Seq<str>, public raw: Map<str,JsonValue>) {
     }
 }
 

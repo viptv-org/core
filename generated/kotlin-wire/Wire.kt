@@ -38,7 +38,8 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
 @Serializable data class Catalog(
     val `id`: String,
     val `name`: String,
-    val `type`: MediaKind,
+    val `type`: String,
+    val `addonName`: String? = null,
     val `addonId`: Double? = null,
     val `addonKey`: String? = null,
     val `supportsSearch`: Boolean,

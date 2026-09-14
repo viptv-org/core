@@ -154,7 +154,12 @@ pub fn tokens(v: &Value) -> Result<Value> {
     )
 }
 pub fn catalog(v: &Value) -> Result<Value> {
-    let mut out = json!({"id":id(v,"id")?,"name":fallback(v,&["name","id"],"Catalog"),"type":kind(v.get("type").unwrap_or(&json!("movie")))?,"supportsSearch":v["supports_search"].as_bool().unwrap_or(false),"supportsSkip":v["supports_skip"].as_bool().unwrap_or(false),"genres":strings(v,"genres"),"extras":[],"raw":clean(v)});
+    let catalog_type = v["type"].as_str().unwrap_or("movie");
+    if catalog_type.trim().is_empty() || catalog_type.len() > 64 {
+        return Err(invalid());
+    }
+    let mut out = json!({"id":id(v,"id")?,"name":fallback(v,&["name","id"],"Catalog"),"type":catalog_type,"supportsSearch":v["supports_search"].as_bool().unwrap_or(false),"supportsSkip":v["supports_skip"].as_bool().unwrap_or(false),"genres":strings(v,"genres"),"extras":[],"raw":clean(v)});
+    optional_string(v, &mut out, "addon_name", "addonName");
     optional_number(v, &mut out, "addon_id", "addonId");
     if let Ok(key) = id(v, "addon_id") {
         out["addonKey"] = json!(key);

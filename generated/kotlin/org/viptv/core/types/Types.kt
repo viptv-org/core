@@ -28,7 +28,9 @@ data class CardPresentation(
 data class Catalog(
     val id: String,
     val name: String,
-    val type: org.viptv.core.types.MediaKind,
+    /// Addons define their own catalog namespaces independently of media kinds.
+    val type: String,
+    val addonName: String? = null,
     val addonId: Double? = null,
     val addonKey: String? = null,
     val supportsSearch: Boolean,

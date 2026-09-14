@@ -151,8 +151,9 @@ fn malformed_storage_is_not_deleted() {
 fn catalog_bad_rows_do_not_hide_valid_rows() {
     let out=normalize("catalogs".into(),json!([{"id":"movies","name":"Movies","type":"movie"},{"id":"anime","type":"anime"},{"type":"movie"},{"id":7,"type":"series"}]).to_string(),"https://example.test".into()).unwrap();
     let out: Value = serde_json::from_str(&out).unwrap();
-    assert_eq!(out.as_array().unwrap().len(), 2);
-    assert_eq!(out[1]["id"], "7");
+    assert_eq!(out.as_array().unwrap().len(), 3);
+    assert_eq!(out[1]["type"], "anime");
+    assert_eq!(out[2]["id"], "7");
 }
 #[test]
 fn normalized_media_removes_nested_transport_secrets() {
@@ -275,4 +276,24 @@ fn post_selection_deleted_or_incomplete_profile_cannot_be_restored() {
         assert_eq!(view(&c)["phase"], "Profiles");
         assert!(effects.iter().all(|e| e["effect"].get("Http").is_none()));
     }
+}
+
+#[test]
+fn catalogs_preserve_addon_defined_types_and_names() {
+    let input = json!([
+        {"id":"top","name":"Popular","type":"movie","addon_id":1,"addon_name":"Cinemeta"},
+        {"id":"anime","name":"Anime","type":"anime","addon_id":4,"addon_name":"AIOMetadata"},
+        {"id":"collections","type":"collection","addon_id":4},
+        {"id":"anime-series","type":"anime.series","addon_id":4},
+        {"id":"anime-movies","type":"anime.movie","addon_id":4}
+    ]);
+    let output: Value =
+        serde_json::from_str(&normalize("catalogs".into(), input.to_string(), "".into()).unwrap())
+            .unwrap();
+    assert_eq!(output.as_array().unwrap().len(), 5);
+    assert_eq!(output[1]["type"], "anime");
+    assert_eq!(output[2]["type"], "collection");
+    assert_eq!(output[3]["type"], "anime.series");
+    assert_eq!(output[4]["type"], "anime.movie");
+    assert_eq!(output[1]["addonName"], "AIOMetadata");
 }

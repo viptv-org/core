@@ -41,7 +41,9 @@ pub struct CatalogExtra {
 pub struct Catalog {
     pub id: String,
     pub name: String,
-    pub r#type: MediaKind,
+    /// Addons define their own catalog namespaces independently of media kinds.
+    pub r#type: String,
+    pub addon_name: Option<String>,
     pub addon_id: Option<f64>,
     pub addon_key: Option<String>,
     pub supports_search: bool,
