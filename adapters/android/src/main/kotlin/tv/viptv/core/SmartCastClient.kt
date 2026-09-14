@@ -23,7 +23,7 @@ class SmartCastClient(
             .toString(),
     )
     private val transport = SmartCastTransport(tvOrigin, executor)
-    private val active = AtomicReference<SmartCastTransport.Call?>()
+    private val active = AtomicReference<HttpTransport.Call?>()
     private val running = AtomicBoolean(false)
 
     @Synchronized
