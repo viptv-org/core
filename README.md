@@ -23,3 +23,7 @@ Android vendors a hash-checked committed source snapshot and generated Kotlin, t
 Tauri's native command and native-fetch adapters are available and tested through their injected ports. No installed desktop application migration is claimed in this Android/web delivery.
 
 Runtime tests use injected fetch/native command ports. Native Rust and WASM behavior tests are distinct from physical TV, Android and installed Tauri testing. See VALIDATION.md for the measured checkpoint.
+
+## Shared card contract
+
+`normalize("cardPresentation", { item, context: "queue" | "catalog" })` returns generated `CardPresentation`: image and its role, title, subtitle, optional normalized progress, and activation intent/label. Renderers must not choose alternate image fields or reconstruct these labels. Queue metadata is enriched through `enrichHome`, which matches the exact episode before adopting its still/title and preserves source, progress and previous-episode identity. Missing episode artwork can use a known landscape or an explicit empty state; a series portrait is never relabeled as an episode still. Platform adapters execute bounded metadata requests; Rust owns their merge.

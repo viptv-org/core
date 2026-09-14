@@ -50,6 +50,7 @@ pub fn generate(registry: &Registry) -> String {
                     | "MediaSource"
                     | "MediaTrack"
                     | "MediaPresentation"
+                    | "CardPresentation"
                     | "SourcePresentation"
                     | "PlaybackSession"
                     | "Catalog"

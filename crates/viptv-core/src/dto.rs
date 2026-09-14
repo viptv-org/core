@@ -165,6 +165,20 @@ pub struct MediaPresentation {
     pub resume_eligible: bool,
     pub can_auto_next: bool,
 }
+/// Complete shelf-card projection. Shells render these fields without selecting
+/// artwork, interpreting progress, or deciding continuation intent.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct CardPresentation {
+    pub image: Option<String>,
+    pub image_role: String,
+    pub title: String,
+    pub subtitle: String,
+    pub progress: Option<f64>,
+    pub primary_action: String,
+    pub primary_action_label: String,
+}
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 pub struct ApiRequest {
     pub method: String,

@@ -26,6 +26,15 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `path`: String,
     val `body`: Map<String, JsonElement>? = null
 )
+@Serializable data class CardPresentation(
+    val `image`: String? = null,
+    val `imageRole`: String,
+    val `title`: String,
+    val `subtitle`: String,
+    val `progress`: Double? = null,
+    val `primaryAction`: String,
+    val `primaryActionLabel`: String
+)
 @Serializable data class Catalog(
     val `id`: String,
     val `name`: String,

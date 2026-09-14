@@ -1,6 +1,7 @@
 // Generated from Rust by viptv-typegen. Serde JSON bridge representation.
 export type Account = { readonly id: string; readonly username: string; readonly name: string; readonly role: string };
 export type ApiRequest = { readonly method: string; readonly path: string; readonly body: { [key: string]: JsonValue } | null };
+export type CardPresentation = { readonly image: string | null; readonly imageRole: string; readonly title: string; readonly subtitle: string; readonly progress: number | null; readonly primaryAction: string; readonly primaryActionLabel: string };
 export type Catalog = { readonly id: string; readonly name: string; readonly type: MediaKind; readonly addonId?: number; readonly addonKey?: string; readonly supportsSearch: boolean; readonly supportsSkip: boolean; readonly extras: ReadonlyArray<CatalogExtra>; readonly genres: ReadonlyArray<string>; readonly raw: { [key: string]: JsonValue } };
 export type CatalogExtra = { readonly name: string; readonly required: boolean; readonly options: ReadonlyArray<string>; readonly defaultValue?: string; readonly optionsLimit?: number };
 export type DiscoverPage = { readonly items: ReadonlyArray<MediaItem>; readonly hasMore: boolean; readonly nextSkip?: number };

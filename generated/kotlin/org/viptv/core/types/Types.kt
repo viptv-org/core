@@ -13,6 +13,18 @@ data class ApiRequest(
     val body: Map<String, org.viptv.core.types.JsonValue>? = null,
 )
 
+/// Complete shelf-card projection. Shells render these fields without selecting
+/// artwork, interpreting progress, or deciding continuation intent.
+data class CardPresentation(
+    val image: String? = null,
+    val imageRole: String,
+    val title: String,
+    val subtitle: String,
+    val progress: Double? = null,
+    val primaryAction: String,
+    val primaryActionLabel: String,
+)
+
 data class Catalog(
     val id: String,
     val name: String,

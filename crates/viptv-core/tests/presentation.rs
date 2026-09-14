@@ -201,3 +201,73 @@ fn episodes_inherit_parent_logo_without_losing_playback_identity() {
         "new.png"
     );
 }
+
+#[test]
+fn queue_card_is_a_complete_shared_projection_of_the_exact_episode() {
+    let original = json!({"id":"series:1:3","type":"series","name":"Series","seriesId":"series","season":1,"episode":3,"poster":"series-poster.jpg","thumbnail":"saved-still.jpg","position":42,"duration":100,"sourceFingerprint":"saved","previousEpisode":{"id":"series:1:2"}});
+    let metadata = json!({"id":"series","name":"Series","poster":"new-series-poster.jpg","thumbnail":"wrong-parent-image.jpg","background":"series-landscape.jpg","episodes":[
+        {"id":"series:1:2","season":1,"episode":2,"thumbnail":"wrong-episode.jpg"},
+        {"id":"series:1:3","season":1,"episode":3,"thumbnail":"episode-three.jpg","name":"The Third Episode"}
+    ]});
+    let enriched = call(
+        "enrichHome",
+        json!({"original":original,"metadata":metadata}),
+    );
+    assert_eq!(enriched["sourceFingerprint"], "saved");
+    assert_eq!(enriched["previousEpisode"]["id"], "series:1:2");
+    let card = call(
+        "cardPresentation",
+        json!({"item":enriched,"context":"queue"}),
+    );
+    assert_eq!(card["image"], "episode-three.jpg");
+    assert_eq!(card["imageRole"], "episode");
+    assert_eq!(card["title"], "Series");
+    assert_eq!(
+        card["subtitle"],
+        "S1 · E3 · The Third Episode · Resume at 0:42"
+    );
+    assert_eq!(card["progress"], 0.42);
+    assert_eq!(card["primaryAction"], "resume");
+    assert_eq!(card["primaryActionLabel"], "Resume");
+}
+
+#[test]
+fn missing_episode_art_never_promotes_parent_or_other_episode_image() {
+    let original = json!({"id":"e3","type":"series","name":"Series","season":1,"episode":3,"poster":"portrait.jpg"});
+    let metadata = json!({"thumbnail":"parent.jpg","episodes":[{"id":"e2","season":1,"episode":2,"thumbnail":"other.jpg"}]});
+    let enriched = call(
+        "enrichHome",
+        json!({"original":original,"metadata":metadata}),
+    );
+    let card = call(
+        "cardPresentation",
+        json!({"item":enriched,"context":"queue"}),
+    );
+    assert!(card["image"].is_null());
+    assert_eq!(card["imageRole"], "none");
+    assert!(card["progress"].is_null());
+}
+
+#[test]
+fn shared_cards_distinguish_catalog_live_and_continuation_intent() {
+    let live = call(
+        "cardPresentation",
+        json!({"item":{"name":"Channel","type":"live","poster":"channel-logo.png","position":40,"duration":100},"context":"catalog"}),
+    );
+    assert_eq!(live["imageRole"], "logo");
+    assert_eq!(live["primaryAction"], "play");
+    assert!(live["progress"].is_null());
+    assert_eq!(live["subtitle"], "");
+    for (context, status, action) in [
+        ("catalog", "next", "details"),
+        ("queue", "next", "next"),
+        ("queue", "caught_up", "episodes"),
+        ("queue", "upcoming", "episodes"),
+    ] {
+        let card = call(
+            "cardPresentation",
+            json!({"item":{"name":"Series","type":"series","season":1,"episode":3,"queueStatus":status},"context":context}),
+        );
+        assert_eq!(card["primaryAction"], action);
+    }
+}

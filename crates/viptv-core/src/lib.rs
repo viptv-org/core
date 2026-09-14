@@ -212,6 +212,7 @@ fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreErro
             .map_err(|_| CoreError::InvalidInput)
     }
     match kind {
+        "cardPresentation" => check::<dto::CardPresentation>(v),
         "catalog" => check::<dto::Catalog>(v),
         "catalogs" => check::<Vec<dto::Catalog>>(v),
         "media" => check::<dto::MediaItem>(v),

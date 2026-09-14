@@ -98,6 +98,95 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
             };
             json!({"heroImage":image(m,"background"),"posterImage":image(m,"poster"),"episodeImage":image(m,"thumbnail"),"titleLogo":image(m,"titleLogo"),"title":m["name"],"episodeLabel":label,"progress":if num(m,"duration")>0.0{(num(m,"position")/num(m,"duration")).clamp(0.0,1.0)}else{0.0},"primaryAction":action,"primaryActionLabel":match action{"next"=>"Play next episode","resume"=>"Resume","play"=>"Watch live","episodes"=>"Episodes",_=>"Play"},"resumeEligible":resume,"canAutoNext":!live&&episode>0.0&&num(m,"duration")>0.0&&num(m,"duration")-num(m,"position")<=10.0&&num(m,"position")>0.0})
         }
+        "cardPresentation" => {
+            let m = &v["item"];
+            let queue = text(v, "context") == "queue";
+            let live = text(m, "type") == "live";
+            let episode = num(m, "episode") > 0.0 || text(m, "type") == "episode";
+            let presentation = normalize("presentation", m)?;
+            let candidates: &[(&str, &str)] = if live {
+                &[("poster", "logo")]
+            } else if queue && episode {
+                // A series poster is not an episode still. An unavailable still
+                // can use an explicitly known landscape, never a portrait crop.
+                &[("thumbnail", "episode"), ("background", "landscape")]
+            } else {
+                &[
+                    ("background", "landscape"),
+                    ("thumbnail", "landscape"),
+                    ("poster", "poster"),
+                ]
+            };
+            let (art, role) = candidates
+                .iter()
+                .find_map(|(key, role)| {
+                    let art = image(m, key);
+                    (!art.is_null()).then_some((art, *role))
+                })
+                .unwrap_or((Value::Null, "none"));
+            let status = match text(m, "queueStatus") {
+                "next" => "Play next episode".to_owned(),
+                "caught_up" => "You're caught up".to_owned(),
+                "upcoming" => "Next episode coming soon".to_owned(),
+                "pending" | "unavailable" => "Find next episode".to_owned(),
+                _ if !live && num(m, "position") > 0.0 => {
+                    let seconds = num(m, "position").floor() as u64;
+                    format!("Resume at {}:{:02}", seconds / 60, seconds % 60)
+                }
+                _ => String::new(),
+            };
+            let mut context = Vec::new();
+            if episode {
+                context.push(format!(
+                    "S{:.0} · E{:.0}",
+                    num(m, "season"),
+                    num(m, "episode")
+                ));
+                if !text(m, "episodeTitle").is_empty() {
+                    context.push(text(m, "episodeTitle").to_owned());
+                }
+            }
+            if !status.is_empty() {
+                context.push(status);
+            }
+            if context.is_empty() && !live {
+                if num(m, "year") > 0.0 {
+                    context.push(format!("{:.0}", num(m, "year")));
+                }
+                if !text(m, "runtime").is_empty() {
+                    context.push(text(m, "runtime").to_owned());
+                }
+                context.extend(
+                    m["genres"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .filter_map(Value::as_str)
+                        .take(2)
+                        .map(str::to_owned),
+                );
+            }
+            let action = if live {
+                "play"
+            } else if !queue {
+                "details"
+            } else if matches!(
+                text(m, "queueStatus"),
+                "caught_up" | "upcoming" | "pending" | "unavailable"
+            ) {
+                "episodes"
+            } else {
+                text(&presentation, "primaryAction")
+            };
+            let label = match action {
+                "details" => "Details",
+                "episodes" => "Episodes",
+                _ => text(&presentation, "primaryActionLabel"),
+            };
+            json!({"image":art,"imageRole":role,"title":m["name"],"subtitle":context.join(" · "),
+                "progress":if !live && num(m,"duration")>0.0 { presentation["progress"].clone() } else { Value::Null },
+                "primaryAction":action,"primaryActionLabel":label})
+        }
         "itemRequest" => item_request(v),
         "playbackRequest" | "preferencesRequest" => snake(v),
         "request" => {
@@ -286,7 +375,6 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
             for k in [
                 "poster",
                 "background",
-                "thumbnail",
                 "description",
                 "year",
                 "runtime",
@@ -298,6 +386,32 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                 if !m[k].is_null() && !m[k].as_array().is_some_and(Vec::is_empty) {
                     out[k] = m[k].clone();
                 }
+            }
+            let is_episode = num(&out, "episode") > 0.0 || text(&out, "type") == "episode";
+            if is_episode {
+                let matching = m["episodes"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .find(|episode| {
+                        (!text(&out, "id").is_empty() && text(episode, "id") == text(&out, "id"))
+                            || (out["season"].is_number()
+                                && out["episode"].is_number()
+                                && episode["season"] == out["season"]
+                                && episode["episode"] == out["episode"])
+                    });
+                if let Some(episode) = matching {
+                    if !image(episode, "thumbnail").is_null() {
+                        out["thumbnail"] = episode["thumbnail"].clone();
+                    }
+                    if !text(episode, "episodeTitle").is_empty() {
+                        out["episodeTitle"] = episode["episodeTitle"].clone();
+                    } else if !text(episode, "name").is_empty() {
+                        out["episodeTitle"] = episode["name"].clone();
+                    }
+                }
+            } else if !image(m, "thumbnail").is_null() {
+                out["thumbnail"] = m["thumbnail"].clone();
             }
             if !image(m, "titleLogo").is_null() {
                 out["titleLogo"] = m["titleLogo"].clone();

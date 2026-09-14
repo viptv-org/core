@@ -42,3 +42,7 @@ Historical first checkpoint follows; its migration limitations describe that ear
 TV-web adopts the Rust normalizers and generated domain types. Its own browser/playback evidence belongs in tv-web/TESTING.md. Existing Android/desktop applications have not yet adopted the core. Existing TV navigation/session orchestration still has remaining extraction work; this is a working first library release, not a completed all-platform migration.
 
 Strict TypeScript validation also passed against the actual pinned Tauri HTTP plugin types; the runtime imports Rust-generated JSON wire types directly.
+
+## 2026-09-14 shared card correction
+
+Added generated CardPresentation for Kotlin and TypeScript and rebuilt WASM. Native workspace tests pass (39 tests), including exact episode still vs parent/neighbor image, missing-art fallback, source/progress preservation and catalog/live/queue intent. Consumer browser and Android validation is recorded in their repositories; no Android device or emulator claim.

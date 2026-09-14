@@ -19,6 +19,13 @@ export class ApiRequest {
     }
 }
 
+/// Complete shelf-card projection. Shells render these fields without selecting
+/// artwork, interpreting progress, or deciding continuation intent.
+export class CardPresentation {
+    constructor (public image: Optional<str>, public imageRole: str, public title: str, public subtitle: str, public progress: Optional<float64>, public primaryAction: str, public primaryActionLabel: str) {
+    }
+}
+
 export class Catalog {
     constructor (public id: str, public name: str, public type: MediaKind, public addonId: Optional<float64>, public addonKey: Optional<str>, public supportsSearch: bool, public supportsSkip: bool, public extras: Seq<CatalogExtra>, public genres: Seq<str>, public raw: Map<str,JsonValue>) {
     }
