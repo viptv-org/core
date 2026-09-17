@@ -141,6 +141,14 @@ pub struct PlaybackSession {
     pub audio_tracks: Vec<MediaTrack>,
     pub subtitle_tracks: Vec<MediaTrack>,
     pub subtitles_supported: bool,
+    pub authorization: Option<PlaybackAuthorization>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackAuthorization {
+    pub cookie: Option<String>,
+    pub user_agent: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]

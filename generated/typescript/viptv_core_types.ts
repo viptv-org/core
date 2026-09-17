@@ -340,8 +340,13 @@ export function matchPhase<R>(value: Phase, cases: {
     return cases[value.kind as Phase["kind"]](value as never);
 }
 
+export class PlaybackAuthorization {
+    constructor (public cookie: Optional<str>, public userAgent: Optional<str>) {
+    }
+}
+
 export class PlaybackSession {
-    constructor (public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool) {
+    constructor (public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
     }
 }
 

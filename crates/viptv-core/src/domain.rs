@@ -349,18 +349,47 @@ fn track(v: &Value) -> Result<Value> {
 }
 pub fn playback(v: &Value, origin: &str) -> Result<Value> {
     let base = url::Url::parse(origin).map_err(|_| invalid())?;
-    let url = base.join(&string(v, "url")?).map_err(|_| invalid())?;
-    if !matches!(base.scheme(), "https" | "http")
-        || url.origin() != base.origin()
-        || !url.path().starts_with("/media/")
-        || !url.username().is_empty()
-        || url.password().is_some()
-    {
-        return Err(invalid());
-    }
+    // Proxy sessions serve root-relative /media/ capability URLs on the API
+    // origin. A direct-URL session hands the ORIGINAL absolute source URL to a
+    // client that declared direct_urls, so an absolute http(s) URL without
+    // embedded credentials passes through unchanged.
+    let raw = string(v, "url")?;
+    let url = if raw.starts_with('/') {
+        let joined = base.join(&raw).map_err(|_| invalid())?;
+        if !matches!(base.scheme(), "https" | "http")
+            || joined.origin() != base.origin()
+            || !joined.path().starts_with("/media/")
+            || !joined.username().is_empty()
+            || joined.password().is_some()
+        {
+            return Err(invalid());
+        }
+        joined
+    } else {
+        let parsed = url::Url::parse(&raw).map_err(|_| invalid())?;
+        if !matches!(parsed.scheme(), "https" | "http")
+            || !parsed.username().is_empty()
+            || parsed.password().is_some()
+        {
+            return Err(invalid());
+        }
+        parsed
+    };
     Ok(
-        json!({"headers":v["headers"].as_object().map(|h|h.iter().filter(|(_,v)|v.is_string()).map(|(k,v)|(k.clone(),v.clone())).collect::<Map<String,Value>>()).unwrap_or_default(),"id":string(v,"id")?,"url":url.as_str(),"format":fallback(v,&["format"],"hls"),"mode":fallback(v,&["mode"],"direct"),"videoMode":fallback(v,&["video_mode"],"copy"),"audioMode":fallback(v,&["audio_mode"],"copy"),"position":v["position"].as_f64().unwrap_or(0.0),"live":v["live"].as_bool().unwrap_or(false),"duration":v["duration"].as_f64().unwrap_or(0.0),"audioTracks":v["audio_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitleTracks":v["subtitle_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitlesSupported":v["subtitles_supported"].as_bool().unwrap_or(false)}),
+        json!({"headers":v["headers"].as_object().map(|h|h.iter().filter(|(_,v)|v.is_string()).map(|(k,v)|(k.clone(),v.clone())).collect::<Map<String,Value>>()).unwrap_or_default(),"id":string(v,"id")?,"url":url.as_str(),"format":fallback(v,&["format"],"hls"),"mode":fallback(v,&["mode"],"direct"),"videoMode":fallback(v,&["video_mode"],"copy"),"audioMode":fallback(v,&["audio_mode"],"copy"),"position":v["position"].as_f64().unwrap_or(0.0),"live":v["live"].as_bool().unwrap_or(false),"duration":v["duration"].as_f64().unwrap_or(0.0),"audioTracks":v["audio_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitleTracks":v["subtitle_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitlesSupported":v["subtitles_supported"].as_bool().unwrap_or(false),"authorization":authorization(v)}),
     )
+}
+
+/// Source credentials for a direct-URL session: the server hands over the
+/// provider's Cookie/User-Agent so a native engine fetches the original
+/// stream itself. Proxy sessions carry none.
+fn authorization(v: &Value) -> Value {
+    match v["authorization"].as_object() {
+        Some(source) => {
+            json!({"cookie":source.get("cookie").cloned().unwrap_or(Value::Null),"userAgent":source.get("user_agent").cloned().unwrap_or(Value::Null)})
+        }
+        None => Value::Null,
+    }
 }
 pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value> {
     match kind_name {

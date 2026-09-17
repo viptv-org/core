@@ -155,7 +155,8 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `duration`: Double,
     val `audioTracks`: List<MediaTrack> = emptyList(),
     val `subtitleTracks`: List<MediaTrack> = emptyList(),
-    val `subtitlesSupported`: Boolean
+    val `subtitlesSupported`: Boolean,
+    val `authorization`: PlaybackAuthorization? = null
 )
 @Serializable data class Profile(
     val `raw`: Map<String, JsonElement> = emptyMap(),

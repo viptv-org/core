@@ -27,7 +27,11 @@ const catalogs = JSON.parse(core.normalize('catalogs', JSON.stringify([{ id: 'mo
 // Addon-defined catalog namespaces are preserved verbatim; only unsupported
 // media rows inside a catalog response are filtered.
 assert.deepEqual(catalogs.map(catalog => catalog.type), ['movie', 'unsupported']);
-assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url:'https://evil.test/media/s'}), 'https://example.test'));
+// A playback URL never carries embedded credentials, and a root-relative URL
+// must stay a same-origin /media/ capability. Absolute http(s) URLs are the
+// ORIGINAL source URLs direct-URL clients play natively.
+assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: '/api/elsewhere'}), 'https://example.test'));
+assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: 'https://user:pass@evil.test/media/s'}), 'https://example.test'));
 console.log(`WASM: ${vectors.length} shared native/WASM startup vectors and domain boundary checks passed`);
 const domain = (kind, value) => JSON.parse(core.normalize(kind, JSON.stringify(value), 'https://example.test'));
 const portrait = {id:'m',type:'movie',name:'Movie',poster:'portrait.jpg',position:20,duration:100};
@@ -39,6 +43,11 @@ assert.equal(domain('androidPreferences',{}).autoplay,true);
 assert.equal(domain('guide',{items:[{start_time:10,end_time:20,display_time:'Now'}]}).programs[0].start,10);
 assert.equal(domain('live',{items:[{id:'c',name:'Channel',logo:'logo.png'}]}).channels[0].poster,'logo.png');
 assert.equal(domain('request',{operation:'playback',profileId:'must-not-send',playback:{streamId:'opaque',capabilities:{directPlay:true}}}).body.profile_id,undefined);
+// directUrls rides the same generic snake_case wire path as directFiles.
+assert.equal(domain('request',{operation:'playback',playback:{streamId:'opaque',capabilities:{directPlay:true,directUrls:true}}}).body.capabilities.direct_urls,true);
+const direct = domain('playback',{id:'s',url:'https://provider.example/stream.mkv',mode:'direct',authorization:{cookie:'session=1',user_agent:'VIPTV Desktop'}});
+assert.equal(direct.url,'https://provider.example/stream.mkv');
+assert.deepEqual(direct.authorization,{cookie:'session=1',userAgent:'VIPTV Desktop'});
 console.log('WASM: presentation, enrichment, Android compatibility and playback request policy passed');
 for (const [item,label] of [[{type:'live'},'Watch live'],[{type:'series',episode:2,queueStatus:'next'},'Play next episode'],[{type:'movie',position:2},'Resume'],[{type:'series'},'Episodes'],[{type:'movie'},'Play']]) {
   assert.equal(domain('presentation',item).primaryActionLabel,label);

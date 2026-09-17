@@ -349,6 +349,11 @@ enum class Phase {
     ERROR;
 }
 
+data class PlaybackAuthorization(
+    val cookie: String? = null,
+    val userAgent: String? = null,
+)
+
 data class PlaybackSession(
     val headers: Map<String, String>,
     val id: String,
@@ -363,6 +368,7 @@ data class PlaybackSession(
     val audioTracks: List<org.viptv.core.types.MediaTrack>,
     val subtitleTracks: List<org.viptv.core.types.MediaTrack>,
     val subtitlesSupported: Boolean,
+    val authorization: org.viptv.core.types.PlaybackAuthorization? = null,
 )
 
 data class Profile(

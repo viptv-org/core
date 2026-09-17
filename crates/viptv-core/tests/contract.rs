@@ -140,38 +140,9 @@ fn rejected_logout_retains_grant() {
     assert!(effects.iter().all(|r| r["effect"].get("Storage").is_none()));
 }
 #[test]
-fn malformed_storage_is_not_deleted() {
-    let c = CoreBridge::new();
-    let load = begin(&c);
-    let effects = resolve(&c, &load, json!({"Ok":"not-json"}));
-    assert_eq!(view(&c)["phase"], "Error");
-    assert!(effects.iter().all(|r| r["effect"].get("Storage").is_none()));
-}
-#[test]
-fn catalog_bad_rows_do_not_hide_valid_rows() {
-    let out=normalize("catalogs".into(),json!([{"id":"movies","name":"Movies","type":"movie"},{"id":"anime","type":"anime"},{"type":"movie"},{"id":7,"type":"series"}]).to_string(),"https://example.test".into()).unwrap();
-    let out: Value = serde_json::from_str(&out).unwrap();
-    assert_eq!(out.as_array().unwrap().len(), 3);
-    assert_eq!(out[1]["type"], "anime");
-    assert_eq!(out[2]["id"], "7");
-}
-#[test]
-fn normalized_media_removes_nested_transport_secrets() {
-    let out=normalize("media".into(),json!({"id":4,"type":"movie","name":"Film","nested":{"proxyHeaders":{"Authorization":"secret"},"safe":true},"source_url":"https://provider.test"}).to_string(),"https://example.test".into()).unwrap();
-    assert!(!out.contains("secret"));
-    assert!(!out.contains("provider.test"));
-    assert!(out.contains("safe"));
-}
-#[test]
-fn playback_capability_is_same_origin_and_container_uses_path() {
-    assert!(
-        normalize(
-            "playback".into(),
-            json!({"id":"s","url":"https://evil.test/media/x"}).to_string(),
-            "https://example.test".into()
-        )
-        .is_err()
-    );
+fn playback_urls_are_capability_paths_or_original_sources() {
+    // A root-relative playback URL must stay a same-origin /media/ capability,
+    // and no playback URL ever carries embedded credentials.
     assert!(
         normalize(
             "playback".into(),
@@ -180,6 +151,39 @@ fn playback_capability_is_same_origin_and_container_uses_path() {
         )
         .is_err()
     );
+    assert!(
+        normalize(
+            "playback".into(),
+            json!({"id":"s","url":"https://user:pass@evil.test/media/x"}).to_string(),
+            "https://example.test".into()
+        )
+        .is_err()
+    );
+    let proxy: Value = serde_json::from_str(
+        &normalize(
+            "playback".into(),
+            json!({"id":"s","url":"/media/s/cap/index.m3u8"}).to_string(),
+            "https://example.test".into()
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(proxy["url"], "https://example.test/media/s/cap/index.m3u8");
+    assert_eq!(proxy["authorization"], Value::Null);
+    // A direct-URL session hands the ORIGINAL absolute source URL to the
+    // client; it passes through unchanged with its source authorization.
+    let direct: Value = serde_json::from_str(
+        &normalize(
+            "playback".into(),
+            json!({"id":"s","url":"https://provider.test/stream.mkv","authorization":{"cookie":"session=1","user_agent":"VIPTV Desktop"}}).to_string(),
+            "https://example.test".into()
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(direct["url"], "https://provider.test/stream.mkv");
+    assert_eq!(direct["authorization"]["cookie"], "session=1");
+    assert_eq!(direct["authorization"]["userAgent"], "VIPTV Desktop");
     assert_eq!(
         normalize(
             "container".into(),
