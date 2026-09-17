@@ -70,6 +70,8 @@ pub fn generate(registry: &Registry) -> String {
                 | "MediaTrack"
                 | "DiscoverPage"
                 | "Profile"
+                | "PlaybackSession"
+                | "PlaybackAuthorization"
         );
         let value = match container {
             C::UnitStruct(_) => "null".into(),

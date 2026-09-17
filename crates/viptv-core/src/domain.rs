@@ -375,21 +375,28 @@ pub fn playback(v: &Value, origin: &str) -> Result<Value> {
         }
         parsed
     };
-    Ok(
-        json!({"headers":v["headers"].as_object().map(|h|h.iter().filter(|(_,v)|v.is_string()).map(|(k,v)|(k.clone(),v.clone())).collect::<Map<String,Value>>()).unwrap_or_default(),"id":string(v,"id")?,"url":url.as_str(),"format":fallback(v,&["format"],"hls"),"mode":fallback(v,&["mode"],"direct"),"videoMode":fallback(v,&["video_mode"],"copy"),"audioMode":fallback(v,&["audio_mode"],"copy"),"position":v["position"].as_f64().unwrap_or(0.0),"live":v["live"].as_bool().unwrap_or(false),"duration":v["duration"].as_f64().unwrap_or(0.0),"audioTracks":v["audio_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitleTracks":v["subtitle_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitlesSupported":v["subtitles_supported"].as_bool().unwrap_or(false),"authorization":authorization(v)}),
-    )
+    let mut out = json!({"headers":v["headers"].as_object().map(|h|h.iter().filter(|(_,v)|v.is_string()).map(|(k,v)|(k.clone(),v.clone())).collect::<Map<String,Value>>()).unwrap_or_default(),"id":string(v,"id")?,"url":url.as_str(),"format":fallback(v,&["format"],"hls"),"mode":fallback(v,&["mode"],"direct"),"videoMode":fallback(v,&["video_mode"],"copy"),"audioMode":fallback(v,&["audio_mode"],"copy"),"position":v["position"].as_f64().unwrap_or(0.0),"live":v["live"].as_bool().unwrap_or(false),"duration":v["duration"].as_f64().unwrap_or(0.0),"audioTracks":v["audio_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitleTracks":v["subtitle_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitlesSupported":v["subtitles_supported"].as_bool().unwrap_or(false)});
+    // Source authorization is present only when the session carries one;
+    // absent fields are omitted, matching the generated wire types.
+    if let Some(authorization) = authorization(v) {
+        out["authorization"] = authorization;
+    }
+    Ok(out)
 }
 
 /// Source credentials for a direct-URL session: the server hands over the
 /// provider's Cookie/User-Agent so a native engine fetches the original
-/// stream itself. Proxy sessions carry none.
-fn authorization(v: &Value) -> Value {
-    match v["authorization"].as_object() {
-        Some(source) => {
-            json!({"cookie":source.get("cookie").cloned().unwrap_or(Value::Null),"userAgent":source.get("user_agent").cloned().unwrap_or(Value::Null)})
-        }
-        None => Value::Null,
+/// stream itself. Proxy sessions carry none; absent fields are omitted.
+fn authorization(v: &Value) -> Option<Value> {
+    let source = v["authorization"].as_object()?;
+    let mut out = Map::new();
+    if let Some(cookie) = source.get("cookie").and_then(Value::as_str) {
+        out.insert("cookie".into(), json!(cookie));
     }
+    if let Some(user_agent) = source.get("user_agent").and_then(Value::as_str) {
+        out.insert("userAgent".into(), json!(user_agent));
+    }
+    Some(Value::Object(out))
 }
 pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value> {
     match kind_name {

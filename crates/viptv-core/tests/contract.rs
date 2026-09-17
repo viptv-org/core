@@ -163,13 +163,13 @@ fn playback_urls_are_capability_paths_or_original_sources() {
         &normalize(
             "playback".into(),
             json!({"id":"s","url":"/media/s/cap/index.m3u8"}).to_string(),
-            "https://example.test".into()
+            "https://example.test".into(),
         )
         .unwrap(),
     )
     .unwrap();
     assert_eq!(proxy["url"], "https://example.test/media/s/cap/index.m3u8");
-    assert_eq!(proxy["authorization"], Value::Null);
+    assert!(proxy.as_object().unwrap().get("authorization").is_none());
     // A direct-URL session hands the ORIGINAL absolute source URL to the
     // client; it passes through unchanged with its source authorization.
     let direct: Value = serde_json::from_str(
