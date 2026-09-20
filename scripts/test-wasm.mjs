@@ -49,6 +49,20 @@ const direct = domain('playback',{id:'s',url:'https://provider.example/stream.mk
 assert.equal(direct.url,'https://provider.example/stream.mkv');
 assert.deepEqual(direct.authorization,{cookie:'session=1',userAgent:'VIPTV Desktop'});
 console.log('WASM: presentation, enrichment, Android compatibility and playback request policy passed');
+// Every remote http(s) image routes through the shared wsrv cache so one
+// resize pipeline serves all artwork; data:, relative sources, and wsrv
+// re-wrapping are the passthrough/unwrap behaviors the UI relies on.
+const artwork = (original, extra = {}) => domain('artworkUrl', { original, width: 256, height: 144, ...extra });
+assert.ok(artwork('https://image.tmdb.org/t/p/w500/abc.jpg').startsWith('https://wsrv.nl/?url=https%3A%2F%2Fimage.tmdb.org%2Ft%2Fp%2Fw500%2Fabc.jpg&w=256&h=144&fit=cover&output=jpg&q=85&we'));
+assert.ok(artwork('https://image.tmdb.org/t/p/original/bg.jpg', { width: 1280, height: 720, large: true }).startsWith('https://wsrv.nl/?url=https%3A%2F%2Fimage.tmdb.org%2Ft%2Fp%2Fw1280%2Fbg.jpg&w=1280&h=720&fit=cover&output=jpg&q=95&we'));
+assert.ok(artwork('https://cdn.some-addon.example/poster.jpg').startsWith('https://wsrv.nl/?url=https%3A%2F%2Fcdn.some-addon.example%2Fposter.jpg&w=256'));
+assert.ok(artwork('http://mixed-content.example/img.jpg').startsWith('https://wsrv.nl/?url=http%3A%2F%2Fmixed-content.example%2Fimg.jpg'));
+assert.ok(artwork('https://example.test/logo.png', { logo: true }).includes('&fit=inside&output=png'));
+assert.ok(artwork('https://wsrv.nl/?url=https%3A%2F%2Fcdn.some-addon.example%2Fposter.jpg').startsWith('https://wsrv.nl/?url=https%3A%2F%2Fcdn.some-addon.example%2Fposter.jpg&w='));
+assert.equal(artwork('data:image/svg+xml;base64,AAA'), 'data:image/svg+xml;base64,AAA');
+assert.equal(artwork('relative/poster.jpg'), 'relative/poster.jpg');
+assert.equal(domain('artworkUrl', { original: '', width: 256, height: 144 }), null);
+console.log('WASM: all remote artwork routes through the wsrv image proxy');
 for (const [item,label] of [[{type:'live'},'Watch live'],[{type:'series',episode:2,queueStatus:'next'},'Play next episode'],[{type:'movie',position:2},'Resume'],[{type:'series'},'Episodes'],[{type:'movie'},'Play']]) {
   assert.equal(domain('presentation',item).primaryActionLabel,label);
 }

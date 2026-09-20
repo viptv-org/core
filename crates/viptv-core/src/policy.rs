@@ -565,11 +565,11 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                 {
                     uri = inner.into_owned();
                 }
+                let width = num(v, "width");
                 if matches(
                     r"^https://(image\.tmdb\.org|artworks\.thetvdb\.com|episodes\.metahub\.space|images\.metahub\.space|live\.metahub\.space|assets\.fanart\.tv|i\.imgur\.com)/[^?#@]+$",
                     &uri,
                 ) {
-                    let width = num(v, "width");
                     let size = if width > 1280.0 {
                         "original"
                     } else if width > 500.0 {
@@ -581,6 +581,12 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
                         .unwrap()
                         .replace(&uri, format!("https://image.tmdb.org/t/p/{size}/"))
                         .into_owned();
+                }
+                // Every remote image routes through wsrv so one CDN cache and
+                // resize pipeline serves all artwork, whatever the origin host.
+                // data: and relative sources stay at origin; clients fall back
+                // to the origin URL when wsrv cannot fetch an image.
+                if uri.starts_with("http://") || uri.starts_with("https://") {
                     json!(format!(
                         "https://wsrv.nl/?url={}&w={}&h={}&fit={}&output={}&q={}&we",
                         enc(&uri),
