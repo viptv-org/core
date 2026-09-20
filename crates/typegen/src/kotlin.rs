@@ -53,6 +53,7 @@ pub fn generate(registry: &Registry) -> String {
                     | "CardPresentation"
                     | "SourcePresentation"
                     | "PlaybackSession"
+                    | "PlaybackAuthorization"
                     | "Catalog"
                     | "CatalogExtra"
                     | "DiscoverPage"

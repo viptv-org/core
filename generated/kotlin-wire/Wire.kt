@@ -142,6 +142,10 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `supported`: Boolean,
     val `selectable`: Boolean
 )
+@Serializable data class PlaybackAuthorization(
+    val `cookie`: String? = null,
+    val `userAgent`: String? = null
+)
 @Serializable data class PlaybackSession(
     val `headers`: Map<String, String> = emptyMap(),
     val `id`: String,
