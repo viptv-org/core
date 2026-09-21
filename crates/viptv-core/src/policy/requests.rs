@@ -8,6 +8,16 @@ pub(super) fn request(v: &Value) -> Result {
         let mut body = item_request(&v["item"]);
         let (method, path) = match op {
             "nextEpisode" => ("POST", format!("{base}/continue/next")),
+            "sources" => ("POST", "/api/streams".into()),
+            "sourcesPoll" => {
+                body = Value::Null;
+                let id = text(v, "id");
+                if id.is_empty() {
+                    return Err(CoreError::InvalidInput);
+                }
+                let after = v["after"].as_u64().unwrap_or(0);
+                ("GET", format!("/api/streams/{}?after={after}", enc(id)))
+            }
             "saveProgress" => {
                 body["position"] = v["position"].clone();
                 body["duration"] = v["duration"].clone();

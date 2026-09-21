@@ -100,6 +100,63 @@ pub(super) fn stream_poll(v: &Value) -> Result<Value> {
     Ok(json!({"events":events,"done":boolean(v,"done")?}))
 }
 
+/// Both TV clients previously reimplemented stream-discovery polling with
+/// hand-copied cursor, deduplication, budget and completion rules; the rules
+/// live here so every platform runs the identical loop. The platform owns
+/// only transport, cancellation and the fixed poll interval.
+pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
+    if v["poll"].as_object().is_none() {
+        return Err(invalid());
+    }
+    let state = v["state"].as_object();
+    let mut cursor = state
+        .and_then(|s| s.get("after"))
+        .and_then(Value::as_f64)
+        .filter(|n| *n >= 0.0)
+        .unwrap_or(0.0) as i64;
+    let polls = state
+        .and_then(|s| s.get("polls"))
+        .and_then(Value::as_u64)
+        .unwrap_or(0)
+        + 1;
+    let mut sources: Vec<Value> = state
+        .and_then(|s| s.get("sources"))
+        .and_then(Value::as_array)
+        .cloned()
+        .unwrap_or_default();
+    let page = stream_poll(&v["poll"])?;
+    let mut done = boolean(&page, "done")?;
+    for event in array(&page, "events")? {
+        let sequence = number(event, "sequence")? as i64;
+        if sequence > cursor {
+            cursor = sequence;
+        }
+        for item in array(event, "sources")? {
+            let id = item["id"].as_str().unwrap_or("");
+            if id.is_empty() {
+                continue;
+            }
+            if !sources
+                .iter()
+                .any(|existing| existing["id"].as_str() == Some(id))
+            {
+                sources.push(item.clone());
+            }
+        }
+    }
+    // Match the three-minute discovery budget: late providers may still
+    // contribute sources, but no client polls forever.
+    if polls >= 120 {
+        done = true;
+    }
+    Ok(json!({
+        "state":{"after":cursor,"sources":sources,"polls":polls},
+        "sources":sources,
+        "done":done,
+    }))
+}
+
+
 pub(super) fn live(v: &Value) -> Result<Value> {
     let channels = v["channels"]
         .as_array()

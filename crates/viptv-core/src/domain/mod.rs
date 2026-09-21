@@ -100,6 +100,7 @@ pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value
         "discoverResponse" => streams::discover_response(v),
         "detailResponse" => streams::detail_response(v),
         "streamPoll" => streams::stream_poll(v),
+        "sourcesPollStep" => streams::sources_poll_step(v),
         "live" => streams::live(v),
         "liveCategories" => streams::live_categories(v),
         "guide" => streams::guide(v),

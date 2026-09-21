@@ -325,3 +325,119 @@ fn addon_catalog_namespaces_use_returned_media_types_and_report_unsupported_rows
     assert_eq!(output["items"].as_array().unwrap().len(), 1);
     assert_eq!(output["unsupportedCount"], 1);
 }
+
+#[test]
+fn stream_discovery_requests_and_polling_steps_share_one_policy() {
+    // The POST body is the same item request shape metadata uses, and the
+    // poll path carries the cursor so neither client rebuilds endpoints.
+    let item = json!({"id":"tt123","type":"movie","name":"Example Movie"});
+    let request: Value = serde_json::from_str(
+        &normalize(
+            "request".into(),
+            json!({"operation":"sources","item":item}).to_string(),
+            "".into(),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(request["method"], "POST");
+    assert_eq!(request["path"], "/api/streams");
+    assert_eq!(request["body"]["id"], "tt123");
+    let poll: Value = serde_json::from_str(
+        &normalize(
+            "request".into(),
+            json!({"operation":"sourcesPoll","id":"job-1","after":7}).to_string(),
+            "".into(),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(poll["method"], "GET");
+    assert_eq!(poll["path"], "/api/streams/job-1?after=7");
+    assert!(poll["body"].is_null());
+    assert!(
+        normalize(
+            "request".into(),
+            json!({"operation":"sourcesPoll","id":"","after":0}).to_string(),
+            "".into()
+        )
+        .is_err(),
+        "a blank job id must not produce a poll path"
+    );
+
+    // The polling step owns the cursor, deduplication and completion rules.
+    let page = json!({"events":[
+        {"seq":3,"source":"iptv","streams":[{"id":"a","name":"A","url":"https://provider.test/a.m3u8"}]},
+        {"seq":4,"source":"addon","streams":[{"id":"b","name":"B","url":"https://provider.test/b.mkv"}]}
+    ],"done":false});
+    let first: Value = serde_json::from_str(
+        &normalize("sourcesPollStep".into(), json!({"poll":page}).to_string(), "".into()).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(first["state"]["after"], 4);
+    assert_eq!(first["state"]["polls"], 1);
+    assert_eq!(first["sources"].as_array().unwrap().len(), 2);
+    assert!(!first["done"].as_bool().unwrap());
+
+    // A replayed page adds nothing: the cursor did not move and the same
+    // source ids are already accumulated.
+    let replay = json!({"events":[
+        {"seq":4,"source":"addon","streams":[{"id":"b","name":"B","url":"https://provider.test/b.mkv"}]}
+    ],"done":false});
+    let second: Value = serde_json::from_str(
+        &normalize(
+            "sourcesPollStep".into(),
+            json!({"state":first["state"],"poll":replay}).to_string(),
+            "".into(),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(second["sources"].as_array().unwrap().len(), 2);
+    assert_eq!(second["state"]["polls"], 2);
+
+    // Server completion ends the loop regardless of budget...
+    let finished = json!({"events":[],"done":true});
+    let third: Value = serde_json::from_str(
+        &normalize(
+            "sourcesPollStep".into(),
+            json!({"state":second["state"],"poll":finished}).to_string(),
+            "".into(),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert!(third["done"].as_bool().unwrap());
+
+    // ...and the budget ends it even when the server keeps polling.
+    let mut state = json!({"after":0,"sources":[],"polls":0});
+    for step in 0..119 {
+        let never_done = json!({"events":[],"done":false});
+        let output: Value = serde_json::from_str(
+            &normalize(
+                "sourcesPollStep".into(),
+                json!({"state":state,"poll":never_done}).to_string(),
+                "".into(),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+        assert!(!output["done"].as_bool().unwrap() || step == 118);
+        state = output["state"].clone();
+    }
+    let budget_hit: Value = serde_json::from_str(
+        &normalize(
+            "sourcesPollStep".into(),
+            json!({"state":state,"poll":json!({"events":[],"done":false})}).to_string(),
+            "".into(),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(budget_hit["state"]["polls"], 120);
+    assert!(budget_hit["done"].as_bool().unwrap(), "the three-minute budget must terminate discovery");
+    assert!(
+        normalize("sourcesPollStep".into(), json!({}).to_string(), "".into()).is_err(),
+        "a missing poll page is invalid input"
+    );
+}
