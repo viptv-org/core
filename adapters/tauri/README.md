@@ -1,6 +1,6 @@
 # Native Tauri core bridge
 
-`commands.rs` contains the actual command implementations for `viptv_core::CoreBridge`. Copy it into the consuming host's source tree as `mod commands;`, depend on this repository's `crates/viptv-core`, and register:
+This directory is a standalone crate, `viptv-core-tauri` (excluded from the core workspace so core stays light). Depend on it by path — `viptv-core-tauri = { path = "../../core/adapters/tauri" }` — and register the commands the host needs:
 
 ```rust
 tauri::Builder::default()
@@ -18,7 +18,7 @@ This is integration source, not a standalone packaged Tauri app. Compile it as p
 
 ## SmartCast desktop controller
 
-Copy `smartcast.rs` beside `commands.rs` and register `SmartCastState` plus `smartcast_configure`, `smartcast_run`, `smartcast_cancel`, and `smartcast_forget`. The host needs `reqwest` with JSON and stream support, `futures-util`, `keyring`, `tokio` sync, `url`, `serde`, and `serde_json`. Restrict these commands to the trusted application window.
+Register `SmartCastState` plus `smartcast_configure`, `smartcast_run`, `smartcast_cancel`, and `smartcast_forget` from the crate's `smartcast` module. The crate carries the required `reqwest`, `futures-util`, `keyring`, `tokio`, `url`, `serde`, and `serde_json` dependencies, so hosts no longer duplicate them. LAN SSDP discovery is a host-owned extension (see the desktop repository) because it is transport-specific, not core contract. Restrict these commands to the trusted application window.
 
 `smartcast_run` keeps the full Rust request/resolve workflow in one native command. React submits an operation and JSON input, then receives only the final complete/error object. The dedicated reqwest client rejects redirects and off-origin effects before networking; its invalid-certificate allowance is confined to requests generated for the configured television origin. Pairing credentials use the operating system keyring and never enter the Tauri store, frontend state, command errors, or logs. The normal backend and public-network clients retain normal TLS validation.
 

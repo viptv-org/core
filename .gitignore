@@ -5,3 +5,4 @@
 .env
 DEV.local.md
 *.log
+adapters/tauri/target/

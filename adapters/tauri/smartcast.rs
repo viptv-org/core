@@ -1,4 +1,4 @@
-//! Copy into the Tauri host beside `commands.rs`.
+//! SmartCast host adapter for the Tauri desktop shell.
 //! SmartCast traffic stays native; the React renderer never sees TV credentials or TLS policy.
 
 use futures_util::StreamExt;
