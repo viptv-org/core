@@ -53,3 +53,35 @@ pub fn platform_support(platform: &str) -> VizioPlatformSupport {
         },
     }
 }
+
+/// The display name from a SmartCast `/state/device/deviceinfo` response, or
+/// `None` when the response is not a Vizio device. Direct-probe discovery
+/// (the desktop and mobile shells that walk `discovery_candidates`) asks
+/// every answering host for this unauthenticated document; some firmwares
+/// put a stray trailing quote in the cast name, which is trimmed here so
+/// every shell renders the same label.
+pub fn deviceinfo_name(body: &str) -> Option<String> {
+    let value: serde_json::Value = serde_json::from_str(body).ok()?;
+    if value.pointer("/STATUS/RESULT").and_then(|v| v.as_str()) != Some("SUCCESS") {
+        return None;
+    }
+    let items = value.get("ITEMS")?.as_array()?;
+    let item = items.first()?;
+    if !item
+        .get("TYPE")
+        .and_then(|v| v.as_str())
+        .is_some_and(|kind| kind.starts_with("T_VIZIO_DEVICE_INFO"))
+    {
+        return None;
+    }
+    let info = item.get("VALUE")?;
+    info.get("CAST_NAME")
+        .and_then(|v| v.as_str())
+        .map(|name| name.trim_matches('"').trim().to_owned())
+        .filter(|name| !name.is_empty())
+        .or_else(|| {
+            info.get("MODEL_NAME")
+                .and_then(|v| v.as_str())
+                .map(str::to_owned)
+        })
+}

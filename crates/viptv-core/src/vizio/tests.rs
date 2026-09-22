@@ -323,3 +323,23 @@ fn setting_response(name: &str, hash: i64, minimum: i64, maximum: i64) -> String
 fn json_value(value: Value) -> JsonValue {
     serde_json::from_value(value).unwrap()
 }
+
+#[test]
+fn deviceinfo_name_extracts_and_trims_smartcast_identity() {
+    let live = r#"{"STATUS":{"RESULT":"SUCCESS","DETAIL":"Success"},"URI":"/state/device/deviceinfo","ITEMS":[{"NAME":"VIZIO Device Info","CNAME":"deviceinfo","TYPE":"T_VIZIO_DEVICE_INFO_V1","VALUE":{"MODEL_NAME":"V655-G9","CAST_NAME":"living room 65\"","API_VERSION":"3.0.12-2507.0002"}}]}"#;
+    assert_eq!(deviceinfo_name(live).as_deref(), Some("living room 65"));
+    let no_cast_name = r#"{"STATUS":{"RESULT":"SUCCESS"},"ITEMS":[{"TYPE":"T_VIZIO_DEVICE_INFO_V1","VALUE":{"MODEL_NAME":"M55-C2"}}]}"#;
+    assert_eq!(deviceinfo_name(no_cast_name).as_deref(), Some("M55-C2"));
+}
+
+#[test]
+fn deviceinfo_name_rejects_non_vizio_documents() {
+    let not_found = r#"{"STATUS":{"RESULT":"ERROR","DETAIL":"Not Found"}}"#;
+    assert_eq!(deviceinfo_name(not_found), None);
+    let wrong_type = r#"{"STATUS":{"RESULT":"SUCCESS"},"ITEMS":[{"TYPE":"T_SETTINGS_V1","VALUE":{"CAST_NAME":"router"}}]}"#;
+    assert_eq!(deviceinfo_name(wrong_type), None);
+    let empty_items = r#"{"STATUS":{"RESULT":"SUCCESS"},"ITEMS":[]}"#;
+    assert_eq!(deviceinfo_name(empty_items), None);
+    assert_eq!(deviceinfo_name("<html>Not Found</html>"), None);
+    assert_eq!(deviceinfo_name(""), None);
+}

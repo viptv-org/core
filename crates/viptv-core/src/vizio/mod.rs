@@ -13,7 +13,7 @@ mod response;
 mod types;
 
 pub use controller::VizioController;
-pub use platform::{discovery_candidates, platform_support};
+pub use platform::{deviceinfo_name, discovery_candidates, platform_support};
 pub use request::plan_request;
 pub use response::{
     match_input, pairing_auth_token, pairing_challenge, parse_inputs, parse_response,
