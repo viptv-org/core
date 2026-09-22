@@ -115,3 +115,32 @@ const failedLandscapeCard = domain('cardPresentation',{item:failedStillItem,cont
 assert.equal(failedLandscapeCard.image,null);
 assert.equal(failedLandscapeCard.imageRole,'none');
 console.log('WASM: failed episode artwork falls back through shared landscape policy');
+
+// The provider bridge exports must round-trip the backend's negotiation rules
+// for local-mode web bundles.
+{
+  const manifest = { id:'express', catalogs:[{ type:'movie', id:'top', name:'Top', extra:[{ name:'genre', isRequired:false, options:['Action','Drama'] }] }], resources:['catalog','meta','stream'], types:['movie'] };
+  const entries = JSON.stringify([[1,'https://example.test/manifest.json',manifest]]);
+  const request = JSON.stringify({ kind:'movie', catalog:'top', skip:0, extras:{} });
+  const plan = JSON.parse(core.discoverPlan(entries, request));
+  assert.equal(plan.endpoints.length, 1);
+  assert.equal(plan.endpoints[0], 'https://example.test/catalog/movie/top.json');
+  assert.ok(plan.single_catalog && !plan.pageable && !plan.aggregated);
+  const responses = JSON.stringify([{ metas:[{ type:'movie', id:'m1', name:'Alpha' }] }]);
+  const page = JSON.parse(core.discoverAggregate(responses, JSON.stringify(plan), 0n));
+  assert.equal(page.metas.length, 1);
+  assert.equal(page.has_more, false);
+  assert.equal(core.addonSupports(JSON.stringify(manifest), 'catalog', 'movie', 'top'), true);
+  assert.equal(core.addonSupports(JSON.stringify(manifest), 'catalog', 'series', 'top'), false);
+  const extras = JSON.parse(core.addonCatalogExtras(JSON.stringify(manifest.catalogs[0])));
+  assert.equal(extras[0].name, 'genre');
+  const row = { name:'Test Movie (2010)', stream_id:101, container_extension:'mp4' };
+  const candidate = JSON.parse(core.providerCandidate(7n, 'movie', JSON.stringify(row)));
+  assert.equal(candidate.id, 'iptv:7:movie:101');
+  const request2 = JSON.stringify({ id:'tt0123456', name:'Test Movie', year:2010, imdb_id:'tt0123456' });
+  const picked = JSON.parse(core.providerSelectCandidates('movie', request2, JSON.stringify([candidate])));
+  assert.equal(picked.length, 1);
+  const provider = JSON.stringify({ url:'https://example.test', username:'demo', password:'secret' });
+  assert.equal(core.providerMediaUrl(provider, 'movie', '101', 'mp4'), 'https://example.test/movie/demo/secret/101.mp4');
+  console.log('WASM: provider bridge plan/aggregate/candidate/media helpers round-trip');
+}
