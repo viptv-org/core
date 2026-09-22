@@ -156,7 +156,6 @@ pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
     }))
 }
 
-
 pub(super) fn live(v: &Value) -> Result<Value> {
     let channels = v["channels"]
         .as_array()

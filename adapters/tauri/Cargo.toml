@@ -10,6 +10,9 @@ publish = false
 [lib]
 path = "lib.rs"
 
+[features]
+provider = ["viptv-core/provider"]
+
 [dependencies]
 viptv-core = { path = "../../crates/viptv-core", features = ["native"] }
 tauri = { version = "2", default-features = false }

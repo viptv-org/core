@@ -371,7 +371,12 @@ fn stream_discovery_requests_and_polling_steps_share_one_policy() {
         {"seq":4,"source":"addon","streams":[{"id":"b","name":"B","url":"https://provider.test/b.mkv"}]}
     ],"done":false});
     let first: Value = serde_json::from_str(
-        &normalize("sourcesPollStep".into(), json!({"poll":page}).to_string(), "".into()).unwrap(),
+        &normalize(
+            "sourcesPollStep".into(),
+            json!({"poll":page}).to_string(),
+            "".into(),
+        )
+        .unwrap(),
     )
     .unwrap();
     assert_eq!(first["state"]["after"], 4);
@@ -435,7 +440,10 @@ fn stream_discovery_requests_and_polling_steps_share_one_policy() {
     )
     .unwrap();
     assert_eq!(budget_hit["state"]["polls"], 120);
-    assert!(budget_hit["done"].as_bool().unwrap(), "the three-minute budget must terminate discovery");
+    assert!(
+        budget_hit["done"].as_bool().unwrap(),
+        "the three-minute budget must terminate discovery"
+    );
     assert!(
         normalize("sourcesPollStep".into(), json!({}).to_string(), "".into()).is_err(),
         "a missing poll page is invalid input"
