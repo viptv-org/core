@@ -215,7 +215,10 @@ pub fn wasm_normalize(
 #[cfg(feature = "native")]
 uniffi::setup_scaffolding!();
 
+// Keep serde validation out of the WASI caller's BrightScript label budget.
+#[cfg_attr(target_os = "wasi", inline(never))]
 fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreError> {
+    #[cfg_attr(target_os = "wasi", inline(never))]
     fn check<T: serde::de::DeserializeOwned>(v: &serde_json::Value) -> Result<(), CoreError> {
         serde_json::from_value::<T>(v.clone())
             .map(|_| ())

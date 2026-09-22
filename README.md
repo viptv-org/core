@@ -14,6 +14,34 @@ Use a current Rust toolchain and the WASM target. Run `cargo run -p viptv-typege
 
 Consumers adopt an immutable core commit together with its generated bindings and runtime. TV-web imports artifacts using `node scripts/core-sync.mjs sync ../core`, records CORE_REF and checks their hashes on build. Update Rust data handling here and regenerate once; consumer applications then adopt and rebuild. Installed apps still require an app update.
 
+## WASI / BrightScript experiment
+
+`crates/viptv-core/examples/wasi.rs` exposes the real Crux core through a persistent
+JSON-lines process. One request produces one flushed response; the instance and
+pending effects remain alive between lines. Run `bash scripts/build-brightscript.sh`
+with the patched `wasm2brs` checkout beside this repository, or set `WASM2BRS_ROOT`.
+That checkout owns the translator/runtime and writes converted files under `out/`.
+For native bridge development, use `cargo run --release -p viptv-core --example wasi`.
+
+Requests are JSON objects with `op`: `normalize` takes `kind`, `input`, and optional
+`origin`; `vizio_platform_support` takes `platform`; `update` takes an `event` object
+or enum string; `resolve` takes an effect `id` and `result`; `view` returns the view
+model. `process_event` and `handle_response` alias `update` and `resolve`. `reset`
+starts a fresh instance and returns its view. Responses are `{ "ok": true,
+"result": ... }` or `{ "ok": false, "error": "..." }`. Effects retain the existing
+generated JSON contract; the platform performs storage/HTTP and resolves their IDs.
+Each input line is capped at 12 MiB (including JSON byte-array overhead); oversized
+input returns an error and closes the process. Invalid JSON returns an error and
+allows the next request.
+
+After building, `python3 scripts/test-wasi.py ../wasm2brs/tools/wasmtime
+../wasm2brs/artifacts/viptv-core-wasi.wasm` checks the existing shared startup vectors,
+normalization, malformed inputs and warm latency. This is an experimental bridge;
+it does not change the production Roku application's adoption status. See the
+translator's `HANDOFF.md` for generated BrightScript and device validation.
+The full conversion currently produces about 19 MB across 11 BrightScript files;
+native/WASI latency does not establish Roku startup time or request latency.
+
 ## Migration state
 
 Android and TV-web adopt the native and WASM library respectively. Both use shared response normalization and presentation/policy outputs; the Crux session model governs restoration. Canonical artwork roles, continuation, source selection and request/response handling live in Rust. UI navigation, input/focus, device storage/network execution and player lifecycle stay in platform shells. Refer to consumer validation records for exact coverage rather than treating a binding build as adoption.

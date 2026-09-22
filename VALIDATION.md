@@ -1,3 +1,22 @@
+# WASI / BrightScript bridge — 2026-09-22
+
+The persistent JSON-lines bridge reuses the existing `CoreBridge` and normalizer;
+no application behavior or generated client protocol changed. Native, raw WASI,
+optimized WASI and the canonical wasm2brs input all passed the same three startup
+vectors, effect resolution, reset, operation aliases, malformed-input recovery,
+normalization boundaries and bounded rejection of requests over 12 MiB.
+
+Warm end-to-end normalization of 32 catalogs (30 requests, including Python pipe
+and JSON overhead) measured median/p95: native 0.282/0.398 ms, raw WASI
+0.491/0.607 ms, optimized WASI 0.500/0.584 ms, canonical WASI 0.501/0.571 ms.
+These measurements use the host's Wasmtime runtime, not a Roku interpreter.
+All 43 Rust tests, workspace formatting, strict core/all-target Clippy, and diff
+whitespace checks passed after implementation. The translator's `HANDOFF.md`
+records BrightScript conversion and device results separately; this checkpoint
+does not adopt the bridge into the production Roku application.
+
+---
+
 # Transparent title artwork — 2026-09-13
 
 Rust media normalization and presentation now expose `titleLogo` separately from hero, poster and episode artwork. Explicit title/clear-logo aliases and on-demand provider `logo` metadata are supported; generic live-channel logos remain station artwork. Parent-series logos inherit into episodes without changing episode identity, title text or resume progress. Home metadata enrichment carries the normalized logo, and missing/blank logos retain text fallback.

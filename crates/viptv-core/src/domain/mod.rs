@@ -91,6 +91,8 @@ pub(super) fn fallback(v: &Value, keys: &[&str], default: &str) -> String {
         .unwrap_or(default)
         .into()
 }
+// BrightScript limits labels per function; keep dispatch outside its caller.
+#[cfg_attr(target_os = "wasi", inline(never))]
 pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value> {
     match kind_name {
         "pairing" => streams::pairing(v),
