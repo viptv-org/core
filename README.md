@@ -39,9 +39,9 @@ After building, `python3 scripts/test-wasi.py ../wasm2brs/tools/wasmtime
 normalization, malformed inputs and warm latency. This is an experimental bridge;
 it does not change the production Roku application's adoption status. See the
 translator's `HANDOFF.md` for generated BrightScript and device validation.
-The full conversion currently produces about 19 MB of BrightScript. The measured
-Roku WASM/WASI initialization is about 314 ms; warm normalization of ten catalogs
-takes about 650 ms. Keep it off animation/input hot paths; native/WASI host latency
+The full conversion currently produces about 15 MB of BrightScript. The measured
+Roku WASM/WASI initialization is about 313 ms; warm normalization of ten catalogs
+takes about 594 ms. Keep it off animation/input hot paths; native/WASI host latency
 is not representative of BrightScript execution. For a repeatable breakdown of
 Rust work, run `cargo run --release -p viptv-core --example normalization_profile`.
 

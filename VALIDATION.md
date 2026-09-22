@@ -15,9 +15,14 @@ outputs and malformed JSON error strings match exactly.
 
 On the development Roku, the visitor alone reduced the warm ten-catalog median
 from 1,075 ms to 772 ms. Adding the sanitizer reduced it to 660 ms. With the
-translator/runtime improvements enabled, all 30 device parity cases passed and
-the median was 650 ms (1.65 times faster than the previous checkpoint). Timed
-initialization was 30 ms for WASM and 284 ms for WASI, 314 ms total; the earlier
+translator/runtime improvements and the checked native allocator enabled, all 31
+device parity cases and allocator stress regressions passed. The final ten-catalog
+median was 594 ms (44.7% lower latency, 1.81 times faster than the 1,075 ms
+checkpoint), with a 601 ms cold call. View/update/storage/HTTP medians were
+5/51/79/142.5 ms; the HTTP maximum was 247 ms. Unicode, nested typed metadata and
+recursive sanitizer cases passed. The generated source totals 15,241,473 bytes
+across 11 files. Timed initialization was 30 ms for WASM and 283 ms for WASI,
+313 ms total; the earlier
 3,945 ms number included regression fixtures and is not a comparable core-only
 startup measurement. Final translator/runtime evidence is in its `HANDOFF.md`.
 
