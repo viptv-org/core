@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 const root = new URL('../', import.meta.url);
 const moduleSource = await readFile(new URL('generated/wasm/viptv_core.js', root), 'utf8');
 const core = await import(`data:text/javascript;base64,${Buffer.from(moduleSource).toString('base64')}`);
-await core.default({ module_or_path: await readFile(new URL('generated/wasm/viptv_core_bg.wasm', root)) });
+await core.default(await readFile(new URL('generated/wasm/viptv_core_bg.wasm', root)));
 const vectors = JSON.parse(await readFile(new URL('tests/bridge-vectors.json', root), 'utf8'));
 for (const scenario of vectors) {
   const app = new core.CoreBridge();

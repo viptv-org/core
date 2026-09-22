@@ -1,0 +1,9 @@
+# Vizio SmartCast's Conjure runtime (and other embedded browsers from the
+# Chrome 87 era) predates the WebAssembly reference-types proposal, so the
+# wasm core must not use externref. wasm-bindgen 0.2.92 generates its JS
+# shim path for references when the feature is off; newer wasm-bindgen
+# versions require reference types unconditionally, which is why the
+# workspace pins the wasm-bindgen trio to the 0.2.92/0.3.69 generation.
+# Scoped to the wasm target only: native builds must not see the flag.
+[target.wasm32-unknown-unknown]
+rustflags = ["-C", "target-feature=-reference-types"]
