@@ -10,23 +10,47 @@ export class CoreBridge {
     constructor();
 }
 
+export function addonCatalogExtras(catalog: string): string;
+
+export function addonEndpoint(base: string, parts: string): string;
+
+export function addonSupports(manifest: string, resource: string, kind: string, id: string): boolean;
+
+export function discoverAggregate(responses: string, plan: string, skip: bigint): string;
+
+export function discoverPlan(entries: string, request: string): string;
+
 export function normalize(kind: string, input: string, origin: string): string;
+
+export function providerCandidate(provider_id: bigint, kind: string, row: string): string;
+
+export function providerMediaUrl(provider: string, kind: string, id: string, ext: string): string;
+
+export function providerSelectCandidates(kind: string, request: string, candidates: string): string;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly __wbg_corebridge_free: (a: number, b: number) => void;
+    readonly addonCatalogExtras: (a: number, b: number) => [number, number];
+    readonly addonEndpoint: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly addonSupports: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
     readonly corebridge_resolve: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly corebridge_update: (a: number, b: number, c: number) => [number, number, number, number];
     readonly corebridge_view: (a: number) => [number, number, number, number];
     readonly corebridge_wasm_new: () => number;
+    readonly discoverAggregate: (a: number, b: number, c: number, d: number, e: bigint) => [number, number, number, number];
+    readonly discoverPlan: (a: number, b: number, c: number, d: number) => [number, number, number, number];
     readonly normalize: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly providerCandidate: (a: bigint, b: number, c: number, d: number, e: number) => [number, number];
+    readonly providerMediaUrl: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
+    readonly providerSelectCandidates: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-    readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+    readonly __externref_table_dealloc: (a: number) => void;
     readonly __wbindgen_start: () => void;
 }
 

@@ -1,10 +1,10 @@
 //! Pure provider/addon client helpers bridged out to fat shells.
 //!
-//! Only compiled behind the `provider` feature, so thin wasm and native
-//! clients keep their smaller surface. Each helper converts JSON strings and
-//! returns JSON strings; no credential, network, or storage logic runs here,
-//! so shells can plan discovery, rank candidates, and build playable URLs
-//! without reimplementing normalization rules.
+//! Compiled behind the `provider` feature, which the web build turns on for
+//! local-mode bundles. Each helper converts JSON strings and returns JSON
+//! strings; no credential, network, or storage logic runs here, so shells
+//! can plan discovery, rank candidates, and build playable URLs without
+//! reimplementing normalization rules.
 use serde_json::Value;
 
 const MAX_BRIDGE_INPUT: usize = 4 * 1024 * 1024;
@@ -130,6 +130,71 @@ pub fn provider_media_url(
     let username = value.get("username").and_then(Value::as_str).unwrap_or("");
     let password = value.get("password").and_then(Value::as_str).unwrap_or("");
     viptv_provider::normalize::media_url(url, username, password, &kind, &id, &ext)
+}
+
+/// Browser-side twins of the native exports, so local-mode web bundles call
+/// the same provider logic the backend runs.
+#[cfg(target_arch = "wasm32")]
+mod wasm_export {
+    fn error(message: String) -> wasm_bindgen::JsValue {
+        wasm_bindgen::JsValue::from_str(&message)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=addonEndpoint)]
+    pub fn addon_endpoint(base: String, parts: String) -> Result<String, wasm_bindgen::JsValue> {
+        super::addon_endpoint(base, parts).map_err(error)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=addonCatalogExtras)]
+    pub fn addon_catalog_extras(catalog: String) -> String {
+        super::addon_catalog_extras(catalog)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=addonSupports)]
+    pub fn addon_supports(manifest: String, resource: String, kind: String, id: String) -> bool {
+        super::addon_supports(manifest, resource, kind, id)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=discoverPlan)]
+    pub fn discover_plan(
+        entries: String,
+        request: String,
+    ) -> Result<String, wasm_bindgen::JsValue> {
+        super::discover_plan(entries, request).map_err(error)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=discoverAggregate)]
+    pub fn discover_aggregate(
+        responses: String,
+        plan: String,
+        skip: u64,
+    ) -> Result<String, wasm_bindgen::JsValue> {
+        super::discover_aggregate(responses, plan, skip).map_err(error)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=providerCandidate)]
+    pub fn provider_candidate(provider_id: i64, kind: String, row: String) -> String {
+        super::provider_candidate(provider_id, kind, row)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=providerSelectCandidates)]
+    pub fn provider_select_candidates(
+        kind: String,
+        request: String,
+        candidates: String,
+    ) -> Result<String, wasm_bindgen::JsValue> {
+        super::provider_select_candidates(kind, request, candidates).map_err(error)
+    }
+
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=providerMediaUrl)]
+    pub fn provider_media_url(
+        provider: String,
+        kind: String,
+        id: String,
+        ext: String,
+    ) -> Result<String, wasm_bindgen::JsValue> {
+        super::provider_media_url(provider, kind, id, ext).map_err(error)
+    }
 }
 
 #[cfg(all(test, feature = "provider"))]
