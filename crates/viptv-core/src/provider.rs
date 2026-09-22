@@ -8,19 +8,20 @@
 use serde_json::Value;
 
 /// Bridge failure carrying the shared provider message. UniFFI cannot throw
-/// bare strings, so native shells catch this and read the message; the wasm
+/// bare strings, so native shells catch this and read the detail; the wasm
 /// twin throws the same text.
 #[derive(Debug, thiserror::Error)]
 #[cfg_attr(feature = "native", derive(uniffi::Error))]
 pub enum ProviderBridgeError {
-    #[error("{message}")]
-    Provider { message: String },
+    // `detail` avoids colliding with Kotlin's Throwable.message.
+    #[error("{detail}")]
+    Provider { detail: String },
 }
 
 impl ProviderBridgeError {
     fn message(message: impl Into<String>) -> Self {
         Self::Provider {
-            message: message.into(),
+            detail: message.into(),
         }
     }
 }

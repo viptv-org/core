@@ -2130,17 +2130,17 @@ public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> 
 
 /**
  * Bridge failure carrying the shared provider message. UniFFI cannot throw
- * bare strings, so native shells catch this and read the message; the wasm
+ * bare strings, so native shells catch this and read the detail; the wasm
  * twin throws the same text.
  */
 sealed class ProviderBridgeException: kotlin.Exception() {
 
     class Provider(
 
-        val `message`: kotlin.String
+        val `detail`: kotlin.String
         ) : ProviderBridgeException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "detail=${ `detail` }"
     }
 
 
@@ -2171,7 +2171,7 @@ public object FfiConverterTypeProviderBridgeError : FfiConverterRustBuffer<Provi
             is ProviderBridgeException.Provider -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`detail`)
             )
         }
     }
@@ -2180,7 +2180,7 @@ public object FfiConverterTypeProviderBridgeError : FfiConverterRustBuffer<Provi
         when(value) {
             is ProviderBridgeException.Provider -> {
                 buf.putInt(1)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`detail`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
