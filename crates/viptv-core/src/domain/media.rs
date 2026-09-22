@@ -1,21 +1,69 @@
 use super::*;
 
 pub fn catalog(v: &Value) -> Result<Value> {
+    let mut out = catalog_fields(v)?;
+    out["raw"] = clean(v);
+    Ok(out)
+}
+
+pub(super) fn catalog_owned(mut v: Value) -> Result<Value> {
+    let mut out = catalog_fields(&v)?;
+    super::identity::clean_in_place(&mut v);
+    out["raw"] = v;
+    Ok(out)
+}
+
+fn catalog_fields(v: &Value) -> Result<Value> {
     let catalog_type = v["type"].as_str().unwrap_or("movie");
     if catalog_type.trim().is_empty() || catalog_type.len() > 64 {
         return Err(invalid());
     }
-    let mut out = json!({"id":id(v,"id")?,"name":fallback(v,&["name","id"],"Catalog"),"type":catalog_type,"supportsSearch":v["supports_search"].as_bool().unwrap_or(false),"supportsSkip":v["supports_skip"].as_bool().unwrap_or(false),"genres":strings(v,"genres"),"extras":[],"raw":clean(v)});
+    // Move owned values into the object. json! borrows and serializes expressions,
+    // which would copy strings and vectors before dropping the originals.
+    let mut out = Value::Object(Map::from_iter([
+        ("id".into(), Value::String(id(v, "id")?)),
+        (
+            "name".into(),
+            Value::String(fallback(v, &["name", "id"], "Catalog")),
+        ),
+        ("type".into(), Value::from(catalog_type)),
+        (
+            "supportsSearch".into(),
+            Value::Bool(v["supports_search"].as_bool().unwrap_or(false)),
+        ),
+        (
+            "supportsSkip".into(),
+            Value::Bool(v["supports_skip"].as_bool().unwrap_or(false)),
+        ),
+        ("genres".into(), Value::from(strings(v, "genres"))),
+        ("extras".into(), Value::Array(Vec::new())),
+    ]));
     optional_string(v, &mut out, "addon_name", "addonName");
     optional_number(v, &mut out, "addon_id", "addonId");
     if let Ok(key) = id(v, "addon_id") {
-        out["addonKey"] = json!(key);
+        out["addonKey"] = Value::String(key);
     }
-    out["extras"] = Value::Array(v["extra"].as_array().into_iter().flatten().filter_map(|e| {
-        let name = e["name"].as_str().filter(|s|!s.is_empty())?;
-        let mut extra = json!({"name":name,"required":e["is_required"].as_bool().unwrap_or(false),"options":strings(e,"options")});
-        optional_string(e,&mut extra,"default","defaultValue"); optional_number(e,&mut extra,"options_limit","optionsLimit"); Some(extra)
-    }).collect());
+    out["extras"] = Value::Array(
+        v["extra"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|e| {
+                let name = e["name"].as_str().filter(|s| !s.is_empty())?;
+                let mut extra = Value::Object(Map::from_iter([
+                    ("name".into(), Value::from(name)),
+                    (
+                        "required".into(),
+                        Value::Bool(e["is_required"].as_bool().unwrap_or(false)),
+                    ),
+                    ("options".into(), Value::from(strings(e, "options"))),
+                ]));
+                optional_string(e, &mut extra, "default", "defaultValue");
+                optional_number(e, &mut extra, "options_limit", "optionsLimit");
+                Some(extra)
+            })
+            .collect(),
+    );
     Ok(out)
 }
 pub fn media(v: &Value) -> Result<Value> {
@@ -164,4 +212,81 @@ pub fn media(v: &Value) -> Result<Value> {
         out["previousEpisode"] = media(&v["previous_episode"])?;
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Keep the old constructor as an independent ownership-optimization oracle.
+    fn legacy_catalog(v: &Value) -> Result<Value> {
+        let catalog_type = v["type"].as_str().unwrap_or("movie");
+        if catalog_type.trim().is_empty() || catalog_type.len() > 64 {
+            return Err(invalid());
+        }
+        let mut out = json!({"id":id(v,"id")?,"name":fallback(v,&["name","id"],"Catalog"),"type":catalog_type,"supportsSearch":v["supports_search"].as_bool().unwrap_or(false),"supportsSkip":v["supports_skip"].as_bool().unwrap_or(false),"genres":strings(v,"genres"),"extras":[],"raw":clean(v)});
+        optional_string(v, &mut out, "addon_name", "addonName");
+        optional_number(v, &mut out, "addon_id", "addonId");
+        if let Ok(key) = id(v, "addon_id") {
+            out["addonKey"] = json!(key);
+        }
+        out["extras"] = Value::Array(v["extra"].as_array().into_iter().flatten().filter_map(|e| {
+            let name = e["name"].as_str().filter(|s|!s.is_empty())?;
+            let mut extra = json!({"name":name,"required":e["is_required"].as_bool().unwrap_or(false),"options":strings(e,"options")});
+            optional_string(e,&mut extra,"default","defaultValue"); optional_number(e,&mut extra,"options_limit","optionsLimit"); Some(extra)
+        }).collect());
+        Ok(out)
+    }
+    #[test]
+    fn owned_catalog_matches_original_for_boundaries_and_nested_metadata() {
+        let ids = [
+            Value::Null,
+            json!(""),
+            json!("映画 Café 🎬"),
+            json!(0),
+            json!(-42),
+            json!(9007199254740991i64),
+            json!(9007199254740992i64),
+            json!(u64::MAX),
+            json!(1.25),
+        ];
+        let types = [
+            Value::Null,
+            json!("anime.series"),
+            json!(""),
+            json!(" "),
+            json!("x".repeat(64)),
+            json!("x".repeat(65)),
+        ];
+        for id_value in &ids {
+            for type_value in &types {
+                for name in [Value::Null, json!(""), json!("Name\n\"quoted\""), json!(42)] {
+                    let input = json!({
+                        "id": id_value, "type": type_value, "name": name,
+                        "addon_id": id_value, "addon_name": "Addon",
+                        "supports_search": true, "supports_skip": 1,
+                        "genres": ["One", null, 2, "", "映画"],
+                        "extra": [null, {}, {"name":""}, {"name":"search", "is_required":true, "default":"", "options_limit":4.5, "options":["x",null,2,"y"]}],
+                        "metadata": {"max":u64::MAX,"min":i64::MIN,"float":-0.0,"items":[null,true,{"safe":"keep","access_TOKEN":"remove","P-r-o-x-y":"remove"}]},
+                        "Authorization": "remove"
+                    });
+                    let stringify = |result: Result<Value>| {
+                        result
+                            .map(|value| serde_json::to_string(&value).unwrap())
+                            .map_err(|error| error.to_string())
+                    };
+                    assert_eq!(
+                        stringify(catalog(&input)),
+                        stringify(legacy_catalog(&input)),
+                        "{input}"
+                    );
+                    assert_eq!(
+                        stringify(catalog_owned(input.clone())),
+                        stringify(legacy_catalog(&input)),
+                        "{input}"
+                    );
+                }
+            }
+        }
+    }
 }

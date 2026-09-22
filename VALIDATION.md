@@ -1,3 +1,28 @@
+# WASI ownership follow-up — 2026-09-22
+
+Catalog construction now moves owned strings, arrays and sanitized raw metadata
+into the output instead of serializing temporary values into a second tree.
+The string bridge also retains its owned parsed catalog metadata in place;
+borrowed callers share the same catalog-field constructor. Both sanitizer walks
+use the same credential-key predicate. Typed DTO validation, exact raw numbers,
+field omission, invalid-catalog isolation and request bounds remain unchanged.
+
+All 47 Rust tests, formatting, strict core/all-target Clippy, and native/raw/
+optimized/canonical WASI protocol checks passed. A permanent regression compares
+216 catalog boundary/metadata combinations against the previous constructor.
+The existing 1,035-document sanitizer corpus also exercises the new owned clean
+path. An additional deterministic differential run compared 1,500 complete
+catalog/catalogs/clean NDJSON responses against the saved pre-change executable;
+all response bytes, including errors, matched.
+
+Native ten-catalog normalization measured about 24 microseconds versus 29 before
+this ownership change. This is a host measurement, not Roku latency. The isolated
+serde_json-only speed-optimization experiment passed host checks and conversion
+but failed real Roku compilation on a long function jump. The WASI release
+profile therefore remains size-optimized.
+
+---
+
 # WASI performance follow-up — 2026-09-22
 
 Profiling exposed failed untagged-enum retries while validating every raw metadata

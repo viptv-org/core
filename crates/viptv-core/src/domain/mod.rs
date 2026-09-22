@@ -122,3 +122,26 @@ pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value
         _ => crate::policy::normalize(kind_name, v),
     }
 }
+
+// The string bridge owns its parsed input. Retain sanitized catalog metadata in
+// place instead of allocating a second tree solely to drop the first one.
+#[cfg_attr(target_os = "wasi", inline(never))]
+pub(crate) fn normalize_owned(kind_name: &str, mut v: Value, origin: &str) -> Result<Value> {
+    match kind_name {
+        "clean" => {
+            identity::clean_in_place(&mut v);
+            Ok(v)
+        }
+        "catalog" => media::catalog_owned(v),
+        "catalogs" => match v {
+            Value::Array(items) => Ok(Value::Array(
+                items
+                    .into_iter()
+                    .filter_map(|v| media::catalog_owned(v).ok())
+                    .collect(),
+            )),
+            _ => Err(invalid()),
+        },
+        _ => normalize_value(kind_name, &v, origin),
+    }
+}

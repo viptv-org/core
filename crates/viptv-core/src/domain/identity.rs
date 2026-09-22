@@ -44,6 +44,21 @@ pub fn clean(v: &Value) -> Value {
     }
 }
 
+pub(super) fn clean_in_place(v: &mut Value) {
+    match v {
+        Value::Array(items) => items.iter_mut().for_each(clean_in_place),
+        Value::Object(fields) => fields.retain(|key, value| {
+            if transport_key(key) {
+                false
+            } else {
+                clean_in_place(value);
+                true
+            }
+        }),
+        _ => {}
+    }
+}
+
 pub fn profile(v: &Value) -> Result<Value> {
     obj(v)?;
     let mut out = json!({"id":id(v,"id")?,"name":string(v,"name")?,"raw":clean(v)});

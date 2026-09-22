@@ -68,7 +68,7 @@ pub fn normalize(kind: String, input: String, origin: String) -> Result<String, 
         return Err(CoreError::InvalidInput);
     }
     let value = serde_json::from_str(&input).map_err(|_| CoreError::InvalidInput)?;
-    let normalized = domain::normalize_value(&kind, &value, &origin)?;
+    let normalized = domain::normalize_owned(&kind, value, &origin)?;
     validate_normalized(&kind, &normalized)?;
     serde_json::to_string(&normalized).map_err(|_| CoreError::InvalidInput)
 }
