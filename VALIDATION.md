@@ -1,3 +1,35 @@
+# WASI performance follow-up — 2026-09-22
+
+Profiling exposed failed untagged-enum retries while validating every raw metadata
+value, and fifteen complete credential-substring searches for every metadata key.
+The JSON visitor now dispatches by the actual JSON type, and the sanitizer scans
+each normalized key once while borrowing ordinary lowercase ASCII keys. The
+schema, typed validation, credential filtering and request size limits remain.
+
+All 46 Rust tests, formatting, strict core/all-target Clippy and native/raw/
+optimized/canonical WASI bridge checks pass. A deterministic parity test compares
+1,035 documents against independent copies of the old implementations, including
+recursive objects/arrays, integer limits, extreme floats, Unicode and escaping,
+mixed-case/separated credential substrings, and ten malformed inputs. Serialized
+outputs and malformed JSON error strings match exactly.
+
+On the development Roku, the visitor alone reduced the warm ten-catalog median
+from 1,075 ms to 772 ms. Adding the sanitizer reduced it to 660 ms. With the
+translator/runtime improvements enabled, all 30 device parity cases passed and
+the median was 650 ms (1.65 times faster than the previous checkpoint). Timed
+initialization was 30 ms for WASM and 284 ms for WASI, 314 ms total; the earlier
+3,945 ms number included regression fixtures and is not a comparable core-only
+startup measurement. Final translator/runtime evidence is in its `HANDOFF.md`.
+
+The native phase profiler is reproducible with `cargo run --release -p viptv-core
+--example normalization_profile`. On the same ten-catalog fixture, typed
+validation fell from about 19 to 4 microseconds and total normalization from
+about 52 to 30 microseconds. These host numbers are not Roku timings. Cargo
+`opt-level = "z"` remains: experimental `s` and `3` variants exceeded Roku's
+per-function label limit during conversion.
+
+---
+
 # WASI / BrightScript bridge — 2026-09-22
 
 The persistent JSON-lines bridge reuses the existing `CoreBridge` and normalizer;

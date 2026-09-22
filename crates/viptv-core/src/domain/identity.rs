@@ -1,4 +1,34 @@
 use super::*;
+use std::borrow::Cow;
+
+fn transport_key(key: &str) -> bool {
+    // Most provider keys are already lowercase ASCII; leave those borrowed.
+    let key = if key
+        .bytes()
+        .all(|byte| byte.is_ascii() && !byte.is_ascii_uppercase() && byte != b'_' && byte != b'-')
+    {
+        Cow::Borrowed(key)
+    } else {
+        Cow::Owned(key.to_lowercase().replace(['_', '-'], ""))
+    };
+    // One pass avoids fifteen general substring searches per metadata key.
+    let bytes = key.as_bytes();
+    bytes.iter().enumerate().any(|(index, byte)| {
+        let tail = &bytes[index..];
+        match byte {
+            b'a' => tail.starts_with(b"authorization") || tail.starts_with(b"accesstoken"),
+            b'c' => tail.starts_with(b"cookie") || tail.starts_with(b"credential"),
+            b'd' => tail.starts_with(b"devicecode") || tail.starts_with(b"devicetoken"),
+            b'h' => tail.starts_with(b"header"),
+            b'l' => tail.starts_with(b"link"),
+            b'o' => tail.starts_with(b"origin"),
+            b'p' => tail.starts_with(b"password") || tail.starts_with(b"proxy"),
+            b'r' => tail.starts_with(b"refreshtoken") || tail.starts_with(b"referer"),
+            b'u' => tail.starts_with(b"url") || tail.starts_with(b"uri"),
+            _ => false,
+        }
+    })
+}
 
 pub fn clean(v: &Value) -> Value {
     match v {
@@ -6,34 +36,14 @@ pub fn clean(v: &Value) -> Value {
         Value::Object(fields) => Value::Object(
             fields
                 .iter()
-                .filter(|(k, _)| {
-                    let k = k.to_lowercase().replace(['_', '-'], "");
-                    ![
-                        "url",
-                        "uri",
-                        "link",
-                        "header",
-                        "authorization",
-                        "accesstoken",
-                        "refreshtoken",
-                        "devicecode",
-                        "devicetoken",
-                        "cookie",
-                        "password",
-                        "credential",
-                        "proxy",
-                        "referer",
-                        "origin",
-                    ]
-                    .iter()
-                    .any(|s| k.contains(s))
-                })
+                .filter(|(key, _)| !transport_key(key))
                 .map(|(k, v)| (k.clone(), clean(v)))
                 .collect(),
         ),
         _ => v.clone(),
     }
 }
+
 pub fn profile(v: &Value) -> Result<Value> {
     obj(v)?;
     let mut out = json!({"id":id(v,"id")?,"name":string(v,"name")?,"raw":clean(v)});
@@ -72,4 +82,51 @@ pub fn tokens(v: &Value) -> Result<Value> {
     Ok(
         json!({"sessionId":id(v,"session_id")?,"accountId":id(v,"account_id")?,"profileId":id(v,"profile_id").ok(),"accessToken":string(v,"access_token")?,"refreshToken":string(v,"refresh_token")?,"expiresIn":number(v,"expires_in")?}),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::transport_key;
+
+    #[test]
+    fn transport_key_matches_original_redaction_for_case_separators_and_unicode() {
+        let forbidden = [
+            "url",
+            "uri",
+            "link",
+            "header",
+            "authorization",
+            "accesstoken",
+            "refreshtoken",
+            "devicecode",
+            "devicetoken",
+            "cookie",
+            "password",
+            "credential",
+            "proxy",
+            "referer",
+            "origin",
+        ];
+        for word in
+            forbidden
+                .into_iter()
+                .chain(["id", "name", "type", "addon_id", "映画", "İ", "Café 🎬"])
+        {
+            for spelling in [
+                word.to_owned(),
+                word.to_uppercase(),
+                word.chars().map(|c| format!("{c}_-")).collect::<String>(),
+            ] {
+                for prefix in ["", "a", "u", "d", "映画"] {
+                    let key = format!("{prefix}{spelling}SUFFIX");
+                    let lowered = key.to_lowercase().replace(['_', '-'], "");
+                    assert_eq!(
+                        transport_key(&key),
+                        forbidden.iter().any(|word| lowered.contains(word)),
+                        "{key}"
+                    );
+                }
+            }
+        }
+    }
 }

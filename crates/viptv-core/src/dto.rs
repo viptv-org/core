@@ -2,7 +2,7 @@
 use facet::Facet;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-#[derive(Clone, Debug, Serialize, Deserialize, Facet, PartialEq)]
+#[derive(Clone, Debug, Serialize, Facet, PartialEq)]
 #[serde(untagged)]
 #[facet(untagged)]
 #[repr(C)]
@@ -13,6 +13,62 @@ pub enum JsonValue {
     String(String),
     Array(Vec<JsonValue>),
     Object(BTreeMap<String, JsonValue>),
+}
+
+// Untagged derive retries every preceding variant (including error allocation)
+// for each metadata value. JSON already tells us which variant it contains.
+impl<'de> Deserialize<'de> for JsonValue {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct JsonVisitor;
+        impl<'de> serde::de::Visitor<'de> for JsonVisitor {
+            type Value = JsonValue;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a JSON value")
+            }
+            fn visit_unit<E>(self) -> Result<Self::Value, E> {
+                Ok(JsonValue::Null)
+            }
+            fn visit_bool<E>(self, value: bool) -> Result<Self::Value, E> {
+                Ok(JsonValue::Boolean(value))
+            }
+            fn visit_i64<E>(self, value: i64) -> Result<Self::Value, E> {
+                Ok(JsonValue::Number(value as f64))
+            }
+            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E> {
+                Ok(JsonValue::Number(value as f64))
+            }
+            fn visit_f64<E>(self, value: f64) -> Result<Self::Value, E> {
+                Ok(JsonValue::Number(value))
+            }
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E> {
+                Ok(JsonValue::String(value.to_owned()))
+            }
+            fn visit_string<E>(self, value: String) -> Result<Self::Value, E> {
+                Ok(JsonValue::String(value))
+            }
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(
+                self,
+                mut items: A,
+            ) -> Result<Self::Value, A::Error> {
+                let mut values = Vec::new();
+                while let Some(value) = items.next_element()? {
+                    values.push(value);
+                }
+                Ok(JsonValue::Array(values))
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                mut fields: A,
+            ) -> Result<Self::Value, A::Error> {
+                let mut values = BTreeMap::new();
+                while let Some((key, value)) = fields.next_entry()? {
+                    values.insert(key, value);
+                }
+                Ok(JsonValue::Object(values))
+            }
+        }
+        deserializer.deserialize_any(JsonVisitor)
+    }
 }
 pub type JsonObject = BTreeMap<String, JsonValue>;
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]

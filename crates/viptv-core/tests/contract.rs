@@ -449,3 +449,29 @@ fn stream_discovery_requests_and_polling_steps_share_one_policy() {
         "a missing poll page is invalid input"
     );
 }
+#[test]
+fn raw_json_deserialization_preserves_all_value_kinds() {
+    use serde::Deserialize;
+    use viptv_core::dto::JsonValue;
+
+    let wire = r#"[null,true,false,-1,18446744073709551615,1.25,"映画 Café 🎬",[],{},[[false,{"id":"x"}]]]"#;
+    let expected = JsonValue::Array(vec![
+        JsonValue::Null,
+        JsonValue::Boolean(true),
+        JsonValue::Boolean(false),
+        JsonValue::Number(-1.0),
+        JsonValue::Number(u64::MAX as f64),
+        JsonValue::Number(1.25),
+        JsonValue::String("映画 Café 🎬".into()),
+        JsonValue::Array(vec![]),
+        JsonValue::Object(Default::default()),
+        JsonValue::Array(vec![JsonValue::Array(vec![
+            JsonValue::Boolean(false),
+            JsonValue::Object([("id".into(), JsonValue::String("x".into()))].into()),
+        ])]),
+    ]);
+    let value: serde_json::Value = serde_json::from_str(wire).unwrap();
+    assert_eq!(serde_json::from_str::<JsonValue>(wire).unwrap(), expected);
+    assert_eq!(JsonValue::deserialize(&value).unwrap(), expected);
+    assert_eq!(JsonValue::deserialize(value).unwrap(), expected);
+}
