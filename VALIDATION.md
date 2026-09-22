@@ -25,6 +25,9 @@ across 11 files. Timed initialization was 30 ms for WASM and 283 ms for WASI,
 313 ms total; the earlier
 3,945 ms number included regression fixtures and is not a comparable core-only
 startup measurement. Final translator/runtime evidence is in its `HANDOFF.md`.
+The separate 100-catalog device run also passed parity and allocator stress:
+5,992 ms cold and 5,903 ms warm, about 59 ms per item. Scaling is approximately
+linear; large batches still take seconds and must stay off the interactive path.
 
 The native phase profiler is reproducible with `cargo run --release -p viptv-core
 --example normalization_profile`. On the same ten-catalog fixture, typed
