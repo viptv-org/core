@@ -764,6 +764,8 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -796,6 +798,8 @@ fun uniffi_viptv_core_checksum_func_provider_candidate(
 fun uniffi_viptv_core_checksum_func_provider_media_url(
 ): Short
 fun uniffi_viptv_core_checksum_func_provider_select_candidates(
+): Short
+fun uniffi_viptv_core_checksum_func_vizio_deviceinfo_name(
 ): Short
 fun uniffi_viptv_core_checksum_func_vizio_discovery_candidates(
 ): Short
@@ -923,6 +927,8 @@ fun uniffi_viptv_core_fn_func_provider_candidate(`providerId`: Long,`kind`: Rust
 fun uniffi_viptv_core_fn_func_provider_media_url(`provider`: RustBuffer.ByValue,`kind`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`ext`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_func_provider_select_candidates(`kind`: RustBuffer.ByValue,`request`: RustBuffer.ByValue,`candidates`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_vizio_deviceinfo_name(`body`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_func_vizio_discovery_candidates(`subnet`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
@@ -1083,6 +1089,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_func_provider_select_candidates() != 11745.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_vizio_deviceinfo_name() != 43515.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_func_vizio_discovery_candidates() != 25938.toShort()) {
@@ -2333,6 +2342,20 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
     uniffiRustCallWithError(ProviderBridgeException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_provider_select_candidates(
         FfiConverterString.lower(`kind`),FfiConverterString.lower(`request`),FfiConverterString.lower(`candidates`),_status)
+}
+    )
+    }
+
+
+        /**
+         * The display name from a SmartCast deviceinfo response, or `null` when the
+         * answering host is not a Vizio television. Direct-probe discovery uses
+         * this after connecting to each candidate from `vizio_discovery_candidates`.
+         */ fun `vizioDeviceinfoName`(`body`: kotlin.String): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_vizio_deviceinfo_name(
+        FfiConverterString.lower(`body`),_status)
 }
     )
     }
