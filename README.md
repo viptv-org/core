@@ -39,8 +39,10 @@ After building, `python3 scripts/test-wasi.py ../wasm2brs/tools/wasmtime
 normalization, malformed inputs and warm latency. This is an experimental bridge;
 it does not change the production Roku application's adoption status. See the
 translator's `HANDOFF.md` for generated BrightScript and device validation.
-The full conversion currently produces about 19 MB across 11 BrightScript files;
-native/WASI latency does not establish Roku startup time or request latency.
+The full conversion currently produces about 19 MB across 12 BrightScript files.
+The measured Roku startup is about 3.9 seconds; warm normalization of ten catalogs
+takes about 1.08 seconds. Keep it off animation/input hot paths; native/WASI host
+latency is not representative of BrightScript execution.
 
 ## Migration state
 

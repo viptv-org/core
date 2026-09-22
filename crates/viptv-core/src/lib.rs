@@ -220,7 +220,7 @@ uniffi::setup_scaffolding!();
 fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreError> {
     #[cfg_attr(target_os = "wasi", inline(never))]
     fn check<T: serde::de::DeserializeOwned>(v: &serde_json::Value) -> Result<(), CoreError> {
-        serde_json::from_value::<T>(v.clone())
+        T::deserialize(v)
             .map(|_| ())
             .map_err(|_| CoreError::InvalidInput)
     }

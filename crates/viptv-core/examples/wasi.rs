@@ -1,42 +1,40 @@
 //! Persistent JSON-lines shell for WASI and the wasm2brs Roku experiment.
-use std::io::{self, BufRead, Read, Write};
+use std::{
+    collections::BTreeMap,
+    io::{self, BufRead, BufWriter, Read, Write},
+};
 use viptv_core::{CoreBridge, CoreError};
 
 // HTTP effects encode a <=2 MiB body as JSON bytes, which can need ~8 MiB.
 const MAX_REQUEST_BYTES: u64 = 12 * 1024 * 1024;
 
 fn dispatch(core: &mut CoreBridge, input: &[u8]) -> Result<String, CoreError> {
-    let request: serde_json::Value =
+    // Borrow nested JSON rather than building, serializing and reparsing its tree.
+    let request: BTreeMap<String, &serde_json::value::RawValue> =
         serde_json::from_slice(input).map_err(|_| CoreError::InvalidInput)?;
-    let field = |key: &str| request.get(key).ok_or(CoreError::InvalidInput);
-    let text = |key: &str| {
+    let field = |key: &str| {
         request
             .get(key)
-            .and_then(serde_json::Value::as_str)
-            .map(str::to_owned)
+            .map(|value| value.get())
             .ok_or(CoreError::InvalidInput)
     };
-    match request.get("op").and_then(serde_json::Value::as_str) {
-        Some("normalize") => viptv_core::normalize(
+    let text = |key: &str| {
+        serde_json::from_str::<String>(field(key)?).map_err(|_| CoreError::InvalidInput)
+    };
+    match text("op")?.as_str() {
+        "normalize" => viptv_core::normalize(
             text("kind")?,
-            field("input")?.to_string(),
-            request
-                .get("origin")
-                .and_then(serde_json::Value::as_str)
-                .unwrap_or_default()
-                .to_owned(),
+            field("input")?.to_owned(),
+            text("origin").unwrap_or_default(),
         ),
-        Some("vizio_platform_support") => Ok(viptv_core::vizio_platform_support(text("platform")?)),
-        Some("update" | "process_event") => core.update(field("event")?.to_string()),
-        Some("resolve" | "handle_response") => {
-            let id = field("id")?
-                .as_u64()
-                .and_then(|id| u32::try_from(id).ok())
-                .ok_or(CoreError::InvalidInput)?;
-            core.resolve(id, field("result")?.to_string())
+        "vizio_platform_support" => Ok(viptv_core::vizio_platform_support(text("platform")?)),
+        "update" | "process_event" => core.update(field("event")?.to_owned()),
+        "resolve" | "handle_response" => {
+            let id = serde_json::from_str(field("id")?).map_err(|_| CoreError::InvalidInput)?;
+            core.resolve(id, field("result")?.to_owned())
         }
-        Some("view") => core.view(),
-        Some("reset") => {
+        "view" => core.view(),
+        "reset" => {
             *core = CoreBridge::new();
             core.view()
         }
@@ -47,7 +45,7 @@ fn dispatch(core: &mut CoreBridge, input: &[u8]) -> Result<String, CoreError> {
 fn main() -> io::Result<()> {
     let mut core = CoreBridge::new();
     let mut input = io::stdin().lock();
-    let mut output = io::stdout().lock();
+    let mut output = BufWriter::new(io::stdout().lock());
     let mut line = Vec::new();
     loop {
         line.clear();

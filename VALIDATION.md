@@ -15,6 +15,27 @@ whitespace checks passed after implementation. The translator's `HANDOFF.md`
 records BrightScript conversion and device results separately; this checkpoint
 does not adopt the bridge into the production Roku application.
 
+The performance follow-up borrows nested request JSON with `RawValue`, buffers
+each response before flushing it, and deserializes typed validation directly
+from the normalized value instead of cloning the whole JSON tree. It preserves
+typed validation and the normalizer's 2 MiB input cap. All four protocol phases,
+43 Rust tests, formatting and strict Clippy passed again; added checks cover
+explicit null input, escaped JSON keys and the 2 MiB normalization boundary.
+After this change, host median/p95 for the same 32 catalogs was native
+0.271/0.366 ms, raw WASI 0.507/1.291 ms, optimized WASI 0.370/0.446 ms and
+canonical WASI 0.348/0.471 ms.
+
+The complete translated program passed 29 exact-response comparisons on the
+development Roku, including all shared startup vectors and a Japanese/accented/
+emoji catalog, plus compiler/memory regressions. Measured initialization was
+3,945 ms; median view/update/storage/HTTP calls were 6/59/92/171.5 ms.
+Ten-catalog normalization improved from 1,377 ms to 1,075 ms warm (22% faster),
+with a 1,078 ms cold call. The Unicode case completed in 85 ms and the complete
+channel run took 9,344 ms. These device measurements
+include concurrent translator/runtime improvements; they cannot isolate the
+effect of the Rust changes. This remains unsuitable for per-frame work, and the
+production Roku application remains unchanged.
+
 ---
 
 # Transparent title artwork — 2026-09-13

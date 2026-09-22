@@ -58,6 +58,9 @@ try:
     assert ask({"op": "view"})["phase"] == "Pairing"
 
     assert ask({"op": "normalize", "kind": "catalogs", "input": []}) == []
+    assert ask({"op": "normalize", "kind": "clean", "input": None}) is None
+    assert ask(r'{"o\u0070":"view"}') == ask({"op": "view"})
+    ask({"op": "normalize", "kind": "clean", "input": "x" * (2 * 1024 * 1024)}, valid=False)
     portrait = {"id": "movie", "type": "movie", "name": "Movie", "poster": "portrait.jpg",
                 "position": 20, "duration": 100}
     presentation = ask({"op": "normalize", "kind": "presentation", "input": portrait})
