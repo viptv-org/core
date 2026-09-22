@@ -18,8 +18,27 @@ all response bytes, including errors, matched.
 Native ten-catalog normalization measured about 24 microseconds versus 29 before
 this ownership change. This is a host measurement, not Roku latency. The isolated
 serde_json-only speed-optimization experiment passed host checks and conversion
-but failed real Roku compilation on a long function jump. The WASI release
-profile therefore remains size-optimized.
+but initially failed real Roku compilation with a Label/Line NotFound error.
+Removing unused generated labels allowed it to compile, but its 466 ms device
+normalization remained slower than the selected size-optimized profile.
+
+The final official translated build passed 32 exact device response comparisons,
+including unsigned/signed 64-bit limits, the largest exactly representable
+53-bit integer and negative zero, plus memory/compiler/WASI and both native
+allocator stress suites. The numeric case exposed a pre-existing signed-zero
+runtime decoder bug; the translator runtime fixed it and added bit-roundtrip
+and memory-store/load regressions before the final pass.
+
+With the combined translator/runtime changes, the final warm ten-catalog median
+was 431 ms (434 ms maximum, 438 ms cold), versus 594 ms before this follow-up:
+27.4% less latency. This is 68.7% below the original 1,377 ms checkpoint. The
+hundred-catalog checkpoint passed at 4,256 ms warm and 4,382 ms cold, about 43 ms
+per item; large batches still take seconds. View/update/storage/HTTP medians were
+4/43/68/122 ms (HTTP maximum 213 ms). Actual WASM/WASI initialization was 30/266 ms,
+296 ms total, excluding regression fixtures. The generated BrightScript totals
+14,082,747 bytes. These are experimental channel measurements; the production
+Roku application's adoption status is unchanged. Final artifact/device evidence
+belongs to the translator's `HANDOFF.md`.
 
 ---
 
