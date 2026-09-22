@@ -748,6 +748,22 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -763,7 +779,23 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 // when the library is loaded.
 internal interface IntegrityCheckingUniffiLib : Library {
     // Integrity check functions only
-    fun uniffi_viptv_core_checksum_func_normalize(
+    fun uniffi_viptv_core_checksum_func_addon_catalog_extras(
+): Short
+fun uniffi_viptv_core_checksum_func_addon_endpoint(
+): Short
+fun uniffi_viptv_core_checksum_func_addon_supports(
+): Short
+fun uniffi_viptv_core_checksum_func_discover_aggregate(
+): Short
+fun uniffi_viptv_core_checksum_func_discover_plan(
+): Short
+fun uniffi_viptv_core_checksum_func_normalize(
+): Short
+fun uniffi_viptv_core_checksum_func_provider_candidate(
+): Short
+fun uniffi_viptv_core_checksum_func_provider_media_url(
+): Short
+fun uniffi_viptv_core_checksum_func_provider_select_candidates(
 ): Short
 fun uniffi_viptv_core_checksum_func_vizio_discovery_candidates(
 ): Short
@@ -874,7 +906,23 @@ fun uniffi_viptv_core_fn_method_smartcastbridge_resolve(`ptr`: Pointer,`requestI
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_smartcastbridge_start(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_addon_catalog_extras(`catalog`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_addon_endpoint(`base`: RustBuffer.ByValue,`parts`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_addon_supports(`manifest`: RustBuffer.ByValue,`resource`: RustBuffer.ByValue,`kind`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Byte
+fun uniffi_viptv_core_fn_func_discover_aggregate(`responses`: RustBuffer.ByValue,`plan`: RustBuffer.ByValue,`skip`: Long,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_discover_plan(`entries`: RustBuffer.ByValue,`request`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_func_normalize(`kind`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,`origin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_provider_candidate(`providerId`: Long,`kind`: RustBuffer.ByValue,`row`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_provider_media_url(`provider`: RustBuffer.ByValue,`kind`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`ext`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_provider_select_candidates(`kind`: RustBuffer.ByValue,`request`: RustBuffer.ByValue,`candidates`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_func_vizio_discovery_candidates(`subnet`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
@@ -1010,7 +1058,31 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 }
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
+    if (lib.uniffi_viptv_core_checksum_func_addon_catalog_extras() != 15961.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_addon_endpoint() != 47852.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_addon_supports() != 33591.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_discover_aggregate() != 6357.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_discover_plan() != 3931.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_func_normalize() != 57983.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_provider_candidate() != 51028.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_provider_media_url() != 42501.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_func_provider_select_candidates() != 11745.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_func_vizio_discovery_candidates() != 25938.toShort()) {
@@ -1244,6 +1316,52 @@ public object FfiConverterUInt: FfiConverter<UInt, Int> {
 
     override fun write(value: UInt, buf: ByteBuffer) {
         buf.putInt(value.toInt())
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterULong: FfiConverter<ULong, Long> {
+    override fun lift(value: Long): ULong {
+        return value.toULong()
+    }
+
+    override fun read(buf: ByteBuffer): ULong {
+        return lift(buf.getLong())
+    }
+
+    override fun lower(value: ULong): Long {
+        return value.toLong()
+    }
+
+    override fun allocationSize(value: ULong) = 8UL
+
+    override fun write(value: ULong, buf: ByteBuffer) {
+        buf.putLong(value.toLong())
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterLong: FfiConverter<Long, Long> {
+    override fun lift(value: Long): Long {
+        return value
+    }
+
+    override fun read(buf: ByteBuffer): Long {
+        return buf.getLong()
+    }
+
+    override fun lower(value: Long): Long {
+        return value
+    }
+
+    override fun allocationSize(value: Long) = 8UL
+
+    override fun write(value: Long, buf: ByteBuffer) {
+        buf.putLong(value)
     }
 }
 
@@ -2009,6 +2127,70 @@ public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> 
 
 
 
+
+/**
+ * Bridge failure carrying the shared provider message. UniFFI cannot throw
+ * bare strings, so native shells catch this and read the message; the wasm
+ * twin throws the same text.
+ */
+sealed class ProviderBridgeException: kotlin.Exception() {
+
+    class Provider(
+
+        val `message`: kotlin.String
+        ) : ProviderBridgeException() {
+        override val message
+            get() = "message=${ `message` }"
+    }
+
+
+    companion object ErrorHandler : UniffiRustCallStatusErrorHandler<ProviderBridgeException> {
+        override fun lift(error_buf: RustBuffer.ByValue): ProviderBridgeException = FfiConverterTypeProviderBridgeError.lift(error_buf)
+    }
+
+
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeProviderBridgeError : FfiConverterRustBuffer<ProviderBridgeException> {
+    override fun read(buf: ByteBuffer): ProviderBridgeException {
+
+
+        return when(buf.getInt()) {
+            1 -> ProviderBridgeException.Provider(
+                FfiConverterString.read(buf),
+                )
+            else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
+        }
+    }
+
+    override fun allocationSize(value: ProviderBridgeException): ULong {
+        return when(value) {
+            is ProviderBridgeException.Provider -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+                + FfiConverterString.allocationSize(value.`message`)
+            )
+        }
+    }
+
+    override fun write(value: ProviderBridgeException, buf: ByteBuffer) {
+        when(value) {
+            is ProviderBridgeException.Provider -> {
+                buf.putInt(1)
+                FfiConverterString.write(value.`message`, buf)
+                Unit
+            }
+        }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
+    }
+
+}
+
+
+
+
 /**
  * @suppress
  */
@@ -2037,11 +2219,120 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
         }
     }
 }
+        /**
+         * Expose a catalog's extra options (genres and the like) as wire objects.
+         */ fun `addonCatalogExtras`(`catalog`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_addon_catalog_extras(
+        FfiConverterString.lower(`catalog`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Build a relative endpoint path for one addon manifest URL.
+         */
+    @Throws(ProviderBridgeException::class) fun `addonEndpoint`(`base`: kotlin.String, `parts`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(ProviderBridgeException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_addon_endpoint(
+        FfiConverterString.lower(`base`),FfiConverterString.lower(`parts`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Whether one addon manifest supports a resource for a kind/id pair.
+         */ fun `addonSupports`(`manifest`: kotlin.String, `resource`: kotlin.String, `kind`: kotlin.String, `id`: kotlin.String): kotlin.Boolean {
+            return FfiConverterBoolean.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_addon_supports(
+        FfiConverterString.lower(`manifest`),FfiConverterString.lower(`resource`),FfiConverterString.lower(`kind`),FfiConverterString.lower(`id`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Aggregate responses for one discovery plan into a page.
+         */
+    @Throws(ProviderBridgeException::class) fun `discoverAggregate`(`responses`: kotlin.String, `plan`: kotlin.String, `skip`: kotlin.ULong): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(ProviderBridgeException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_discover_aggregate(
+        FfiConverterString.lower(`responses`),FfiConverterString.lower(`plan`),FfiConverterULong.lower(`skip`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Plan one discovery request for a set of addon entries without network I/O.
+         *
+         * `entries` is a JSON array of `[id, manifest_url, manifest]` tuples. The
+         * returned plan describes the endpoints to call and the aggregation flags.
+         */
+    @Throws(ProviderBridgeException::class) fun `discoverPlan`(`entries`: kotlin.String, `request`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(ProviderBridgeException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_discover_plan(
+        FfiConverterString.lower(`entries`),FfiConverterString.lower(`request`),_status)
+}
+    )
+    }
+
+
     @Throws(CoreException::class) fun `normalize`(`kind`: kotlin.String, `input`: kotlin.String, `origin`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_normalize(
         FfiConverterString.lower(`kind`),FfiConverterString.lower(`input`),FfiConverterString.lower(`origin`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Parse one provider row into a candidate, or `null` when it is not playable.
+         */ fun `providerCandidate`(`providerId`: kotlin.Long, `kind`: kotlin.String, `row`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_provider_candidate(
+        FfiConverterLong.lower(`providerId`),FfiConverterString.lower(`kind`),FfiConverterString.lower(`row`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Build a playable Xtream URL for a provider's kind/id/extension.
+         *
+         * `provider` is `{"url": ..., "username": ..., "password": ...}`. The result
+         * is returned only to the calling shell for playback on this device.
+         */
+    @Throws(ProviderBridgeException::class) fun `providerMediaUrl`(`provider`: kotlin.String, `kind`: kotlin.String, `id`: kotlin.String, `ext`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(ProviderBridgeException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_provider_media_url(
+        FfiConverterString.lower(`provider`),FfiConverterString.lower(`kind`),FfiConverterString.lower(`id`),FfiConverterString.lower(`ext`),_status)
+}
+    )
+    }
+
+
+        /**
+         * Rank a set of candidates for one match request, returning the winners.
+         *
+         * `candidates` is the JSON array produced by [`provider_candidate`].
+         */
+    @Throws(ProviderBridgeException::class) fun `providerSelectCandidates`(`kind`: kotlin.String, `request`: kotlin.String, `candidates`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    uniffiRustCallWithError(ProviderBridgeException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_provider_select_candidates(
+        FfiConverterString.lower(`kind`),FfiConverterString.lower(`request`),FfiConverterString.lower(`candidates`),_status)
 }
     )
     }
