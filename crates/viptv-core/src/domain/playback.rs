@@ -78,5 +78,27 @@ fn authorization(v: &Value) -> Option<Value> {
     if let Some(user_agent) = source.get("user_agent").and_then(Value::as_str) {
         out.insert("userAgent".into(), json!(user_agent));
     }
+    if let Some(headers) = source.get("headers").and_then(Value::as_object) {
+        let headers: Map<String, Value> = headers
+            .iter()
+            .filter_map(|(name, value)| {
+                let value = value.as_str()?;
+                (!name.is_empty()
+                    && name.len() <= 128
+                    && name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+                    && !matches!(
+                        name.to_ascii_lowercase().as_str(),
+                        "host" | "connection" | "content-length"
+                    )
+                    && value.len() <= 8192
+                    && !value.contains(['\r', '\n']))
+                .then(|| (name.clone(), json!(value)))
+            })
+            .take(32)
+            .collect();
+        if !headers.is_empty() {
+            out.insert("headers".into(), Value::Object(headers));
+        }
+    }
     Some(Value::Object(out))
 }

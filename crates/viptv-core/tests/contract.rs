@@ -175,7 +175,7 @@ fn playback_urls_are_capability_paths_or_original_sources() {
     let direct: Value = serde_json::from_str(
         &normalize(
             "playback".into(),
-            json!({"id":"s","url":"https://provider.test/stream.mkv","authorization":{"cookie":"session=1","user_agent":"VIPTV Desktop"}}).to_string(),
+            json!({"id":"s","url":"https://provider.test/stream.mkv","authorization":{"cookie":"session=1","user_agent":"VIPTV Desktop","headers":{"Referer":"https://provider.test/watch","X-Stream":"opaque","Host":"wrong.test","Bad":"value\\r\\nInjected: yes"}}}).to_string(),
             "https://example.test".into()
         )
         .unwrap(),
@@ -184,6 +184,11 @@ fn playback_urls_are_capability_paths_or_original_sources() {
     assert_eq!(direct["url"], "https://provider.test/stream.mkv");
     assert_eq!(direct["authorization"]["cookie"], "session=1");
     assert_eq!(direct["authorization"]["userAgent"], "VIPTV Desktop");
+    assert_eq!(
+        direct["authorization"]["headers"]["Referer"],
+        "https://provider.test/watch"
+    );
+    assert!(direct["authorization"]["headers"].get("Host").is_none());
     assert_eq!(
         normalize(
             "container".into(),

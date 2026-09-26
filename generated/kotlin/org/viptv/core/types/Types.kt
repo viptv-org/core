@@ -352,6 +352,7 @@ enum class Phase {
 data class PlaybackAuthorization(
     val cookie: String? = null,
     val userAgent: String? = null,
+    val headers: Map<String, String>? = null,
 )
 
 data class PlaybackSession(
@@ -424,6 +425,8 @@ data class Session(
 data class SourcePresentation(
     val title: String,
     val body: String,
+    val providerKey: String,
+    val providerLabel: String,
 )
 
 sealed interface StorageOperation {

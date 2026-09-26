@@ -46,7 +46,17 @@ pub(super) fn source_display(v: &Value) -> Value {
         } else {
             "Source".into()
         };
-        json!({"title":title,"body":if !description.trim().is_empty(){description}else if !opaque(provider){provider}else{""}})
+        let label = title.lines().next().unwrap_or("Source").trim();
+        let addon = text(v, "sourceAddonId").trim();
+        let key = if !addon.is_empty() {
+            format!("addon:{addon}")
+        } else if !provider.trim().is_empty() {
+            format!("provider:{}", provider.trim())
+        } else {
+            format!("label:{label}")
+        };
+        json!({"title":title,"body":if !description.trim().is_empty(){description}else if !opaque(provider){provider}else{""},
+            "providerKey":key,"providerLabel":label})
     }
 }
 

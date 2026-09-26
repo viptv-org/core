@@ -1,3 +1,12 @@
+# Native playback metadata follow-up — AND-036
+
+Source display projections now include stable provider group keys and labels;
+missing provider IDs no longer merge unrelated IPTV/addon sources. Native direct
+playback preserves bounded, single-line upstream headers (including Referer)
+alongside Cookie/User-Agent, while rejecting transport-owned Host/Connection
+headers. Kotlin/TypeScript and WASM artifacts were regenerated from Rust. The
+workspace unit/integration suites pass; consumer/device evidence remains separate.
+
 # WASI ownership follow-up — 2026-09-22
 
 Catalog construction now moves owned strings, arrays and sanitized raw metadata

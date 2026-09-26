@@ -323,3 +323,20 @@ fn failed_queue_still_uses_landscape_then_empty_without_changing_resume() {
         }
     }
 }
+
+#[test]
+fn source_groups_do_not_collapse_missing_provider_ids() {
+    let iptv = call(
+        "sourceDisplay",
+        json!({"name":"IPTV One","sourceAddonId":"iptv:1"}),
+    );
+    let addon = call(
+        "sourceDisplay",
+        json!({"name":"Torrent Addon","sourceAddonId":"4"}),
+    );
+    let other = call("sourceDisplay", json!({"name":"IPTV Two"}));
+    assert_ne!(iptv["providerKey"], addon["providerKey"]);
+    assert_ne!(iptv["providerKey"], other["providerKey"]);
+    assert_eq!(addon["providerLabel"], "Torrent Addon");
+    assert_eq!(other["providerLabel"], "IPTV Two");
+}

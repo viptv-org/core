@@ -341,7 +341,7 @@ export function matchPhase<R>(value: Phase, cases: {
 }
 
 export class PlaybackAuthorization {
-    constructor (public cookie: Optional<str>, public userAgent: Optional<str>) {
+    constructor (public cookie: Optional<str>, public userAgent: Optional<str>, public headers: Optional<Map<str,str>>) {
     }
 }
 
@@ -394,7 +394,7 @@ export class Session {
 
 /// Safe source labels shared by native and web renderers, separate from source identity.
 export class SourcePresentation {
-    constructor (public title: str, public body: str) {
+    constructor (public title: str, public body: str, public providerKey: str, public providerLabel: str) {
     }
 }
 

@@ -205,6 +205,7 @@ pub struct PlaybackSession {
 pub struct PlaybackAuthorization {
     pub cookie: Option<String>,
     pub user_agent: Option<String>,
+    pub headers: Option<BTreeMap<String, String>>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
@@ -255,7 +256,11 @@ pub struct ApiRequest {
 
 /// Safe source labels shared by native and web renderers, separate from source identity.
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
 pub struct SourcePresentation {
     pub title: String,
     pub body: String,
+    pub provider_key: String,
+    pub provider_label: String,
 }
