@@ -148,6 +148,9 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `headers`: Map<String, String>? = null
 )
 @Serializable data class PlaybackSession(
+    val `preferredAudioLanguage`: String? = null,
+    val `preferredSubtitleLanguage`: String? = null,
+    val `maximumHeight`: Long? = null,
     val `headers`: Map<String, String> = emptyMap(),
     val `id`: String,
     val `url`: String,

@@ -356,6 +356,9 @@ data class PlaybackAuthorization(
 )
 
 data class PlaybackSession(
+    val preferredAudioLanguage: String? = null,
+    val preferredSubtitleLanguage: String? = null,
+    val maximumHeight: UInt? = null,
     val headers: Map<String, String>,
     val id: String,
     val url: String,

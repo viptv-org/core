@@ -183,6 +183,9 @@ pub struct MediaTrack {
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackSession {
+    pub preferred_audio_language: Option<String>,
+    pub preferred_subtitle_language: Option<String>,
+    pub maximum_height: Option<u32>,
     #[serde(default)]
     pub headers: BTreeMap<String, String>,
     pub id: String,
