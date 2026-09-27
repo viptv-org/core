@@ -1,5 +1,10 @@
 # viptv shared core
 
+Actions delivery: main pushes and manual builds produce sideloading artifacts
+(Android universal APK; desktop Windows/Linux installers; Roku ZIP; TV WGT/IPK).
+Other repositories have no Actions workflows. Local checks remain; previous
+CI/release-publication descriptions below are historical. No automatic deploys.
+
 Crux Rust application behavior and API normalization for browser, Android and Tauri. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/c58c9b91827a39442462797602bded35a83a9f64/SHARED_CORE.md); this repository owns the implementation. Roku stays independent.
 
 `crates/viptv-core` owns startup/session/profile state and normalization of backend identity, catalog, media, source and playback payloads. The Crux model requests HTTP, storage and rendering effects. The same library compiles to native code and browser WASM. Rust DTOs generate Kotlin/TypeScript interfaces and kotlinx.serialization JSON codecs in `generated/kotlin-wire`; `generated/typescript/wire.ts` describes the actual JSON bridge protocol. Native Kotlin calls use the generated UniFFI bridge, while browser JavaScript uses the generated wasm-bindgen bridge.
