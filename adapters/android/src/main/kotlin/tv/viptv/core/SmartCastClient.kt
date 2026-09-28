@@ -13,12 +13,14 @@ class SmartCastClient(
     deviceName: String,
     private val tokenStore: SmartCastTokenStore,
     executor: Executor,
+    timeoutMillis: Long = 5_000,
 ) : AutoCloseable {
     private val bridge = SmartCastBridge(
         JSONObject()
             .put("host", tvOrigin)
             .put("deviceId", deviceId)
             .put("deviceName", deviceName)
+            .put("timeoutMillis", timeoutMillis)
             .putOpt("authToken", tokenStore.load(tvOrigin))
             .toString(),
     )
