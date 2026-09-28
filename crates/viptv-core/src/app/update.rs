@@ -190,14 +190,17 @@ impl App for Viptv {
                     );
                 }
                 if !(200..300).contains(&response.status) {
-                    let command = fail(
-                        model,
-                        match response.status {
-                            403 => "This action needs parent authorization",
-                            429 => "Please try again shortly",
-                            _ => "The server could not complete the request",
-                        },
-                    );
+                    let mut error = if response.body.len() <= 4096 {
+                        serde_json::from_slice::<serde_json::Value>(&response.body)
+                            .ok()
+                            .filter(|v| v.is_object())
+                            .unwrap_or(json!({}))
+                    } else {
+                        json!({})
+                    };
+                    error["status"] = json!(response.status);
+                    let display = domain::api_error(&error);
+                    let command = fail(model, display["message"].as_str().unwrap());
                     model.view.error_status = Some(response.status);
                     return command;
                 }

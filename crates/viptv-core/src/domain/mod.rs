@@ -2,11 +2,13 @@
 use crate::CoreError;
 use serde_json::{Map, Value, json};
 
+mod api_error;
 mod identity;
 mod media;
 mod playback;
 mod streams;
 
+pub use api_error::api_error;
 pub use identity::{clean, identity, profile, tokens};
 pub use media::{catalog, media};
 pub use playback::playback;
@@ -95,6 +97,7 @@ pub(super) fn fallback(v: &Value, keys: &[&str], default: &str) -> String {
 #[cfg_attr(target_os = "wasi", inline(never))]
 pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value> {
     match kind_name {
+        "apiError" => Ok(api_error(v)),
         "pairing" => streams::pairing(v),
         "androidPreferences" => streams::android_preferences(v, origin),
         "preferences" => streams::preferences(v),
