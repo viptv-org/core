@@ -98,6 +98,7 @@ pub fn vizio_discovery_candidates(subnet: String) -> String {
 /// answering host is not a Vizio television. Direct-probe discovery uses
 /// this after connecting to each candidate from `vizio_discovery_candidates`.
 #[cfg_attr(feature = "native", uniffi::export)]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen::prelude::wasm_bindgen)]
 pub fn vizio_deviceinfo_name(body: String) -> Option<String> {
     vizio::deviceinfo_name(&body)
 }

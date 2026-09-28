@@ -97,6 +97,31 @@ function getInt32Memory0() {
     }
     return cachedInt32Memory0;
 }
+/**
+* The display name from a SmartCast deviceinfo response, or `null` when the
+* answering host is not a Vizio television. Direct-probe discovery uses
+* this after connecting to each candidate from `vizio_discovery_candidates`.
+* @param {string} body
+* @returns {string | undefined}
+*/
+export function vizio_deviceinfo_name(body) {
+    try {
+        const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+        const ptr0 = passStringToWasm0(body, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.vizio_deviceinfo_name(retptr, ptr0, len0);
+        var r0 = getInt32Memory0()[retptr / 4 + 0];
+        var r1 = getInt32Memory0()[retptr / 4 + 1];
+        let v2;
+        if (r0 !== 0) {
+            v2 = getStringFromWasm0(r0, r1).slice();
+            wasm.__wbindgen_free(r0, r1 * 1, 1);
+        }
+        return v2;
+    } finally {
+        wasm.__wbindgen_add_to_stack_pointer(16);
+    }
+}
 
 function getObject(idx) { return heap[idx]; }
 

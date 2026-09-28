@@ -1,6 +1,14 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* The display name from a SmartCast deviceinfo response, or `null` when the
+* answering host is not a Vizio television. Direct-probe discovery uses
+* this after connecting to each candidate from `vizio_discovery_candidates`.
+* @param {string} body
+* @returns {string | undefined}
+*/
+export function vizio_deviceinfo_name(body: string): string | undefined;
+/**
 * @param {string} kind
 * @param {string} input
 * @param {string} origin
@@ -103,6 +111,7 @@ export interface InitOutput {
   readonly providerCandidate: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly providerMediaUrl: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
   readonly providerSelectCandidates: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly vizio_deviceinfo_name: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
