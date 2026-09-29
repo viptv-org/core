@@ -9,6 +9,9 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
 }
 @Serializable enum class MediaKind { @SerialName("movie") MOVIE, @SerialName("series") SERIES, @SerialName("live") LIVE, @SerialName("episode") EPISODE }
 @Serializable enum class Phase { @SerialName("Starting") STARTING, @SerialName("Restoring") RESTORING, @SerialName("Checking") CHECKING, @SerialName("Selecting") SELECTING, @SerialName("Ready") READY, @SerialName("Profiles") PROFILES, @SerialName("Pairing") PAIRING, @SerialName("Error") ERROR }
+@Serializable enum class PlaybackDeliveryKind { @SerialName("direct") DIRECT, @SerialName("gateway") GATEWAY }
+@Serializable enum class PlaybackLeaseStatus { @SerialName("starting") STARTING, @SerialName("ready") READY, @SerialName("failed") FAILED, @SerialName("expired") EXPIRED, @SerialName("released") RELEASED }
+@Serializable enum class PlaybackPlatform { @SerialName("android") ANDROID, @SerialName("android_tv") ANDROID_TV, @SerialName("desktop") DESKTOP, @SerialName("web") WEB, @SerialName("tizen") TIZEN, @SerialName("webos") WEBOS, @SerialName("roku") ROKU, @SerialName("vizio") VIZIO }
 @Serializable enum class VizioControllerOutputKind { @SerialName("request") REQUEST, @SerialName("complete") COMPLETE, @SerialName("error") ERROR }
 @Serializable enum class VizioFailureKind { @SerialName("invalidConfig") INVALIDCONFIG, @SerialName("invalidInput") INVALIDINPUT, @SerialName("authentication") AUTHENTICATION, @SerialName("invalidParameter") INVALIDPARAMETER, @SerialName("endpointNotFound") ENDPOINTNOTFOUND, @SerialName("busy") BUSY, @SerialName("transport") TRANSPORT, @SerialName("invalidResponse") INVALIDRESPONSE, @SerialName("httpStatus") HTTPSTATUS }
 @Serializable enum class VizioHttpMethod { @SerialName("GET") GET, @SerialName("PUT") PUT }
@@ -147,7 +150,25 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `userAgent`: String? = null,
     val `headers`: Map<String, String>? = null
 )
+@Serializable data class PlaybackClient(
+    val `platform`: PlaybackPlatform,
+    val `canPlayDirect`: Boolean,
+    val `maxWidth`: Long,
+    val `maxHeight`: Long,
+    val `videoCodecs`: List<String> = emptyList(),
+    val `audioCodecs`: List<String> = emptyList()
+)
+@Serializable data class PlaybackLease(
+    val `id`: String,
+    val `status`: PlaybackLeaseStatus,
+    val `expiresAt`: Double,
+    val `renewAfterSeconds`: Long,
+    val `session`: PlaybackSession? = null,
+    val `errorCode`: String? = null,
+    val `error`: String? = null
+)
 @Serializable data class PlaybackSession(
+    val `deliveryKind`: PlaybackDeliveryKind? = null,
     val `preferredAudioLanguage`: String? = null,
     val `preferredSubtitleLanguage`: String? = null,
     val `maximumHeight`: Long? = null,
@@ -165,6 +186,15 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `subtitleTracks`: List<MediaTrack> = emptyList(),
     val `subtitlesSupported`: Boolean,
     val `authorization`: PlaybackAuthorization? = null
+)
+@Serializable data class PlaybackV2Request(
+    val `requestId`: String,
+    val `streamId`: String,
+    val `client`: PlaybackClient,
+    val `position`: Double,
+    val `forceGateway`: Boolean,
+    val `audioTrack`: Long? = null,
+    val `subtitleTrack`: Long? = null
 )
 @Serializable data class Profile(
     val `raw`: Map<String, JsonElement> = emptyMap(),

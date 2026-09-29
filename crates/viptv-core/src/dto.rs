@@ -208,6 +208,7 @@ pub struct MediaTrack {
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackSession {
+    pub delivery_kind: Option<PlaybackDeliveryKind>,
     pub preferred_audio_language: Option<String>,
     pub preferred_subtitle_language: Option<String>,
     pub maximum_height: Option<u32>,
@@ -226,6 +227,77 @@ pub struct PlaybackSession {
     pub subtitle_tracks: Vec<MediaTrack>,
     pub subtitles_supported: bool,
     pub authorization: Option<PlaybackAuthorization>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "lowercase")]
+#[facet(rename_all = "lowercase")]
+#[repr(C)]
+pub enum PlaybackDeliveryKind {
+    Direct,
+    Gateway,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "lowercase")]
+#[facet(rename_all = "lowercase")]
+#[repr(C)]
+pub enum PlaybackLeaseStatus {
+    Starting,
+    Ready,
+    Failed,
+    Expired,
+    Released,
+}
+#[derive(Clone, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackLease {
+    pub id: String,
+    pub status: PlaybackLeaseStatus,
+    /// Unix time in milliseconds; platform clock checks expiry before use.
+    pub expires_at: f64,
+    pub renew_after_seconds: u32,
+    pub session: Option<PlaybackSession>,
+    pub error_code: Option<String>,
+    pub error: Option<String>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "snake_case")]
+#[facet(rename_all = "snake_case")]
+#[repr(C)]
+pub enum PlaybackPlatform {
+    Android,
+    AndroidTv,
+    Desktop,
+    Web,
+    Tizen,
+    Webos,
+    Roku,
+    Vizio,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackClient {
+    pub platform: PlaybackPlatform,
+    pub can_play_direct: bool,
+    pub max_width: u32,
+    pub max_height: u32,
+    pub video_codecs: Vec<String>,
+    pub audio_codecs: Vec<String>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackV2Request {
+    pub request_id: String,
+    pub stream_id: String,
+    pub client: PlaybackClient,
+    #[serde(default)]
+    pub position: f64,
+    #[serde(default)]
+    pub force_gateway: bool,
+    pub audio_track: Option<u32>,
+    pub subtitle_track: Option<u32>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]

@@ -34,6 +34,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::MediaSource>()?
         .register_type::<viptv_core::dto::SourcesPollStep>()?
         .register_type::<viptv_core::dto::PlaybackSession>()?
+        .register_type::<viptv_core::dto::PlaybackLease>()?
+        .register_type::<viptv_core::dto::PlaybackV2Request>()?
         .register_type::<viptv_core::dto::DiscoverPage>()?
         .build()?;
     let registry = generator.registry();

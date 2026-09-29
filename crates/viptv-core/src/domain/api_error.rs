@@ -24,6 +24,12 @@ pub fn api_error(v: &Value) -> Value {
         _ => supplied,
     };
     let known = match code {
+        "playback_expired" | "authorization_expired" => {
+            Some("This playback session has expired. Start playback again to reconnect.")
+        }
+        "playback_failed" => {
+            Some("The selected source could not start. Try another source or retry playback.")
+        }
         "gateway_required" => Some(
             "This device or source requires a playback gateway. Configure one in account settings or ask the server operator.",
         ),

@@ -355,7 +355,52 @@ data class PlaybackAuthorization(
     val headers: Map<String, String>? = null,
 )
 
+data class PlaybackClient(
+    val platform: org.viptv.core.types.PlaybackPlatform,
+    val canPlayDirect: Boolean,
+    val maxWidth: UInt,
+    val maxHeight: UInt,
+    val videoCodecs: List<String>,
+    val audioCodecs: List<String>,
+)
+
+enum class PlaybackDeliveryKind {
+    DIRECT,
+    GATEWAY;
+}
+
+data class PlaybackLease(
+    val id: String,
+    val status: org.viptv.core.types.PlaybackLeaseStatus,
+    /// Unix time in milliseconds; platform clock checks expiry before use.
+    val expiresAt: Double,
+    val renewAfterSeconds: UInt,
+    val session: org.viptv.core.types.PlaybackSession? = null,
+    val errorCode: String? = null,
+    val error: String? = null,
+)
+
+enum class PlaybackLeaseStatus {
+    STARTING,
+    READY,
+    FAILED,
+    EXPIRED,
+    RELEASED;
+}
+
+enum class PlaybackPlatform {
+    ANDROID,
+    ANDROID_TV,
+    DESKTOP,
+    WEB,
+    TIZEN,
+    WEBOS,
+    ROKU,
+    VIZIO;
+}
+
 data class PlaybackSession(
+    val deliveryKind: org.viptv.core.types.PlaybackDeliveryKind? = null,
     val preferredAudioLanguage: String? = null,
     val preferredSubtitleLanguage: String? = null,
     val maximumHeight: UInt? = null,
@@ -373,6 +418,16 @@ data class PlaybackSession(
     val subtitleTracks: List<org.viptv.core.types.MediaTrack>,
     val subtitlesSupported: Boolean,
     val authorization: org.viptv.core.types.PlaybackAuthorization? = null,
+)
+
+data class PlaybackV2Request(
+    val requestId: String,
+    val streamId: String,
+    val client: org.viptv.core.types.PlaybackClient,
+    val position: Double,
+    val forceGateway: Boolean,
+    val audioTrack: UInt? = null,
+    val subtitleTrack: UInt? = null,
 )
 
 data class Profile(

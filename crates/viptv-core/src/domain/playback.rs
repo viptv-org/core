@@ -1,5 +1,155 @@
 use super::*;
 
+/// V2 is a closed lease envelope. Never promote arbitrary delivery fields into
+/// transport authority, and never expose a usable URL from a terminal lease.
+pub(super) fn playback_v2(v: &Value, origin: &str) -> Result<Value> {
+    let id = string(v, "id")?;
+    if id.len() > 128
+        || !id
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-'))
+    {
+        return Err(invalid());
+    }
+    let status = string(v, "status")?;
+    if !matches!(
+        status.as_str(),
+        "starting" | "ready" | "failed" | "expired" | "released"
+    ) {
+        return Err(invalid());
+    }
+    let expires = v["expires_at"]
+        .as_u64()
+        .filter(|n| *n <= 9_007_199_254_740)
+        .ok_or_else(invalid)?;
+    let renew = v["renew_after_seconds"]
+        .as_u64()
+        .filter(|n| (1..=300).contains(n))
+        .ok_or_else(invalid)?;
+    let mut out = json!({"id":id,"status":status,"expiresAt":expires * 1000,"renewAfterSeconds":renew,"session":null,"errorCode":null,"error":null});
+    if status != "ready" {
+        if matches!(status.as_str(), "failed" | "expired") {
+            let code = v["error_code"].as_str().unwrap_or(if status == "expired" {
+                "playback_expired"
+            } else {
+                "playback_failed"
+            });
+            let error = api_error(&json!({"status":502,"error_code":code}));
+            out["errorCode"] = error["code"].clone();
+            out["error"] = error["message"].clone();
+        }
+        return Ok(out);
+    }
+    let delivery = obj(&v["delivery"])?;
+    let value = &v["delivery"];
+    let kind = string(value, "kind")?;
+    if !matches!(kind.as_str(), "direct" | "gateway") {
+        return Err(invalid());
+    }
+    let raw = string(value, "url")?;
+    let url = url::Url::parse(&raw).map_err(|_| invalid())?;
+    if raw.len() > 16384
+        || !matches!(url.scheme(), "http" | "https")
+        || url.host_str().is_none()
+        || !url.username().is_empty()
+        || url.password().is_some()
+        || url.fragment().is_some()
+        || (kind == "gateway" && url.scheme() != "https")
+    {
+        return Err(invalid());
+    }
+    let position = number(value, "position")?;
+    if !position.is_finite() || position < 0.0 {
+        return Err(invalid());
+    }
+    let live = boolean(value, "live")?;
+    let mut safe = json!({"id":id,"url":url.as_str(),"position":if live { 0.0 } else { position },"live":live});
+    if kind == "direct" {
+        if value["format"] != "original" {
+            return Err(invalid());
+        }
+        let headers = obj(&value["headers"])?;
+        if headers.len() > 32 {
+            return Err(invalid());
+        }
+        for (name, value) in headers {
+            if name.is_empty()
+                || name.len() > 128
+                || !name.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+                || matches!(
+                    name.to_ascii_lowercase().as_str(),
+                    "host"
+                        | "connection"
+                        | "content-length"
+                        | "transfer-encoding"
+                        | "upgrade"
+                        | "keep-alive"
+                        | "te"
+                        | "trailer"
+                        | "proxy-authorization"
+                )
+                || !value
+                    .as_str()
+                    .is_some_and(|s| s.len() <= 8192 && !s.contains(['\r', '\n', '\0']))
+            {
+                return Err(invalid());
+            }
+        }
+        safe["headers"] = json!(headers);
+        safe["authorization"] = json!({"headers":headers});
+        for (name, value) in headers {
+            if name.eq_ignore_ascii_case("cookie") {
+                safe["authorization"]["cookie"] = value.clone();
+            }
+            if name.eq_ignore_ascii_case("user-agent") {
+                safe["authorization"]["user_agent"] = value.clone();
+            }
+        }
+        safe["format"] = json!("original");
+        safe["mode"] = json!("direct");
+    } else {
+        if delivery
+            .get("headers")
+            .is_some_and(|h| !h.is_null() && h != &json!({}))
+            || delivery.get("authorization").is_some_and(|a| !a.is_null())
+        {
+            return Err(invalid());
+        }
+        for (field, allowed) in [
+            ("format", &["hls"][..]),
+            ("mode", &["direct", "remux", "transcode"][..]),
+            ("video_mode", &["copy", "encode"][..]),
+            ("audio_mode", &["copy", "encode", "none"][..]),
+        ] {
+            if !value[field].as_str().is_some_and(|s| allowed.contains(&s)) {
+                return Err(invalid());
+            }
+            safe[field] = value[field].clone();
+        }
+        let duration = number(value, "duration")?;
+        if !duration.is_finite() || duration < 0.0 {
+            return Err(invalid());
+        }
+        safe["duration"] = json!(duration);
+        safe["subtitles_supported"] = json!(boolean(value, "subtitles_supported")?);
+        for field in ["audio_tracks", "subtitle_tracks"] {
+            let tracks = array(value, field)?;
+            if tracks.len() > 256
+                || tracks
+                    .iter()
+                    .any(|track| !track["input_index"].as_u64().is_some_and(|n| n <= 65535))
+            {
+                return Err(invalid());
+            }
+            safe[field] = json!(tracks);
+        }
+    }
+    let mut session = playback(&safe, origin)?;
+    session["deliveryKind"] = json!(kind);
+    out["session"] = session;
+    Ok(out)
+}
+
 pub(super) fn source(v: &Value) -> Result<Value> {
     let mut out =
         json!({"id":string(v,"id")?,"name":fallback(v,&["name","title"],"Source"),"raw":clean(v)});
@@ -63,11 +213,26 @@ pub fn playback(v: &Value, origin: &str) -> Result<Value> {
     if let Some(authorization) = authorization(v) {
         out["authorization"] = authorization;
     }
-    optional_string(&v["preferences"], &mut out, "audio_language", "preferredAudioLanguage");
+    optional_string(
+        &v["preferences"],
+        &mut out,
+        "audio_language",
+        "preferredAudioLanguage",
+    );
     if v["preferences"]["subtitles_enabled"].as_bool() == Some(true) {
-        optional_string(&v["preferences"], &mut out, "subtitle_language", "preferredSubtitleLanguage");
+        optional_string(
+            &v["preferences"],
+            &mut out,
+            "subtitle_language",
+            "preferredSubtitleLanguage",
+        );
     }
-    if let Some(height) = match v["preferences"]["quality"].as_str() { Some("1080p") => Some(1080), Some("720p") => Some(720), Some("480p") => Some(480), _ => None } {
+    if let Some(height) = match v["preferences"]["quality"].as_str() {
+        Some("1080p") => Some(1080),
+        Some("720p") => Some(720),
+        Some("480p") => Some(480),
+        _ => None,
+    } {
         out["maximumHeight"] = json!(height);
     }
     Ok(out)

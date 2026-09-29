@@ -1,3 +1,24 @@
+# Backend v2 playback lease contract — 2026-09-29
+
+Generated PlaybackLease/PlaybackV2Request/PlaybackClient and closed platform,
+lease-status and delivery-kind enums now describe the backend contract. The
+playbackV2 normalizer preserves native HTTP direct URLs/validated source headers,
+requires absolute HTTPS gateway delivery without attached credential headers,
+keeps processing mode distinct from delivery kind, and exposes no session URL
+for pending or terminal leases. Provider error text is replaced with safe shared
+messages. Lease expiry is explicit Unix milliseconds; renewal is seconds.
+
+Canonical request/start/status/heartbeat/stop operations validate the current
+v2 wire contract. Real 4K decoder dimensions survive unchanged. Unknown legacy
+options (including forceTranscode) are rejected, not silently discarded: backend
+conversion/preference parity and client lifecycle adoption remain required.
+This is a shared protocol checkpoint, not a completed playback cutover.
+
+All 57 workspace tests, strict all-target Clippy, generated native Kotlin and
+release WASM builds, and the actual WASM suite passed. Five new native fixtures
+cover direct/gateway policy, safe failures, malformed envelopes and canonical
+request serialization. Both consumers must pin this same committed revision.
+
 # Backend v2 source discovery — 2026-09-29
 
 Explicit sourcesV2/sourcesPollV2 request operations preserve exact movie/episode

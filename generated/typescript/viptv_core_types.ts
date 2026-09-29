@@ -345,8 +345,104 @@ export class PlaybackAuthorization {
     }
 }
 
+export class PlaybackClient {
+    constructor (public platform: PlaybackPlatform, public canPlayDirect: bool, public maxWidth: uint32, public maxHeight: uint32, public videoCodecs: Seq<str>, public audioCodecs: Seq<str>) {
+    }
+}
+
+export type PlaybackDeliveryKind =
+    | { kind: "direct" }
+    | { kind: "gateway" };
+
+export const playbackDeliveryKindDirect = (): PlaybackDeliveryKind => ({ kind: "direct" });
+
+export const playbackDeliveryKindGateway = (): PlaybackDeliveryKind => ({ kind: "gateway" });
+
+export function matchPlaybackDeliveryKind<R>(value: PlaybackDeliveryKind, cases: {
+    direct: (v: Extract<PlaybackDeliveryKind, { kind: "direct" }>) => R;
+    gateway: (v: Extract<PlaybackDeliveryKind, { kind: "gateway" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackDeliveryKind["kind"]](value as never);
+}
+
+export class PlaybackLease {
+    constructor (public id: str, public status: PlaybackLeaseStatus, public expiresAt: float64, public renewAfterSeconds: uint32, public session: Optional<PlaybackSession>, public errorCode: Optional<str>, public error: Optional<str>) {
+    }
+}
+
+export type PlaybackLeaseStatus =
+    | { kind: "starting" }
+    | { kind: "ready" }
+    | { kind: "failed" }
+    | { kind: "expired" }
+    | { kind: "released" };
+
+export const playbackLeaseStatusStarting = (): PlaybackLeaseStatus => ({ kind: "starting" });
+
+export const playbackLeaseStatusReady = (): PlaybackLeaseStatus => ({ kind: "ready" });
+
+export const playbackLeaseStatusFailed = (): PlaybackLeaseStatus => ({ kind: "failed" });
+
+export const playbackLeaseStatusExpired = (): PlaybackLeaseStatus => ({ kind: "expired" });
+
+export const playbackLeaseStatusReleased = (): PlaybackLeaseStatus => ({ kind: "released" });
+
+export function matchPlaybackLeaseStatus<R>(value: PlaybackLeaseStatus, cases: {
+    starting: (v: Extract<PlaybackLeaseStatus, { kind: "starting" }>) => R;
+    ready: (v: Extract<PlaybackLeaseStatus, { kind: "ready" }>) => R;
+    failed: (v: Extract<PlaybackLeaseStatus, { kind: "failed" }>) => R;
+    expired: (v: Extract<PlaybackLeaseStatus, { kind: "expired" }>) => R;
+    released: (v: Extract<PlaybackLeaseStatus, { kind: "released" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackLeaseStatus["kind"]](value as never);
+}
+
+export type PlaybackPlatform =
+    | { kind: "android" }
+    | { kind: "android_tv" }
+    | { kind: "desktop" }
+    | { kind: "web" }
+    | { kind: "tizen" }
+    | { kind: "webos" }
+    | { kind: "roku" }
+    | { kind: "vizio" };
+
+export const playbackPlatformAndroid = (): PlaybackPlatform => ({ kind: "android" });
+
+export const playbackPlatformAndroidTv = (): PlaybackPlatform => ({ kind: "android_tv" });
+
+export const playbackPlatformDesktop = (): PlaybackPlatform => ({ kind: "desktop" });
+
+export const playbackPlatformWeb = (): PlaybackPlatform => ({ kind: "web" });
+
+export const playbackPlatformTizen = (): PlaybackPlatform => ({ kind: "tizen" });
+
+export const playbackPlatformWebos = (): PlaybackPlatform => ({ kind: "webos" });
+
+export const playbackPlatformRoku = (): PlaybackPlatform => ({ kind: "roku" });
+
+export const playbackPlatformVizio = (): PlaybackPlatform => ({ kind: "vizio" });
+
+export function matchPlaybackPlatform<R>(value: PlaybackPlatform, cases: {
+    android: (v: Extract<PlaybackPlatform, { kind: "android" }>) => R;
+    android_tv: (v: Extract<PlaybackPlatform, { kind: "android_tv" }>) => R;
+    desktop: (v: Extract<PlaybackPlatform, { kind: "desktop" }>) => R;
+    web: (v: Extract<PlaybackPlatform, { kind: "web" }>) => R;
+    tizen: (v: Extract<PlaybackPlatform, { kind: "tizen" }>) => R;
+    webos: (v: Extract<PlaybackPlatform, { kind: "webos" }>) => R;
+    roku: (v: Extract<PlaybackPlatform, { kind: "roku" }>) => R;
+    vizio: (v: Extract<PlaybackPlatform, { kind: "vizio" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackPlatform["kind"]](value as never);
+}
+
 export class PlaybackSession {
-    constructor (public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public maximumHeight: Optional<uint32>, public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
+    constructor (public deliveryKind: Optional<PlaybackDeliveryKind>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public maximumHeight: Optional<uint32>, public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
+    }
+}
+
+export class PlaybackV2Request {
+    constructor (public requestId: str, public streamId: str, public client: PlaybackClient, public position: float64, public forceGateway: bool, public audioTrack: Optional<uint32>, public subtitleTrack: Optional<uint32>) {
     }
 }
 
