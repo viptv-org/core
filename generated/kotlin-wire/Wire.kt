@@ -72,6 +72,22 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `restricted`: Boolean,
     val `profileSetupRequired`: Boolean
 )
+@Serializable data class LiveCatalogCategories(
+    val `catalogId`: String? = null,
+    val `generation`: String? = null,
+    val `items`: List<LiveCatalogCategory> = emptyList(),
+    val `nextCursor`: String? = null
+)
+@Serializable data class LiveCatalogCategory(
+    val `id`: String,
+    val `name`: String
+)
+@Serializable data class LiveCatalogPage(
+    val `catalogId`: String? = null,
+    val `generation`: String? = null,
+    val `items`: List<MediaItem> = emptyList(),
+    val `nextCursor`: String? = null
+)
 @Serializable data class MediaItem(
     val `id`: String,
     val `type`: MediaKind,

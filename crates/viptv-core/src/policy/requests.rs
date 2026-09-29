@@ -24,6 +24,22 @@ pub(super) fn request(v: &Value) -> Result {
                 };
                 ("GET", format!("{prefix}/{}?after={after}", enc(id)))
             }
+            "livePageV2" | "liveCategoriesV2" => {
+                body = Value::Null;
+                ("GET", live_catalog_request(v, op == "liveCategoriesV2")?)
+            }
+            "liveGuideV2" | "liveSourceV2" => {
+                body = Value::Null;
+                let id = text(v, "id");
+                if id.is_empty() || id.len() > 256 || id.chars().any(char::is_control) {
+                    return Err(CoreError::InvalidInput);
+                }
+                if op == "liveSourceV2" {
+                    ("POST", format!("/api/v2/iptv/live/{}/source", enc(id)))
+                } else {
+                    ("GET", format!("/api/v2/iptv/guide/{}", enc(id)))
+                }
+            }
             "saveProgress" => {
                 body["position"] = v["position"].clone();
                 body["duration"] = v["duration"].clone();
@@ -87,6 +103,84 @@ pub(super) fn request(v: &Value) -> Result {
         };
         json!({"method":method,"path":path,"body":body})
     })
+}
+
+pub(crate) fn valid_live_cursor(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 4096
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'-'))
+}
+
+fn live_catalog_request(v: &Value, categories: bool) -> std::result::Result<String, CoreError> {
+    if ["offset", "view", "filter"]
+        .iter()
+        .any(|key| !v[*key].is_null())
+    {
+        return Err(CoreError::InvalidInput);
+    }
+    let limit = match &v["limit"] {
+        Value::Null => 50,
+        value => value
+            .as_u64()
+            .filter(|n| (1..=200).contains(n))
+            .ok_or(CoreError::InvalidInput)?,
+    };
+    let mut query = format!("limit={limit}");
+    if !v["collection"].is_null() {
+        let value = v["collection"]
+            .as_str()
+            .filter(|value| matches!(*value, "favorites" | "recent"))
+            .ok_or(CoreError::InvalidInput)?;
+        if categories {
+            return Err(CoreError::InvalidInput);
+        }
+        query += &format!("&collection={value}");
+    }
+    if !v["catalogId"].is_null() {
+        let value = v["catalogId"]
+            .as_str()
+            .filter(|s| !s.is_empty() && s.len() <= 16 && s.bytes().all(|b| b.is_ascii_digit()))
+            .ok_or(CoreError::InvalidInput)?;
+        let id = value
+            .parse::<u64>()
+            .ok()
+            .filter(|id| *id > 0 && *id <= 9_007_199_254_740_991)
+            .ok_or(CoreError::InvalidInput)?;
+        query += &format!("&catalog_id={id}");
+    }
+    if !v["categoryId"].is_null() {
+        let id = v["categoryId"]
+            .as_str()
+            .filter(|s| !s.is_empty() && s.len() <= 256 && !s.chars().any(char::is_control))
+            .ok_or(CoreError::InvalidInput)?;
+        if categories {
+            return Err(CoreError::InvalidInput);
+        }
+        query += &format!("&category_id={}", enc(id));
+    }
+    if !v["search"].is_null() {
+        let search = v["search"]
+            .as_str()
+            .filter(|s| s.len() <= 128 && !s.chars().any(char::is_control))
+            .ok_or(CoreError::InvalidInput)?
+            .trim();
+        if !search.is_empty() {
+            query += &format!("&search={}", enc(search));
+        }
+    }
+    if !v["cursor"].is_null() {
+        let cursor = v["cursor"]
+            .as_str()
+            .filter(|s| valid_live_cursor(s))
+            .ok_or(CoreError::InvalidInput)?;
+        query += &format!("&cursor={}", enc(cursor));
+    }
+    Ok(format!(
+        "/api/v2/iptv/live/{}?{query}",
+        if categories { "categories" } else { "channels" }
+    ))
 }
 
 fn playback_v2_request(input: &Value) -> Result {

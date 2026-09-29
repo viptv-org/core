@@ -37,6 +37,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::PlaybackLease>()?
         .register_type::<viptv_core::dto::PlaybackV2Request>()?
         .register_type::<viptv_core::dto::DiscoverPage>()?
+        .register_type::<viptv_core::dto::LiveCatalogPage>()?
+        .register_type::<viptv_core::dto::LiveCatalogCategories>()?
         .build()?;
     let registry = generator.registry();
     std::fs::create_dir_all(root.join("typescript"))?;

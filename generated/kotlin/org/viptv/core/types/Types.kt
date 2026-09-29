@@ -253,6 +253,26 @@ sealed interface JsonValue {
     ) : JsonValue
 }
 
+data class LiveCatalogCategories(
+    val catalogId: String? = null,
+    val generation: String? = null,
+    val items: List<org.viptv.core.types.LiveCatalogCategory>,
+    val nextCursor: String? = null,
+)
+
+data class LiveCatalogCategory(
+    val id: String,
+    val name: String,
+)
+
+/// Raw provider order; no synchronous totals or client-side playlist index.
+data class LiveCatalogPage(
+    val catalogId: String? = null,
+    val generation: String? = null,
+    val items: List<org.viptv.core.types.MediaItem>,
+    val nextCursor: String? = null,
+)
+
 data class MediaItem(
     val id: String,
     val type: org.viptv.core.types.MediaKind,

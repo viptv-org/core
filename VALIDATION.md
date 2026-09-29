@@ -1,3 +1,19 @@
+# Raw live v2 contracts — 2026-09-29
+
+Generated LiveCatalogPage/LiveCatalogCategories preserve account catalog and
+snapshot generation, provider order, HTTP logos and opaque next cursors. No exact
+total is fabricated. Canonical request operations handle raw channel/category
+pages, exact live source and guide reads, rejecting offset/US/family filters,
+oversized pages/tokens and invalid collection choices. Favorites/Recent remain
+explicit personal subsets, not whole-playlist indexing. Exact live source decoding
+accepts an opaque IPTV card and rejects media URL/header authority at this seam.
+
+All 63 workspace tests, strict Clippy, Kotlin/native generation, release WASM and
+actual WASM contracts passed. Four new native fixtures cover default/cursor,
+empty/malformed/legacy pages, HTTP logos, 4K-neutral data and private source cards.
+Consumer adoption and activation are recorded separately; this does not claim
+ordinary guide migration, physical playback or a production deployment.
+
 # Backend v2 player-option mapping — 2026-09-29
 
 PlaybackV2Request now includes the gateway's closed conversion enum, track

@@ -335,6 +335,35 @@ pub struct DiscoverPage {
     pub next_skip: Option<f64>,
 }
 
+/// Raw provider order; no synchronous totals or client-side playlist index.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct LiveCatalogPage {
+    pub catalog_id: Option<String>,
+    pub generation: Option<String>,
+    pub items: Vec<MediaItem>,
+    pub next_cursor: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct LiveCatalogCategory {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct LiveCatalogCategories {
+    pub catalog_id: Option<String>,
+    pub generation: Option<String>,
+    pub items: Vec<LiveCatalogCategory>,
+    pub next_cursor: Option<String>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]

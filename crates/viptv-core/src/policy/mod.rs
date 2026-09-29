@@ -6,6 +6,7 @@ mod catalog;
 mod presentation;
 mod progress;
 mod requests;
+pub(crate) use requests::valid_live_cursor;
 mod sources;
 
 type Result = std::result::Result<Value, CoreError>;

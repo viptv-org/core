@@ -258,6 +258,22 @@ export function matchJsonValue<R>(value: JsonValue, cases: {
     return cases[value.kind as JsonValue["kind"]](value as never);
 }
 
+export class LiveCatalogCategories {
+    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<LiveCatalogCategory>, public nextCursor: Optional<str>) {
+    }
+}
+
+export class LiveCatalogCategory {
+    constructor (public id: str, public name: str) {
+    }
+}
+
+/// Raw provider order; no synchronous totals or client-side playlist index.
+export class LiveCatalogPage {
+    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<MediaItem>, public nextCursor: Optional<str>) {
+    }
+}
+
 export class MediaItem {
     constructor (public id: str, public type: MediaKind, public name: str, public title: str, public poster: Optional<str>, public background: Optional<str>, public thumbnail: Optional<str>, public titleLogo: Optional<str>, public imdbRating: Optional<str>, public credits: Optional<str>, public posterShape: Optional<str>, public updatedAtMillis: Optional<float64>, public releasedAtMillis: Optional<float64>, public episodes: Seq<MediaItem>, public description: Optional<str>, public year: Optional<float64>, public runtime: Optional<str>, public genres: Seq<str>, public position: Optional<float64>, public duration: Optional<float64>, public watched: Optional<bool>, public season: Optional<float64>, public episode: Optional<float64>, public episodeTitle: Optional<str>, public seriesId: Optional<str>, public queueStatus: Optional<str>, public previousEpisode: Optional<MediaItem>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public sourceFingerprint: Optional<str>, public sourceBingeGroup: Optional<str>, public sourceReleaseGroup: Optional<str>, public sourceQuality: Optional<str>, public sourceAudio: Optional<str>, public raw: Map<str,JsonValue>) {
     }
