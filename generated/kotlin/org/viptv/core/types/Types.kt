@@ -364,6 +364,13 @@ data class PlaybackClient(
     val audioCodecs: List<String>,
 )
 
+enum class PlaybackConversion {
+    AUTO,
+    AUDIO,
+    VIDEO,
+    AUDIO_VIDEO;
+}
+
 enum class PlaybackDeliveryKind {
     DIRECT,
     GATEWAY;
@@ -421,6 +428,7 @@ data class PlaybackSession(
 )
 
 data class PlaybackV2Request(
+    val conversion: org.viptv.core.types.PlaybackConversion,
     val requestId: String,
     val streamId: String,
     val client: org.viptv.core.types.PlaybackClient,
@@ -428,6 +436,10 @@ data class PlaybackV2Request(
     val forceGateway: Boolean,
     val audioTrack: UInt? = null,
     val subtitleTrack: UInt? = null,
+    val audioLanguage: String? = null,
+    val preferredAudioLanguage: String? = null,
+    val preferredSubtitleLanguage: String? = null,
+    val subtitlesOff: Boolean,
 )
 
 data class Profile(

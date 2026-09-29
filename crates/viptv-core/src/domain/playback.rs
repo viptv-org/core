@@ -145,6 +145,29 @@ pub(super) fn playback_v2(v: &Value, origin: &str) -> Result<Value> {
         }
     }
     let mut session = playback(&safe, origin)?;
+    // Direct native players consume language preferences locally. Do not copy
+    // the retired quality preference or any unrecognized transport metadata.
+    let preferences = &value["preferences"];
+    for (field, output) in [
+        ("audio_language", "preferredAudioLanguage"),
+        ("subtitle_language", "preferredSubtitleLanguage"),
+    ] {
+        if field == "subtitle_language" && preferences["subtitles_enabled"].as_bool() != Some(true)
+        {
+            continue;
+        }
+        if let Some(language) = preferences[field].as_str() {
+            if language.is_empty()
+                || language.len() > 35
+                || !language
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+            {
+                return Err(invalid());
+            }
+            session[output] = json!(language);
+        }
+    }
     session["deliveryKind"] = json!(kind);
     out["session"] = session;
     Ok(out)

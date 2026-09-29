@@ -9,6 +9,7 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
 }
 @Serializable enum class MediaKind { @SerialName("movie") MOVIE, @SerialName("series") SERIES, @SerialName("live") LIVE, @SerialName("episode") EPISODE }
 @Serializable enum class Phase { @SerialName("Starting") STARTING, @SerialName("Restoring") RESTORING, @SerialName("Checking") CHECKING, @SerialName("Selecting") SELECTING, @SerialName("Ready") READY, @SerialName("Profiles") PROFILES, @SerialName("Pairing") PAIRING, @SerialName("Error") ERROR }
+@Serializable enum class PlaybackConversion { @SerialName("auto") AUTO, @SerialName("audio") AUDIO, @SerialName("video") VIDEO, @SerialName("audio_video") AUDIO_VIDEO }
 @Serializable enum class PlaybackDeliveryKind { @SerialName("direct") DIRECT, @SerialName("gateway") GATEWAY }
 @Serializable enum class PlaybackLeaseStatus { @SerialName("starting") STARTING, @SerialName("ready") READY, @SerialName("failed") FAILED, @SerialName("expired") EXPIRED, @SerialName("released") RELEASED }
 @Serializable enum class PlaybackPlatform { @SerialName("android") ANDROID, @SerialName("android_tv") ANDROID_TV, @SerialName("desktop") DESKTOP, @SerialName("web") WEB, @SerialName("tizen") TIZEN, @SerialName("webos") WEBOS, @SerialName("roku") ROKU, @SerialName("vizio") VIZIO }
@@ -188,13 +189,18 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `authorization`: PlaybackAuthorization? = null
 )
 @Serializable data class PlaybackV2Request(
+    val `conversion`: PlaybackConversion,
     val `requestId`: String,
     val `streamId`: String,
     val `client`: PlaybackClient,
     val `position`: Double,
     val `forceGateway`: Boolean,
     val `audioTrack`: Long? = null,
-    val `subtitleTrack`: Long? = null
+    val `subtitleTrack`: Long? = null,
+    val `audioLanguage`: String? = null,
+    val `preferredAudioLanguage`: String? = null,
+    val `preferredSubtitleLanguage`: String? = null,
+    val `subtitlesOff`: Boolean
 )
 @Serializable data class Profile(
     val `raw`: Map<String, JsonElement> = emptyMap(),

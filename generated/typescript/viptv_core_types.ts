@@ -350,6 +350,29 @@ export class PlaybackClient {
     }
 }
 
+export type PlaybackConversion =
+    | { kind: "auto" }
+    | { kind: "audio" }
+    | { kind: "video" }
+    | { kind: "audio_video" };
+
+export const playbackConversionAuto = (): PlaybackConversion => ({ kind: "auto" });
+
+export const playbackConversionAudio = (): PlaybackConversion => ({ kind: "audio" });
+
+export const playbackConversionVideo = (): PlaybackConversion => ({ kind: "video" });
+
+export const playbackConversionAudioVideo = (): PlaybackConversion => ({ kind: "audio_video" });
+
+export function matchPlaybackConversion<R>(value: PlaybackConversion, cases: {
+    auto: (v: Extract<PlaybackConversion, { kind: "auto" }>) => R;
+    audio: (v: Extract<PlaybackConversion, { kind: "audio" }>) => R;
+    video: (v: Extract<PlaybackConversion, { kind: "video" }>) => R;
+    audio_video: (v: Extract<PlaybackConversion, { kind: "audio_video" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackConversion["kind"]](value as never);
+}
+
 export type PlaybackDeliveryKind =
     | { kind: "direct" }
     | { kind: "gateway" };
@@ -442,7 +465,7 @@ export class PlaybackSession {
 }
 
 export class PlaybackV2Request {
-    constructor (public requestId: str, public streamId: str, public client: PlaybackClient, public position: float64, public forceGateway: bool, public audioTrack: Optional<uint32>, public subtitleTrack: Optional<uint32>) {
+    constructor (public conversion: PlaybackConversion, public requestId: str, public streamId: str, public client: PlaybackClient, public position: float64, public forceGateway: bool, public audioTrack: Optional<uint32>, public subtitleTrack: Optional<uint32>, public audioLanguage: Optional<str>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public subtitlesOff: bool) {
     }
 }
 

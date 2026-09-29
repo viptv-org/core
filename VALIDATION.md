@@ -1,3 +1,19 @@
+# Backend v2 player-option mapping — 2026-09-29
+
+PlaybackV2Request now includes the gateway's closed conversion enum, track
+language preferences and subtitle-off choice. playbackV2Intent is the shared
+bridge from measured player capabilities/options to this canonical request;
+Tauri/HTML platform aliases, scoped audio/video conversion and explicit track
+choices are normalized once. Reported 4K dimensions remain unchanged and profile
+quality is excluded. Native direct lease normalization retains bounded language
+preferences without restoring the removed quality cap. Contradictory subtitle
+choices and malformed language tags fail validation.
+
+All 59 workspace tests, strict Clippy, native/Kotlin generation, release WASM
+and actual WASM contracts passed. Ordinary player activation and backend profile
+preference integration remain open; this checkpoint supplies their shared
+contract, not end-to-end playback or hardware qualification.
+
 # Backend v2 playback lease contract — 2026-09-29
 
 Generated PlaybackLease/PlaybackV2Request/PlaybackClient and closed platform,

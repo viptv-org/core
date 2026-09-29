@@ -145,3 +145,51 @@ fn canonical_v2_request_preserves_4k_facts_and_rejects_legacy_options() {
         assert_eq!(out["path"], format!("/api/v2/playback/pb2_fixture{suffix}"));
     }
 }
+
+#[test]
+fn player_intent_maps_conversion_tracks_and_real_decoder_facts_once() {
+    let mut input = json!({"requestId":"request_1","platform":"tauri","preferences":{"audioLanguage":"pt-BR","subtitleLanguage":"en","subtitlesEnabled":true,"quality":"1080p"},"playback":{"streamId":"source","position":20,"capabilities":{"maxWidth":3840,"maxHeight":2160,"h264":true,"hevc":true,"aac":true,"directUrls":true},"forceTranscode":true,"conversionReason":"audio-codec","audioTrackIndex":2,"subtitleTrackIndex":3,"subtitlesOff":true}});
+    let out = run("playbackV2Intent", &input).unwrap();
+    assert_eq!(out["client"]["platform"], "desktop");
+    assert_eq!(out["client"]["maxHeight"], 2160);
+    assert_eq!(out["client"]["videoCodecs"], json!(["h264", "hevc"]));
+    assert_eq!(out["conversion"], "audio");
+    assert_eq!(out["forceGateway"], true);
+    assert_eq!(out["audioTrack"], 2);
+    assert!(out["subtitleTrack"].is_null());
+    assert!(out["preferredSubtitleLanguage"].is_null());
+    assert_eq!(out["preferredAudioLanguage"], "pt-BR");
+    assert!(out.get("quality").is_none());
+    let wire = run("request", &json!({"operation":"playbackV2","playback":out})).unwrap();
+    assert_eq!(wire["body"]["conversion"], "audio");
+    for (reason, conversion) in [
+        (json!("video-codec"), "video"),
+        (Value::Null, "audio_video"),
+    ] {
+        input["playback"]["conversionReason"] = reason;
+        assert_eq!(
+            run("playbackV2Intent", &input).unwrap()["conversion"],
+            conversion
+        );
+    }
+    input["playback"]["conversionReason"] = json!("network");
+    assert!(run("playbackV2Intent", &input).is_err());
+    input["playback"]["forceTranscode"] = json!(false);
+    input["platform"] = json!("vizio");
+    assert_eq!(
+        run("playbackV2Intent", &input).unwrap()["client"]["canPlayDirect"],
+        false
+    );
+}
+
+#[test]
+fn direct_language_preferences_survive_without_restoring_a_quality_cap() {
+    let mut value = lease();
+    value["delivery"] = json!({"kind":"direct","url":"http://provider.example/movie.mp4","format":"original","headers":{},"position":0,"live":false,"preferences":{"audio_language":"en","subtitle_language":"pt-BR","subtitles_enabled":true,"quality":"1080p"}});
+    let out = run("playbackV2", &value).unwrap();
+    assert_eq!(out["session"]["preferredAudioLanguage"], "en");
+    assert_eq!(out["session"]["preferredSubtitleLanguage"], "pt-BR");
+    assert!(out["session"]["maximumHeight"].is_null());
+    value["delivery"]["preferences"]["audio_language"] = json!("http://private.invalid/credential");
+    assert!(run("playbackV2", &value).is_err());
+}

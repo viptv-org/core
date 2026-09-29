@@ -289,6 +289,8 @@ pub struct PlaybackClient {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackV2Request {
+    #[serde(default)]
+    pub conversion: PlaybackConversion,
     pub request_id: String,
     pub stream_id: String,
     pub client: PlaybackClient,
@@ -298,6 +300,22 @@ pub struct PlaybackV2Request {
     pub force_gateway: bool,
     pub audio_track: Option<u32>,
     pub subtitle_track: Option<u32>,
+    pub audio_language: Option<String>,
+    pub preferred_audio_language: Option<String>,
+    pub preferred_subtitle_language: Option<String>,
+    #[serde(default)]
+    pub subtitles_off: bool,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "snake_case")]
+#[facet(rename_all = "snake_case")]
+#[repr(C)]
+pub enum PlaybackConversion {
+    #[default]
+    Auto,
+    Audio,
+    Video,
+    AudioVideo,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]

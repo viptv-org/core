@@ -105,6 +105,22 @@ fn playback_v2_request(input: &Value) -> Result {
         || !(2..=16384).contains(&request.client.max_height)
         || request.audio_track.is_some_and(|n| n > 65535)
         || request.subtitle_track.is_some_and(|n| n > 65535)
+        || (request.subtitles_off
+            && (request.subtitle_track.is_some() || request.preferred_subtitle_language.is_some()))
+        || [
+            &request.audio_language,
+            &request.preferred_audio_language,
+            &request.preferred_subtitle_language,
+        ]
+        .into_iter()
+        .flatten()
+        .any(|language| {
+            language.is_empty()
+                || language.len() > 35
+                || !language
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b == b'-')
+        })
         || [&request.client.video_codecs, &request.client.audio_codecs]
             .iter()
             .any(|list| {
@@ -124,4 +140,57 @@ fn playback_v2_request(input: &Value) -> Result {
     serde_json::to_value(request)
         .map(|v| snake(&v))
         .map_err(|_| CoreError::InvalidInput)
+}
+
+/// Shared bridge from measured player facts/options to the canonical v2 request.
+/// No source URL or arbitrary capability/quality extension gains authority.
+pub(super) fn playback_v2_intent(v: &Value) -> Result {
+    let playback = &v["playback"];
+    let caps = &playback["capabilities"];
+    if !playback["channelId"].is_null() {
+        return Err(CoreError::InvalidInput);
+    }
+    let platform = match text(v, "platform") {
+        "html5" => "web",
+        "tauri" => "desktop",
+        other => other,
+    };
+    let codecs = |field: &str, flags: &[(&str, &str)]| -> Value {
+        let mut values: Vec<Value> = caps[field].as_array().cloned().unwrap_or_default();
+        for (flag, codec) in flags {
+            let value = json!(codec);
+            if caps[*flag].as_bool() == Some(true) && !values.contains(&value) {
+                values.push(value);
+            }
+        }
+        json!(values)
+    };
+    let conversion = if playback["forceTranscode"].as_bool() == Some(true) {
+        match playback["conversionReason"].as_str() {
+            Some("audio-codec") => "audio",
+            Some("video-codec" | "container" | "rendering" | "performance") => "video",
+            None => "audio_video",
+            _ => return Err(CoreError::InvalidInput),
+        }
+    } else {
+        "auto"
+    };
+    let off = playback["subtitlesOff"].as_bool().unwrap_or(false);
+    let preferences = &v["preferences"];
+    let value = json!({
+        "requestId":v["requestId"], "streamId":playback["streamId"],
+        "client":{"platform":platform,"canPlayDirect":!matches!(platform,"roku"|"vizio") && ["directPlay","directFiles","directUrls"].iter().any(|key| caps[*key].as_bool()==Some(true)),
+          "maxWidth":caps["maxWidth"],"maxHeight":caps["maxHeight"],
+          "videoCodecs":codecs("directVideoCodecs", &[("h264","h264"),("hevc","hevc")]),
+          "audioCodecs":codecs("directAudioCodecs", &[("aac","aac")])},
+        "position":playback.get("position").cloned().unwrap_or(json!(0)),
+        "forceGateway":playback["managedOnly"].as_bool().unwrap_or(false) || conversion!="auto",
+        "conversion":conversion,"audioTrack":playback["audioTrackIndex"],
+        "subtitleTrack":if off { Value::Null } else { playback["subtitleTrackIndex"].clone() },
+        "audioLanguage":playback["audioLanguage"],"preferredAudioLanguage":preferences["audioLanguage"],
+        "preferredSubtitleLanguage":if !off && preferences["subtitlesEnabled"].as_bool()==Some(true) {preferences["subtitleLanguage"].clone()} else {Value::Null},
+        "subtitlesOff":off
+    });
+    playback_v2_request(&value)?;
+    Ok(value)
 }
