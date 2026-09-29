@@ -33,6 +33,12 @@ assert.deepEqual(catalogs.map(catalog => catalog.type), ['movie', 'unsupported']
 assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: '/api/elsewhere'}), 'https://example.test'));
 assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: 'https://user:pass@evil.test/media/s'}), 'https://example.test'));
 console.log(`WASM: ${vectors.length} shared native/WASM startup vectors and domain boundary checks passed`);
+const v2Request=JSON.parse(core.normalize('request',JSON.stringify({operation:'sourcesV2',item:{id:'tt1234567:1:2',type:'series',season:1,episode:2}}),''));
+assert.equal(v2Request.path,'/api/v2/streams');
+const v2Poll=JSON.parse(core.normalize('sourcesPollStep',JSON.stringify({poll:{done:true,events:[{seq:1,source:'iptv:1',streams:[],error_code:'provider_connection_limit',error:'https://provider.invalid/private-token'}]}}),''));
+assert.equal(v2Poll.state.errors[0].code,'provider_connection_limit');
+assert.ok(v2Poll.state.errors[0].message.includes('Stop another stream'));
+assert.ok(!JSON.stringify(v2Poll).includes('private-token'));
 const domain = (kind, value) => JSON.parse(core.normalize(kind, JSON.stringify(value), 'https://example.test'));
 const portrait = {id:'m',type:'movie',name:'Movie',poster:'portrait.jpg',position:20,duration:100};
 assert.equal(domain('presentation',portrait).heroImage,null);

@@ -95,8 +95,25 @@ pub(super) fn detail_response(v: &Value) -> Result<Value> {
     Ok(json!({"episodes":item["episodes"],"item":item}))
 }
 
+fn source_label(value: &str) -> &str {
+    if value.len() <= 128
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b':' | b'_' | b'-'))
+    {
+        value
+    } else {
+        "source"
+    }
+}
 pub(super) fn stream_poll(v: &Value) -> Result<Value> {
-    let events=array(v,"events")?.iter().map(|e|{let mut out=json!({"sequence":number(e,"seq")?,"source":string(e,"source")?,"sources":array(e,"streams")?.iter().filter_map(|s|source(s).ok()).collect::<Vec<_>>()});if e["error"].is_string(){out["error"]=json!("Source unavailable");}Ok(out)}).collect::<Result<Vec<_>>>()?;
+    let events=array(v,"events")?.iter().map(|e|{
+        let mut out=json!({"sequence":number(e,"seq")?,"source":string(e,"source")?,"sources":array(e,"streams")?.iter().filter_map(|s|source(s).ok()).collect::<Vec<_>>()});
+        if e["error"].is_string() || e["error_code"].is_string() {
+            let error=api_error(&json!({"status":502,"error":e["error"],"error_code":e["error_code"]}));
+            out["error"]=error["message"].clone();out["errorCode"]=error["code"].clone();
+        }Ok(out)
+    }).collect::<Result<Vec<_>>>()?;
     Ok(json!({"events":events,"done":boolean(v,"done")?}))
 }
 
@@ -125,11 +142,22 @@ pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
         .cloned()
         .unwrap_or_default();
     let page = stream_poll(&v["poll"])?;
+    let mut errors:Vec<Value>=state.and_then(|s|s.get("errors")).and_then(Value::as_array).into_iter().flatten().take(16).filter_map(|e| {
+        let source=e["source"].as_str()?;
+        let error=api_error(&json!({"status":502,"error":e["message"],"error_code":e["code"]}));
+        Some(json!({"source":source_label(source),"message":error["message"],"code":error["code"]}))
+    }).collect();
     let mut done = boolean(&page, "done")?;
     for event in array(&page, "events")? {
         let sequence = number(event, "sequence")? as i64;
         if sequence > cursor {
             cursor = sequence;
+        }
+        if let Some(message) = event["error"].as_str() {
+            let failure = json!({"source":source_label(event["source"].as_str().unwrap_or("source")),"message":message,"code":event["errorCode"]});
+            if errors.len() < 16 && !errors.contains(&failure) {
+                errors.push(failure);
+            }
         }
         for item in array(event, "sources")? {
             let id = item["id"].as_str().unwrap_or("");
@@ -149,11 +177,17 @@ pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
     if polls >= 120 {
         done = true;
     }
-    Ok(json!({
+    let mut out = json!({
         "state":{"after":cursor,"sources":sources,"polls":polls},
         "sources":sources,
         "done":done,
-    }))
+    });
+    out["state"]["errors"] = if errors.is_empty() {
+        Value::Null
+    } else {
+        json!(errors)
+    };
+    Ok(out)
 }
 
 pub(super) fn live(v: &Value) -> Result<Value> {

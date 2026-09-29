@@ -32,6 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::Catalog>()?
         .register_type::<viptv_core::dto::MediaItem>()?
         .register_type::<viptv_core::dto::MediaSource>()?
+        .register_type::<viptv_core::dto::SourcesPollStep>()?
         .register_type::<viptv_core::dto::PlaybackSession>()?
         .register_type::<viptv_core::dto::DiscoverPage>()?
         .build()?;

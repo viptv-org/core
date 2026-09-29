@@ -169,6 +169,31 @@ pub struct MediaSource {
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
+pub struct SourceFailure {
+    pub source: String,
+    pub code: Option<String>,
+    pub message: String,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SourcesPollState {
+    pub after: f64,
+    pub sources: Vec<MediaSource>,
+    pub polls: u32,
+    pub errors: Option<Vec<SourceFailure>>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SourcesPollStep {
+    pub state: SourcesPollState,
+    pub sources: Vec<MediaSource>,
+    pub done: bool,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
 pub struct MediaTrack {
     pub input_index: f64,
     pub codec: Option<String>,

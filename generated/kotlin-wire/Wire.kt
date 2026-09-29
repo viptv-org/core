@@ -185,11 +185,27 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `refreshToken`: String,
     val `expiresIn`: Double
 )
+@Serializable data class SourceFailure(
+    val `source`: String,
+    val `code`: String? = null,
+    val `message`: String
+)
 @Serializable data class SourcePresentation(
     val `title`: String,
     val `body`: String,
     val `providerKey`: String,
     val `providerLabel`: String
+)
+@Serializable data class SourcesPollState(
+    val `after`: Double,
+    val `sources`: List<MediaSource> = emptyList(),
+    val `polls`: Long,
+    val `errors`: List<SourceFailure>? = null
+)
+@Serializable data class SourcesPollStep(
+    val `state`: SourcesPollState,
+    val `sources`: List<MediaSource> = emptyList(),
+    val `done`: Boolean
 )
 @Serializable data class ViewModel(
     val `phase`: Phase,

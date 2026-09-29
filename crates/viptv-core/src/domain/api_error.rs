@@ -4,7 +4,15 @@ use serde_json::{Value, json};
 pub fn api_error(v: &Value) -> Value {
     let status = v["status"].as_u64().unwrap_or(0);
     let raw = v["error"].as_str().unwrap_or("").trim();
-    let supplied = v["error_code"].as_str().unwrap_or("");
+    let supplied = v["error_code"]
+        .as_str()
+        .filter(|code| {
+            code.len() <= 64
+                && code
+                    .bytes()
+                    .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_')
+        })
+        .unwrap_or("");
     let code = match (supplied, raw) {
         (
             "",
@@ -16,6 +24,76 @@ pub fn api_error(v: &Value) -> Value {
         _ => supplied,
     };
     let known = match code {
+        "gateway_required" => Some(
+            "This device or source requires a playback gateway. Configure one in account settings or ask the server operator.",
+        ),
+        "gateway_capacity" => {
+            Some("Playback capacity is currently full. Stop another stream or try again shortly.")
+        }
+        "provider_rate_limited" => {
+            Some("The IPTV provider is limiting API requests. Wait before trying again.")
+        }
+        "provider_credentials_rejected" => Some(
+            "The IPTV provider rejected access. Check your credentials, subscription status or provider access restrictions.",
+        ),
+        "provider_timeout" | "provider_refresh_timeout" => {
+            Some("The IPTV provider took too long to respond. Try again later.")
+        }
+        "provider_protocol_invalid" | "provider_response_too_large" => {
+            Some("The IPTV provider returned an invalid or oversized response. Try another source.")
+        }
+        "provider_discovery_failed"
+        | "provider_unavailable"
+        | "provider_dns_unavailable"
+        | "provider_response_interrupted" => Some(
+            "This IPTV provider could not return sources. Try again or choose another provider.",
+        ),
+        "source_not_found" | "playback_not_found" => Some(
+            "This source or playback session is unavailable in your account. Refresh the sources.",
+        ),
+        "source_configuration_changed" => {
+            Some("The source configuration changed. Refresh the sources and try again.")
+        }
+        "source_format_unsupported" => Some(
+            "Only HTTP(S) streams are supported here. Choose another source or configure a resolver.",
+        ),
+        "source_route_migration_required" => Some(
+            "This source still uses a retired routing configuration. Ask the server operator to update it.",
+        ),
+        "invalid_episode_selection" => {
+            Some("Choose a specific season and episode before requesting IPTV sources.")
+        }
+        "addon_timeout" => {
+            Some("The addon took too long to respond. Try again or choose another addon.")
+        }
+        "addon_access_denied" => {
+            Some("The addon rejected access. Check its configuration or subscription.")
+        }
+        "addon_rate_limited" => Some("The addon is limiting requests. Wait before trying again."),
+        "addon_protocol_invalid" | "addon_response_too_large" => {
+            Some("The addon returned an invalid or oversized response. Try another addon.")
+        }
+        "addon_unavailable" | "addon_dns_unavailable" | "addon_response_interrupted" => {
+            Some("The addon could not return sources. Try again or choose another addon.")
+        }
+        "addon_private_destination" | "provider_private_destination" => {
+            Some("This source uses a private network address that the server does not allow.")
+        }
+        "addon_redirect_rejected" | "provider_redirect_rejected" => Some(
+            "The source returned a redirect that the server could not safely follow. Check its address.",
+        ),
+        "secret_store_not_configured"
+        | "secret_key_unavailable"
+        | "secret_authentication_failed"
+        | "invalid_secret_envelope" => Some(
+            "The server could not unlock saved source credentials. Ask the server operator to check its encryption keys.",
+        ),
+        "catalog_changed" => Some(
+            "This playlist changed while you were browsing. Reload it to see the current channels.",
+        ),
+        "client_update_required" => {
+            Some("Update this app to use the server's current playback and catalog API.")
+        }
         "provider_connection_limit" => Some(
             "This IPTV provider has reached its connection limit. Stop another stream or choose another provider.",
         ),
@@ -71,7 +149,7 @@ pub fn api_error(v: &Value) -> Value {
         403 => "VIPTV refused this request. Check your profile permissions.",
         404 | 410 => "This item or stream is no longer available. Refresh and try again.",
         429 => "Too many requests. Wait a moment and try again.",
-        502 | 503 | 504 => {
+        502..=504 => {
             "The server or provider is temporarily unavailable. Try again or choose another source."
         }
         _ => "VIPTV could not complete this request. Try again.",

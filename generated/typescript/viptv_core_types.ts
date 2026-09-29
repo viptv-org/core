@@ -392,9 +392,24 @@ export class Session {
     }
 }
 
+export class SourceFailure {
+    constructor (public source: str, public code: Optional<str>, public message: str) {
+    }
+}
+
 /// Safe source labels shared by native and web renderers, separate from source identity.
 export class SourcePresentation {
     constructor (public title: str, public body: str, public providerKey: str, public providerLabel: str) {
+    }
+}
+
+export class SourcesPollState {
+    constructor (public after: float64, public sources: Seq<MediaSource>, public polls: uint32, public errors: Optional<Seq<SourceFailure>>) {
+    }
+}
+
+export class SourcesPollStep {
+    constructor (public state: SourcesPollState, public sources: Seq<MediaSource>, public done: bool) {
     }
 }
 

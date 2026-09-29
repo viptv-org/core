@@ -47,6 +47,9 @@ pub fn generate(registry: &Registry) -> String {
             && matches!(
                 name.name.as_str(),
                 "MediaItem"
+                    | "SourceFailure"
+                    | "SourcesPollState"
+                    | "SourcesPollStep"
                     | "MediaSource"
                     | "MediaTrack"
                     | "MediaPresentation"

@@ -424,12 +424,31 @@ data class Session(
     val expiresIn: Double,
 )
 
+data class SourceFailure(
+    val source: String,
+    val code: String? = null,
+    val message: String,
+)
+
 /// Safe source labels shared by native and web renderers, separate from source identity.
 data class SourcePresentation(
     val title: String,
     val body: String,
     val providerKey: String,
     val providerLabel: String,
+)
+
+data class SourcesPollState(
+    val after: Double,
+    val sources: List<org.viptv.core.types.MediaSource>,
+    val polls: UInt,
+    val errors: List<org.viptv.core.types.SourceFailure>? = null,
+)
+
+data class SourcesPollStep(
+    val state: org.viptv.core.types.SourcesPollState,
+    val sources: List<org.viptv.core.types.MediaSource>,
+    val done: Boolean,
 )
 
 sealed interface StorageOperation {

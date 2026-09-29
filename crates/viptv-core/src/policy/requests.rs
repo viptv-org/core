@@ -9,14 +9,20 @@ pub(super) fn request(v: &Value) -> Result {
         let (method, path) = match op {
             "nextEpisode" => ("POST", format!("{base}/continue/next")),
             "sources" => ("POST", "/api/streams".into()),
-            "sourcesPoll" => {
+            "sourcesV2" => ("POST", "/api/v2/streams".into()),
+            "sourcesPoll" | "sourcesPollV2" => {
                 body = Value::Null;
                 let id = text(v, "id");
                 if id.is_empty() {
                     return Err(CoreError::InvalidInput);
                 }
                 let after = v["after"].as_u64().unwrap_or(0);
-                ("GET", format!("/api/streams/{}?after={after}", enc(id)))
+                let prefix = if op == "sourcesPollV2" {
+                    "/api/v2/streams"
+                } else {
+                    "/api/streams"
+                };
+                ("GET", format!("{prefix}/{}?after={after}", enc(id)))
             }
             "saveProgress" => {
                 body["position"] = v["position"].clone();

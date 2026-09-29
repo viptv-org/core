@@ -1,3 +1,17 @@
+# Backend v2 source discovery — 2026-09-29
+
+Explicit sourcesV2/sourcesPollV2 request operations preserve exact movie/episode
+identity. Generated Kotlin/TypeScript poll state carries bounded, deduplicated
+source failures with closed human-readable messages; raw provider error text is
+not displayed. Healthy sources remain available when another provider fails.
+Legacy operations remain temporarily for live discovery pending its coordinated
+catalog/playback cutover; this checkpoint does not complete that migration.
+
+Type generation, native bindings, release WASM, all 52 workspace tests, strict
+all-target Clippy and the actual WASM contract suite passed. Android and TV-web
+must adopt this same immutable revision; application and device acceptance is
+recorded separately in their repositories. HTTP provider support is unchanged.
+
 # Native playback metadata follow-up — AND-036
 
 Source display projections now include stable provider group keys and labels;
