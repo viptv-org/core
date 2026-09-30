@@ -1,3 +1,30 @@
+# Application-facing local provider retirement — 2026-09-30
+
+Core `8ae9f81` removes the retired application provider/add-on bridge and feature
+selection while retaining the standalone provider parser used by the backend.
+The provided native/WASM generators were rerun; frozen v2 event/JSON declarations
+remain byte-identical. Workspace default/all-feature tests, runtime tests, strict
+Clippy and 35 baseline/candidate native plus actual WASM operations passed. See
+[LOCAL_RETIREMENT.md](LOCAL_RETIREMENT.md) for exact evidence and boundaries.
+
+Reviewed consumers now pin this source: TV-web `db9c5ab`, desktop `54854cf` and the
+isolated Android handoff `75bbacf`. The user's Android checkout remains untouched.
+These checks do not qualify physical-device media, installed Windows playback,
+production migration or deployment.
+
+# Reverse guide cursors and uncapped source matching — 2026-09-29
+
+Live channel/category DTOs now carry nullable previousCursor alongside the next
+cursor. Reverse tokens use the same bounded opaque syntax. Source matching no
+longer combines decoder dimensions with the retired profile quality preference,
+and unknown decoder height no longer invents a 1080p ceiling. Actual reported
+decoder limits still reject unsupported sources.
+
+All 64 workspace tests, strict Clippy, Kotlin/native generation, release WASM
+and actual WASM contracts passed. TV-web and Android imported code revision
+fba95c8f3ba00e97fbc460acc746d23a912795bc. Client guide adoption and physical 4K
+playback remain separate acceptance gates.
+
 # Raw live v2 contracts — 2026-09-29
 
 Generated LiveCatalogPage/LiveCatalogCategories preserve account catalog and
