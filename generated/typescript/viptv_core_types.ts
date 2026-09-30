@@ -259,7 +259,7 @@ export function matchJsonValue<R>(value: JsonValue, cases: {
 }
 
 export class LiveCatalogCategories {
-    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<LiveCatalogCategory>, public nextCursor: Optional<str>) {
+    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<LiveCatalogCategory>, public nextCursor: Optional<str>, public previousCursor: Optional<str>) {
     }
 }
 
@@ -270,7 +270,7 @@ export class LiveCatalogCategory {
 
 /// Raw provider order; no synchronous totals or client-side playlist index.
 export class LiveCatalogPage {
-    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<MediaItem>, public nextCursor: Optional<str>) {
+    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<MediaItem>, public nextCursor: Optional<str>, public previousCursor: Optional<str>) {
     }
 }
 

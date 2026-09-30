@@ -344,6 +344,7 @@ pub struct LiveCatalogPage {
     pub generation: Option<String>,
     pub items: Vec<MediaItem>,
     pub next_cursor: Option<String>,
+    pub previous_cursor: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
@@ -362,6 +363,7 @@ pub struct LiveCatalogCategories {
     pub generation: Option<String>,
     pub items: Vec<LiveCatalogCategory>,
     pub next_cursor: Option<String>,
+    pub previous_cursor: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]

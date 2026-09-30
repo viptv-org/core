@@ -12,7 +12,7 @@ fn run(kind: &str, input: Value) -> Result<Value, viptv_core::CoreError> {
 
 #[test]
 fn live_pages_preserve_provider_order_and_http_logos_without_fabricating_totals() {
-    let page = json!({"catalog_id":2,"generation":0,"items":[{"id":"iptv:2:9","name":"Zulu","logo":"http://provider.example/logo.png","category_id":"Sports","category":"Sports"},{"id":"iptv:2:1","name":"Alpha","logo":null}],"next_cursor":"opaque_next"});
+    let page = json!({"catalog_id":2,"generation":0,"items":[{"id":"iptv:2:9","name":"Zulu","logo":"http://provider.example/logo.png","category_id":"Sports","category":"Sports"},{"id":"iptv:2:1","name":"Alpha","logo":null}],"next_cursor":"opaque_next","previous_cursor":"opaque_previous"});
     let out = run("liveCatalogV2", page).unwrap();
     assert_eq!(out["catalogId"], "2");
     assert_eq!(out["generation"], "0");
@@ -26,9 +26,20 @@ fn live_pages_preserve_provider_order_and_http_logos_without_fabricating_totals(
     assert!(out.get("total").is_none());
     let typed: viptv_core::dto::LiveCatalogPage = serde_json::from_value(out).unwrap();
     assert_eq!(typed.next_cursor.as_deref(), Some("opaque_next"));
+    assert_eq!(typed.previous_cursor.as_deref(), Some("opaque_previous"));
     let categories = run("liveCategoriesV2", json!({"catalog_id":2,"generation":1,"items":[{"id":"8","name":"Sports","count":99999,"url":"private-value"}],"next_cursor":null})).unwrap();
     assert_eq!(categories["items"][0], json!({"id":"8","name":"Sports"}));
     let _: viptv_core::dto::LiveCatalogCategories = serde_json::from_value(categories).unwrap();
+}
+
+#[test]
+fn source_matching_ignores_retired_quality_caps_but_retains_measured_limits() {
+    let mut input = json!({"source":{"name":"2160p h264 English audio"},"capabilities":{"maxHeight":2160},"preferences":{"quality":"480p"}});
+    assert_eq!(run("sourceMatch", input.clone()).unwrap()["likely"], true);
+    input["capabilities"]["maxHeight"] = json!(1080);
+    assert_eq!(run("sourceMatch", input.clone()).unwrap()["likely"], false);
+    input["capabilities"]["maxHeight"] = Value::Null;
+    assert_eq!(run("sourceMatch", input).unwrap()["likely"], true);
 }
 
 #[test]

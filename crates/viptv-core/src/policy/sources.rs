@@ -113,15 +113,10 @@ pub(super) fn source_match(v: &Value) -> Value {
     let s = &v["source"];
     let caps = &v["capabilities"];
     let prefs = &v["preferences"];
-    let mut height = caps["maxHeight"]
+    let height = caps["maxHeight"]
         .as_f64()
         .filter(|n| *n > 0.0)
-        .unwrap_or(1080.0);
-    for (h, q) in [(480.0, "480p"), (720.0, "720p"), (1080.0, "1080p")] {
-        if prefs["quality"] == q {
-            height = height.min(h);
-        }
-    }
+        .unwrap_or(f64::INFINITY);
     let words = [
         text(s, "name"),
         text(s, "title"),

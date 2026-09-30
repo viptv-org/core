@@ -258,6 +258,7 @@ data class LiveCatalogCategories(
     val generation: String? = null,
     val items: List<org.viptv.core.types.LiveCatalogCategory>,
     val nextCursor: String? = null,
+    val previousCursor: String? = null,
 )
 
 data class LiveCatalogCategory(
@@ -271,6 +272,7 @@ data class LiveCatalogPage(
     val generation: String? = null,
     val items: List<org.viptv.core.types.MediaItem>,
     val nextCursor: String? = null,
+    val previousCursor: String? = null,
 )
 
 data class MediaItem(

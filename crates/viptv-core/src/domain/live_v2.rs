@@ -35,8 +35,13 @@ pub(super) fn page(v: &Value, categories: bool) -> Result<Value> {
         Value::String(value) if crate::policy::valid_live_cursor(value) => Some(value.clone()),
         _ => return Err(invalid()),
     };
+    let previous = match &v["previous_cursor"] {
+        Value::Null => None,
+        Value::String(value) if crate::policy::valid_live_cursor(value) => Some(value.clone()),
+        _ => return Err(invalid()),
+    };
     if catalog.is_some() != generation.is_some()
-        || (catalog.is_none() && (!items.is_empty() || cursor.is_some()))
+        || (catalog.is_none() && (!items.is_empty() || cursor.is_some() || previous.is_some()))
     {
         return Err(invalid());
     }
@@ -64,7 +69,9 @@ pub(super) fn page(v: &Value, categories: bool) -> Result<Value> {
             media(&raw)
         })
         .collect::<Result<Vec<_>>>()?;
-    Ok(json!({"catalogId":catalog,"generation":generation,"items":items,"nextCursor":cursor}))
+    Ok(
+        json!({"catalogId":catalog,"generation":generation,"items":items,"nextCursor":cursor,"previousCursor":previous}),
+    )
 }
 
 pub(super) fn source(v: &Value) -> Result<Value> {
