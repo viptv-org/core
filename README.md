@@ -15,6 +15,13 @@ Crux Rust application behavior and API normalization for browser, Android and Ta
 
 ## Build and adoption
 
+BE-002 retires the application-facing anonymous addon/provider bridge. Core
+native/WASM exports no longer plan anonymous discovery or construct provider
+media URLs. The standalone `crates/viptv-provider` parser/planner remains for
+backend reuse; normalization, authenticated session/v2 wire and SmartCast remain.
+Consumers must adopt the regenerated native bindings and WASM together. See
+`scripts/test-v2-retirement-parity.mjs` for baseline native/actual-WASM comparison.
+
 Use a current Rust toolchain and the WASM target. Run `cargo run -p viptv-typegen` to generate protocol types, `bash scripts/build-native-bindings.sh` for native Kotlin bindings, and `bash scripts/build-wasm.sh` with the matching wasm-bindgen CLI to build the browser artifact. Cargo.lock pins the dependency graph. CI builds native/WASM interfaces and publishes revision-named artifacts.
 
 Consumers adopt an immutable core commit together with its generated bindings and runtime. TV-web imports artifacts using `node scripts/core-sync.mjs sync ../core`, records CORE_REF and checks their hashes on build. Update Rust data handling here and regenerate once; consumer applications then adopt and rebuild. Installed apps still require an app update.
