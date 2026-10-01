@@ -219,6 +219,10 @@ mod tests {
     use super::*;
 
     // Keep the old constructor as an independent ownership-optimization oracle.
+    // It can be removed (with the comparisons below, replaced by fixed expected
+    // JSON) once only one of `catalog`/`catalog_owned` remains, or once the
+    // legacy addon catalog shape (`supports_search`, `extra`, `is_required`)
+    // is no longer normalized.
     fn legacy_catalog(v: &Value) -> Result<Value> {
         let catalog_type = v["type"].as_str().unwrap_or("movie");
         if catalog_type.trim().is_empty() || catalog_type.len() > 64 {
