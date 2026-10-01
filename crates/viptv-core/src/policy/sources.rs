@@ -1,4 +1,58 @@
 use super::*;
+use regex::Regex;
+use std::sync::LazyLock;
+
+/// Preferred audio-language codes and the alias alternation matched in source
+/// labels. The final entry (no codes) is the English default.
+const AUDIO_LANGUAGES: [(&[&str], &str); 11] = [
+    (&["es", "spa"], "spanish|spa|es"),
+    (&["fr", "fre", "fra"], "french|fre|fra|fr"),
+    (&["de", "deu", "ger"], "german|ger|deu|de"),
+    (&["it"], "italian|ita|it"),
+    (&["pt", "por"], "portuguese|por|pt"),
+    (&["ja", "jpn"], "japanese|jpn|ja"),
+    (&["ko"], "korean|kor|ko"),
+    (&["zh"], "chinese|zho|chi|zh"),
+    (&["hi"], "hindi|hin|hi"),
+    (&["ar"], "arabic|ara|ar"),
+    (&[], "english|eng|en"),
+];
+
+/// Audio-language patterns for one alias set, compiled once per process.
+struct LanguagePatterns {
+    english: bool,
+    /// `<language> subtitles` labels, stripped before looking for audio evidence.
+    subtitle_label: Regex,
+    mentioned: Regex,
+    explicit: Regex,
+    reported: Regex,
+}
+
+static LANGUAGE_PATTERNS: LazyLock<Vec<LanguagePatterns>> = LazyLock::new(|| {
+    let compile = |pattern: String| Regex::new(&pattern).expect("policy regex");
+    AUDIO_LANGUAGES
+        .iter()
+        .map(|(codes, aliases)| LanguagePatterns {
+            english: codes.is_empty(),
+            subtitle_label: compile(format!(
+                "(?:{aliases})[ ._:-]+(?:subtitles?|subs?|captions?)"
+            )),
+            mentioned: compile(format!("(^|[^a-z])(?:{aliases})([^a-z]|$)")),
+            explicit: compile(format!(
+                "(^|[^a-z])(?:(?:{aliases})[ ._:-]+(?:audio|dubbed|dub)|(?:audio|dubbed|dub)[ ._:-]+(?:{aliases}))([^a-z]|$)"
+            )),
+            reported: compile(format!("(?i)^(?:{aliases})(?:[-_].*)?$")),
+        })
+        .collect()
+});
+
+fn language_patterns(language: &str) -> &'static LanguagePatterns {
+    let index = AUDIO_LANGUAGES
+        .iter()
+        .position(|(codes, _)| codes.contains(&language))
+        .unwrap_or(AUDIO_LANGUAGES.len() - 1);
+    &LANGUAGE_PATTERNS[index]
+}
 
 pub(super) fn auto_next(v: &Value) -> Value {
     json!(
@@ -15,7 +69,7 @@ pub(super) fn auto_next(v: &Value) -> Value {
 
 pub(super) fn source_display(v: &Value) -> Value {
     {
-        let opaque = |s: &str| matches(r"^[A-Za-z0-9._-]+:[0-9]+$", s);
+        let opaque = |s: &str| policy_regex!(r"^[A-Za-z0-9._-]+:[0-9]+$").is_match(s);
         let name = if text(v, "sourceName").trim().is_empty() {
             text(v, "name")
         } else {
@@ -126,58 +180,31 @@ pub(super) fn source_match(v: &Value) -> Value {
     ]
     .join("\n")
     .to_lowercase();
-    let language = text(prefs, "audioLanguage").to_lowercase();
-    let aliases = match language.as_str() {
-        "es" | "spa" => "spanish|spa|es",
-        "fr" | "fre" | "fra" => "french|fre|fra|fr",
-        "de" | "deu" | "ger" => "german|ger|deu|de",
-        "it" => "italian|ita|it",
-        "pt" | "por" => "portuguese|por|pt",
-        "ja" | "jpn" => "japanese|jpn|ja",
-        "ko" => "korean|kor|ko",
-        "zh" => "chinese|zho|chi|zh",
-        "hi" => "hindi|hin|hi",
-        "ar" => "arabic|ara|ar",
-        _ => "english|eng|en",
-    };
-    let english = aliases == "english|eng|en";
+    let language = language_patterns(&text(prefs, "audioLanguage").to_lowercase());
+    let english = language.english;
     let mut mentioned = false;
     let mut explicit = false;
     let mut dubbed = false;
     let mut multi = false;
     for line in words.replace(['|', ';'], "\n").lines() {
-        let subtitles = matches(r"(^|[^a-z])(?:subtitles?|subs?|captions?)([^a-z]|$)", line);
-        let audio = matches(r"(^|[^a-z])(?:audio|dubbed|dub)([^a-z]|$)", line);
+        let subtitles =
+            policy_regex!(r"(^|[^a-z])(?:subtitles?|subs?|captions?)([^a-z]|$)").is_match(line);
+        let audio = policy_regex!(r"(^|[^a-z])(?:audio|dubbed|dub)([^a-z]|$)").is_match(line);
         if subtitles && !audio {
             continue;
         }
-        let line = regex::Regex::new(&format!(
-            "(?:{aliases})[ ._:-]+(?:subtitles?|subs?|captions?)"
-        ))
-        .unwrap()
-        .replace_all(line, "");
-        mentioned |= matches(&format!("(^|[^a-z])(?:{aliases})([^a-z]|$)"), &line);
-        explicit |= matches(
-            &format!(
-                "(^|[^a-z])(?:(?:{aliases})[ ._:-]+(?:audio|dubbed|dub)|(?:audio|dubbed|dub)[ ._:-]+(?:{aliases}))([^a-z]|$)"
-            ),
-            &line,
-        );
+        let line = language.subtitle_label.replace_all(line, "");
+        mentioned |= language.mentioned.is_match(&line);
+        explicit |= language.explicit.is_match(&line);
         if english {
-            dubbed |= matches(r"(^|[^a-z])(?:dubbed|dub)([^a-z]|$)", &line);
-            multi |= matches(
-                r"(^|[^a-z])(?:dual[ ._-]?audio|multi[ ._-]?audio)([^a-z]|$)",
-                &line,
-            );
+            dubbed |= policy_regex!(r"(^|[^a-z])(?:dubbed|dub)([^a-z]|$)").is_match(&line);
+            multi |= policy_regex!(r"(^|[^a-z])(?:dual[ ._-]?audio|multi[ ._-]?audio)([^a-z]|$)")
+                .is_match(&line);
         }
     }
     let reported = s["raw"]["reported_languages"].as_array().is_some_and(|a| {
-        a.iter().any(|x| {
-            matches(
-                &format!("(?i)^(?:{aliases})(?:[-_].*)?$"),
-                x.as_str().unwrap_or(""),
-            )
-        })
+        a.iter()
+            .any(|x| language.reported.is_match(x.as_str().unwrap_or("")))
     });
     let evidence = if english {
         s["raw"]["audioEvidenceScore"].as_f64()
@@ -202,12 +229,10 @@ pub(super) fn source_match(v: &Value) -> Value {
     if words.contains("4k") {
         resolution = 2160.0;
     }
-    let h264 = matches(r"(^|[^a-z0-9])(?:h\.?264|x264|avc)([^a-z0-9]|$)", &words);
-    let h265 = matches(r"(^|[^a-z0-9])(?:h\.?265|x265|hevc)([^a-z0-9]|$)", &words);
-    let heavy = matches(
-        r"(^|[^a-z0-9])(?:hdr|hdr10|dv|10bit|10-bit|hi10p|av1)([^a-z0-9]|$)",
-        &words,
-    );
+    let h264 = policy_regex!(r"(^|[^a-z0-9])(?:h\.?264|x264|avc)([^a-z0-9]|$)").is_match(&words);
+    let h265 = policy_regex!(r"(^|[^a-z0-9])(?:h\.?265|x265|hevc)([^a-z0-9]|$)").is_match(&words);
+    let heavy = policy_regex!(r"(^|[^a-z0-9])(?:hdr|hdr10|dv|10bit|10-bit|hi10p|av1)([^a-z0-9]|$)")
+        .is_match(&words);
     let likely = resolution > 0.0
         && resolution <= height
         && (h264 || (h265 && caps["hevcSdr"] == true))

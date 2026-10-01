@@ -2,6 +2,16 @@
 use crate::CoreError;
 use serde_json::{Value, json};
 
+/// Returns a fixed policy pattern compiled once per process (each call site
+/// owns its own lazily initialised `Regex`).
+macro_rules! policy_regex {
+    ($pattern:literal) => {{
+        static PATTERN: std::sync::LazyLock<regex::Regex> =
+            std::sync::LazyLock::new(|| regex::Regex::new($pattern).expect("policy regex"));
+        &*PATTERN
+    }};
+}
+
 mod catalog;
 mod presentation;
 mod progress;
@@ -95,9 +105,4 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
         "artworkUrl" => catalog::artwork_url(v)?,
         _ => return Err(CoreError::InvalidInput),
     })
-}
-pub(super) fn matches(pattern: &str, text: &str) -> bool {
-    regex::Regex::new(pattern)
-        .expect("policy regex")
-        .is_match(text)
 }
