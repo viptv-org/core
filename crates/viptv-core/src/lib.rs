@@ -3,8 +3,6 @@ pub mod app;
 pub mod domain;
 pub mod dto;
 pub mod policy;
-#[cfg(feature = "provider")]
-pub mod provider;
 pub mod vizio;
 pub use app::*;
 use crux_core::{

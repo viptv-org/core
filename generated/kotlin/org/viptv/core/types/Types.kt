@@ -253,6 +253,28 @@ sealed interface JsonValue {
     ) : JsonValue
 }
 
+data class LiveCatalogCategories(
+    val catalogId: String? = null,
+    val generation: String? = null,
+    val items: List<org.viptv.core.types.LiveCatalogCategory>,
+    val nextCursor: String? = null,
+    val previousCursor: String? = null,
+)
+
+data class LiveCatalogCategory(
+    val id: String,
+    val name: String,
+)
+
+/// Raw provider order; no synchronous totals or client-side playlist index.
+data class LiveCatalogPage(
+    val catalogId: String? = null,
+    val generation: String? = null,
+    val items: List<org.viptv.core.types.MediaItem>,
+    val nextCursor: String? = null,
+    val previousCursor: String? = null,
+)
+
 data class MediaItem(
     val id: String,
     val type: org.viptv.core.types.MediaKind,
@@ -355,7 +377,59 @@ data class PlaybackAuthorization(
     val headers: Map<String, String>? = null,
 )
 
+data class PlaybackClient(
+    val platform: org.viptv.core.types.PlaybackPlatform,
+    val canPlayDirect: Boolean,
+    val maxWidth: UInt,
+    val maxHeight: UInt,
+    val videoCodecs: List<String>,
+    val audioCodecs: List<String>,
+)
+
+enum class PlaybackConversion {
+    AUTO,
+    AUDIO,
+    VIDEO,
+    AUDIO_VIDEO;
+}
+
+enum class PlaybackDeliveryKind {
+    DIRECT,
+    GATEWAY;
+}
+
+data class PlaybackLease(
+    val id: String,
+    val status: org.viptv.core.types.PlaybackLeaseStatus,
+    /// Unix time in milliseconds; platform clock checks expiry before use.
+    val expiresAt: Double,
+    val renewAfterSeconds: UInt,
+    val session: org.viptv.core.types.PlaybackSession? = null,
+    val errorCode: String? = null,
+    val error: String? = null,
+)
+
+enum class PlaybackLeaseStatus {
+    STARTING,
+    READY,
+    FAILED,
+    EXPIRED,
+    RELEASED;
+}
+
+enum class PlaybackPlatform {
+    ANDROID,
+    ANDROID_TV,
+    DESKTOP,
+    WEB,
+    TIZEN,
+    WEBOS,
+    ROKU,
+    VIZIO;
+}
+
 data class PlaybackSession(
+    val deliveryKind: org.viptv.core.types.PlaybackDeliveryKind? = null,
     val preferredAudioLanguage: String? = null,
     val preferredSubtitleLanguage: String? = null,
     val maximumHeight: UInt? = null,
@@ -373,6 +447,21 @@ data class PlaybackSession(
     val subtitleTracks: List<org.viptv.core.types.MediaTrack>,
     val subtitlesSupported: Boolean,
     val authorization: org.viptv.core.types.PlaybackAuthorization? = null,
+)
+
+data class PlaybackV2Request(
+    val conversion: org.viptv.core.types.PlaybackConversion,
+    val requestId: String,
+    val streamId: String,
+    val client: org.viptv.core.types.PlaybackClient,
+    val position: Double,
+    val forceGateway: Boolean,
+    val audioTrack: UInt? = null,
+    val subtitleTrack: UInt? = null,
+    val audioLanguage: String? = null,
+    val preferredAudioLanguage: String? = null,
+    val preferredSubtitleLanguage: String? = null,
+    val subtitlesOff: Boolean,
 )
 
 data class Profile(
@@ -424,12 +513,31 @@ data class Session(
     val expiresIn: Double,
 )
 
+data class SourceFailure(
+    val source: String,
+    val code: String? = null,
+    val message: String,
+)
+
 /// Safe source labels shared by native and web renderers, separate from source identity.
 data class SourcePresentation(
     val title: String,
     val body: String,
     val providerKey: String,
     val providerLabel: String,
+)
+
+data class SourcesPollState(
+    val after: Double,
+    val sources: List<org.viptv.core.types.MediaSource>,
+    val polls: UInt,
+    val errors: List<org.viptv.core.types.SourceFailure>? = null,
+)
+
+data class SourcesPollStep(
+    val state: org.viptv.core.types.SourcesPollState,
+    val sources: List<org.viptv.core.types.MediaSource>,
+    val done: Boolean,
 )
 
 sealed interface StorageOperation {

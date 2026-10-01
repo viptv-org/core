@@ -1,4 +1,58 @@
 use super::*;
+use regex::Regex;
+use std::sync::LazyLock;
+
+/// Preferred audio-language codes and the alias alternation matched in source
+/// labels. The final entry (no codes) is the English default.
+const AUDIO_LANGUAGES: [(&[&str], &str); 11] = [
+    (&["es", "spa"], "spanish|spa|es"),
+    (&["fr", "fre", "fra"], "french|fre|fra|fr"),
+    (&["de", "deu", "ger"], "german|ger|deu|de"),
+    (&["it"], "italian|ita|it"),
+    (&["pt", "por"], "portuguese|por|pt"),
+    (&["ja", "jpn"], "japanese|jpn|ja"),
+    (&["ko"], "korean|kor|ko"),
+    (&["zh"], "chinese|zho|chi|zh"),
+    (&["hi"], "hindi|hin|hi"),
+    (&["ar"], "arabic|ara|ar"),
+    (&[], "english|eng|en"),
+];
+
+/// Audio-language patterns for one alias set, compiled once per process.
+struct LanguagePatterns {
+    english: bool,
+    /// `<language> subtitles` labels, stripped before looking for audio evidence.
+    subtitle_label: Regex,
+    mentioned: Regex,
+    explicit: Regex,
+    reported: Regex,
+}
+
+static LANGUAGE_PATTERNS: LazyLock<Vec<LanguagePatterns>> = LazyLock::new(|| {
+    let compile = |pattern: String| Regex::new(&pattern).expect("policy regex");
+    AUDIO_LANGUAGES
+        .iter()
+        .map(|(codes, aliases)| LanguagePatterns {
+            english: codes.is_empty(),
+            subtitle_label: compile(format!(
+                "(?:{aliases})[ ._:-]+(?:subtitles?|subs?|captions?)"
+            )),
+            mentioned: compile(format!("(^|[^a-z])(?:{aliases})([^a-z]|$)")),
+            explicit: compile(format!(
+                "(^|[^a-z])(?:(?:{aliases})[ ._:-]+(?:audio|dubbed|dub)|(?:audio|dubbed|dub)[ ._:-]+(?:{aliases}))([^a-z]|$)"
+            )),
+            reported: compile(format!("(?i)^(?:{aliases})(?:[-_].*)?$")),
+        })
+        .collect()
+});
+
+fn language_patterns(language: &str) -> &'static LanguagePatterns {
+    let index = AUDIO_LANGUAGES
+        .iter()
+        .position(|(codes, _)| codes.contains(&language))
+        .unwrap_or(AUDIO_LANGUAGES.len() - 1);
+    &LANGUAGE_PATTERNS[index]
+}
 
 pub(super) fn auto_next(v: &Value) -> Value {
     json!(
@@ -15,7 +69,7 @@ pub(super) fn auto_next(v: &Value) -> Value {
 
 pub(super) fn source_display(v: &Value) -> Value {
     {
-        let opaque = |s: &str| matches(r"^[A-Za-z0-9._-]+:[0-9]+$", s);
+        let opaque = |s: &str| policy_regex!(r"^[A-Za-z0-9._-]+:[0-9]+$").is_match(s);
         let name = if text(v, "sourceName").trim().is_empty() {
             text(v, "name")
         } else {
@@ -95,7 +149,17 @@ pub(super) fn continuation_source(v: &Value) -> Result {
                 .iter()
                 .find(|s| text(s, "sourceAddonId") == provider)
         } else {
-            sources.iter().filter(|s|text(s,"sourceAddonId").starts_with("addon:")).min_by(|a,b|num(&source_match(&json!({"source":a,"capabilities":v["capabilities"],"preferences":v["preferences"]})),"rank").total_cmp(&num(&source_match(&json!({"source":b,"capabilities":v["capabilities"],"preferences":v["preferences"]})),"rank")))
+            let (caps, prefs) = (&v["capabilities"], &v["preferences"]);
+            let addons = sources
+                .iter()
+                .filter(|s| text(s, "sourceAddonId").starts_with("addon:"))
+                .map(|s| (s, source_fit(s, caps, prefs)))
+                .collect::<Vec<_>>();
+            let reference = reference_height(caps, || addons.iter().map(|(_, fit)| *fit));
+            addons
+                .iter()
+                .min_by(|(_, a), (_, b)| a.rank(reference).total_cmp(&b.rank(reference)))
+                .map(|(s, _)| *s)
         };
         found
             .map(|s| {
@@ -109,19 +173,75 @@ pub(super) fn continuation_source(v: &Value) -> Result {
     })
 }
 
+/// Ranks one source. Optional `candidates` are the sources it is compared
+/// with; they only set the quality reference when the device reports no
+/// `maxHeight` (see [`reference_height`]).
 pub(super) fn source_match(v: &Value) -> Value {
-    let s = &v["source"];
-    let caps = &v["capabilities"];
-    let prefs = &v["preferences"];
-    let mut height = caps["maxHeight"]
-        .as_f64()
-        .filter(|n| *n > 0.0)
-        .unwrap_or(1080.0);
-    for (h, q) in [(480.0, "480p"), (720.0, "720p"), (1080.0, "1080p")] {
-        if prefs["quality"] == q {
-            height = height.min(h);
-        }
+    let (caps, prefs) = (&v["capabilities"], &v["preferences"]);
+    let fit = source_fit(&v["source"], caps, prefs);
+    let reference = reference_height(caps, || {
+        v["candidates"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|s| source_fit(s, caps, prefs))
+            .chain([fit])
+    });
+    json!({
+        "rank": fit.rank(reference),
+        "likely": fit.likely,
+        "best": fit.likely && fit.score >= 4.0 && fit.resolution == reference,
+    })
+}
+
+/// What one source label says about its audio language and playability.
+#[derive(Clone, Copy)]
+struct SourceFit {
+    /// Preferred-audio-language evidence, 0 to 9.
+    score: f64,
+    /// Labelled vertical resolution, or 0 when unknown.
+    resolution: f64,
+    /// The label suggests this device can play it directly.
+    likely: bool,
+}
+
+impl SourceFit {
+    fn rank(self, reference: f64) -> f64 {
+        let quality = if self.likely && self.resolution == reference {
+            0.0
+        } else if self.likely {
+            1.0
+        } else {
+            5.0
+        };
+        (9.0 - self.score) * 10.0 + quality
     }
+}
+
+/// The measured device height limit. Profile quality caps were retired
+/// (design BACKEND_V2.md); only actual decoder/display limits remain.
+fn device_max_height(caps: &Value) -> Option<f64> {
+    caps["maxHeight"].as_f64().filter(|n| *n > 0.0)
+}
+
+/// The resolution a likely source must have to rank as the best quality: the
+/// device `maxHeight` when reported, otherwise the highest resolution among
+/// the compared sources that the device is likely to play. Without a limit
+/// there is no fixed target, so the best quality actually on offer wins.
+fn reference_height<I: IntoIterator<Item = SourceFit>>(
+    caps: &Value,
+    compared: impl FnOnce() -> I,
+) -> f64 {
+    device_max_height(caps).unwrap_or_else(|| {
+        compared()
+            .into_iter()
+            .filter(|fit| fit.likely)
+            .fold(0.0, |high, fit| f64::max(high, fit.resolution))
+    })
+}
+
+fn source_fit(s: &Value, caps: &Value, prefs: &Value) -> SourceFit {
+    let height = device_max_height(caps).unwrap_or(f64::INFINITY);
     let words = [
         text(s, "name"),
         text(s, "title"),
@@ -131,58 +251,31 @@ pub(super) fn source_match(v: &Value) -> Value {
     ]
     .join("\n")
     .to_lowercase();
-    let language = text(prefs, "audioLanguage").to_lowercase();
-    let aliases = match language.as_str() {
-        "es" | "spa" => "spanish|spa|es",
-        "fr" | "fre" | "fra" => "french|fre|fra|fr",
-        "de" | "deu" | "ger" => "german|ger|deu|de",
-        "it" => "italian|ita|it",
-        "pt" | "por" => "portuguese|por|pt",
-        "ja" | "jpn" => "japanese|jpn|ja",
-        "ko" => "korean|kor|ko",
-        "zh" => "chinese|zho|chi|zh",
-        "hi" => "hindi|hin|hi",
-        "ar" => "arabic|ara|ar",
-        _ => "english|eng|en",
-    };
-    let english = aliases == "english|eng|en";
+    let language = language_patterns(&text(prefs, "audioLanguage").to_lowercase());
+    let english = language.english;
     let mut mentioned = false;
     let mut explicit = false;
     let mut dubbed = false;
     let mut multi = false;
     for line in words.replace(['|', ';'], "\n").lines() {
-        let subtitles = matches(r"(^|[^a-z])(?:subtitles?|subs?|captions?)([^a-z]|$)", line);
-        let audio = matches(r"(^|[^a-z])(?:audio|dubbed|dub)([^a-z]|$)", line);
+        let subtitles =
+            policy_regex!(r"(^|[^a-z])(?:subtitles?|subs?|captions?)([^a-z]|$)").is_match(line);
+        let audio = policy_regex!(r"(^|[^a-z])(?:audio|dubbed|dub)([^a-z]|$)").is_match(line);
         if subtitles && !audio {
             continue;
         }
-        let line = regex::Regex::new(&format!(
-            "(?:{aliases})[ ._:-]+(?:subtitles?|subs?|captions?)"
-        ))
-        .unwrap()
-        .replace_all(line, "");
-        mentioned |= matches(&format!("(^|[^a-z])(?:{aliases})([^a-z]|$)"), &line);
-        explicit |= matches(
-            &format!(
-                "(^|[^a-z])(?:(?:{aliases})[ ._:-]+(?:audio|dubbed|dub)|(?:audio|dubbed|dub)[ ._:-]+(?:{aliases}))([^a-z]|$)"
-            ),
-            &line,
-        );
+        let line = language.subtitle_label.replace_all(line, "");
+        mentioned |= language.mentioned.is_match(&line);
+        explicit |= language.explicit.is_match(&line);
         if english {
-            dubbed |= matches(r"(^|[^a-z])(?:dubbed|dub)([^a-z]|$)", &line);
-            multi |= matches(
-                r"(^|[^a-z])(?:dual[ ._-]?audio|multi[ ._-]?audio)([^a-z]|$)",
-                &line,
-            );
+            dubbed |= policy_regex!(r"(^|[^a-z])(?:dubbed|dub)([^a-z]|$)").is_match(&line);
+            multi |= policy_regex!(r"(^|[^a-z])(?:dual[ ._-]?audio|multi[ ._-]?audio)([^a-z]|$)")
+                .is_match(&line);
         }
     }
     let reported = s["raw"]["reported_languages"].as_array().is_some_and(|a| {
-        a.iter().any(|x| {
-            matches(
-                &format!("(?i)^(?:{aliases})(?:[-_].*)?$"),
-                x.as_str().unwrap_or(""),
-            )
-        })
+        a.iter()
+            .any(|x| language.reported.is_match(x.as_str().unwrap_or("")))
     });
     let evidence = if english {
         s["raw"]["audioEvidenceScore"].as_f64()
@@ -207,15 +300,17 @@ pub(super) fn source_match(v: &Value) -> Value {
     if words.contains("4k") {
         resolution = 2160.0;
     }
-    let h264 = matches(r"(^|[^a-z0-9])(?:h\.?264|x264|avc)([^a-z0-9]|$)", &words);
-    let h265 = matches(r"(^|[^a-z0-9])(?:h\.?265|x265|hevc)([^a-z0-9]|$)", &words);
-    let heavy = matches(
-        r"(^|[^a-z0-9])(?:hdr|hdr10|dv|10bit|10-bit|hi10p|av1)([^a-z0-9]|$)",
-        &words,
-    );
+    let h264 = policy_regex!(r"(^|[^a-z0-9])(?:h\.?264|x264|avc)([^a-z0-9]|$)").is_match(&words);
+    let h265 = policy_regex!(r"(^|[^a-z0-9])(?:h\.?265|x265|hevc)([^a-z0-9]|$)").is_match(&words);
+    let heavy = policy_regex!(r"(^|[^a-z0-9])(?:hdr|hdr10|dv|10bit|10-bit|hi10p|av1)([^a-z0-9]|$)")
+        .is_match(&words);
     let likely = resolution > 0.0
         && resolution <= height
         && (h264 || (h265 && caps["hevcSdr"] == true))
         && !heavy;
-    json!({"rank":(9.0-score)*10.0+if likely&&resolution==height{0.0}else if likely{1.0}else{5.0},"likely":likely,"best":likely&&score>=4.0&&resolution==height})
+    SourceFit {
+        score,
+        resolution,
+        likely,
+    }
 }

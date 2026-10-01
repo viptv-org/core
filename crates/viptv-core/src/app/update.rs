@@ -200,7 +200,10 @@ impl App for Viptv {
                     };
                     error["status"] = json!(response.status);
                     let display = domain::api_error(&error);
-                    let command = fail(model, display["message"].as_str().unwrap());
+                    let command = fail(
+                        model,
+                        display["message"].as_str().unwrap_or("Request failed"),
+                    );
                     model.view.error_status = Some(response.status);
                     return command;
                 }

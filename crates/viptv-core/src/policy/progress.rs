@@ -85,11 +85,11 @@ pub(super) fn initial_episode(v: &Value) -> Result {
         };
         let latest = eps
             .iter()
-            .filter(|e| updated(e) > 0.0)
-            .max_by(|a, b| updated(a).total_cmp(&updated(b)));
-        if let Some(latest) = latest {
+            .enumerate()
+            .filter(|(_, e)| updated(e) > 0.0)
+            .max_by(|(_, a), (_, b)| updated(a).total_cmp(&updated(b)));
+        if let Some((index, latest)) = latest {
             if watched(latest) {
-                let index = eps.iter().position(|e| e == latest).unwrap();
                 eps.iter()
                     .skip(index + 1)
                     .find(|e| {

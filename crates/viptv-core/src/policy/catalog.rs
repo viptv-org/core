@@ -43,10 +43,11 @@ pub(super) fn artwork_url(v: &Value) -> Result {
                 uri = inner.into_owned();
             }
             let width = num(v, "width");
-            if matches(
-                r"^https://(image\.tmdb\.org|artworks\.thetvdb\.com|episodes\.metahub\.space|images\.metahub\.space|live\.metahub\.space|assets\.fanart\.tv|i\.imgur\.com)/[^?#@]+$",
-                &uri,
-            ) {
+            if policy_regex!(
+                r"^https://(image\.tmdb\.org|artworks\.thetvdb\.com|episodes\.metahub\.space|images\.metahub\.space|live\.metahub\.space|assets\.fanart\.tv|i\.imgur\.com)/[^?#@]+$"
+            )
+            .is_match(&uri)
+            {
                 let size = if width > 1280.0 {
                     "original"
                 } else if width > 500.0 {
@@ -54,8 +55,7 @@ pub(super) fn artwork_url(v: &Value) -> Result {
                 } else {
                     "w500"
                 };
-                uri = regex::Regex::new(r"^https://image\.tmdb\.org/t/p/(w[0-9]+|original)/")
-                    .unwrap()
+                uri = policy_regex!(r"^https://image\.tmdb\.org/t/p/(w[0-9]+|original)/")
                     .replace(&uri, format!("https://image.tmdb.org/t/p/{size}/"))
                     .into_owned();
             }

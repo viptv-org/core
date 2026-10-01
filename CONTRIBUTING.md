@@ -6,7 +6,7 @@ Thanks for your interest. VIPTV is a multi-repository product; this repository o
 
 1. Read the pinned `DESIGN_REF` commit and [design/SHARED_CORE.md](https://github.com/viptv-org/design/blob/main/SHARED_CORE.md) before behavior changes; record proposed UX changes in design first.
 2. Search this repository's GitHub Issues before opening a new one.
-3. This workspace also owns the shared `viptv-provider` crate (`crates/viptv-provider`) consumed by the backend (vendored) and fat clients (feature `provider`). Change it here, rebuild the generated artifacts, and let consumers re-sync their pins.
+3. This workspace also owns the `viptv-provider` crate (`crates/viptv-provider`). Only the backend uses it, vendored into `server/provider` by its `scripts/sync-provider.sh`; the core crate and generated bindings do not depend on it. Change it here, then re-sync the backend.
 4. Generated Kotlin/TypeScript/WASM interfaces come from Rust; never hand-edit `generated/` or consumers' `vendor/` trees.
 5. Validate before pushing: `cargo fmt --check`, `cargo clippy --locked --workspace --all-targets -- -D warnings`, `cargo test --locked --workspace`, `cargo run --locked -p viptv-typegen`, `bash scripts/build-native-bindings.sh`, `bash scripts/build-wasm.sh`, `node scripts/test-wasm.mjs`, and the runtime package checks in `packages/runtime`.
 

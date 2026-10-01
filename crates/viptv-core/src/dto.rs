@@ -169,6 +169,31 @@ pub struct MediaSource {
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
+pub struct SourceFailure {
+    pub source: String,
+    pub code: Option<String>,
+    pub message: String,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SourcesPollState {
+    pub after: f64,
+    pub sources: Vec<MediaSource>,
+    pub polls: u32,
+    pub errors: Option<Vec<SourceFailure>>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SourcesPollStep {
+    pub state: SourcesPollState,
+    pub sources: Vec<MediaSource>,
+    pub done: bool,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
 pub struct MediaTrack {
     pub input_index: f64,
     pub codec: Option<String>,
@@ -183,6 +208,7 @@ pub struct MediaTrack {
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackSession {
+    pub delivery_kind: Option<PlaybackDeliveryKind>,
     pub preferred_audio_language: Option<String>,
     pub preferred_subtitle_language: Option<String>,
     pub maximum_height: Option<u32>,
@@ -203,6 +229,95 @@ pub struct PlaybackSession {
     pub authorization: Option<PlaybackAuthorization>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "lowercase")]
+#[facet(rename_all = "lowercase")]
+#[repr(C)]
+pub enum PlaybackDeliveryKind {
+    Direct,
+    Gateway,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "lowercase")]
+#[facet(rename_all = "lowercase")]
+#[repr(C)]
+pub enum PlaybackLeaseStatus {
+    Starting,
+    Ready,
+    Failed,
+    Expired,
+    Released,
+}
+#[derive(Clone, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackLease {
+    pub id: String,
+    pub status: PlaybackLeaseStatus,
+    /// Unix time in milliseconds; platform clock checks expiry before use.
+    pub expires_at: f64,
+    pub renew_after_seconds: u32,
+    pub session: Option<PlaybackSession>,
+    pub error_code: Option<String>,
+    pub error: Option<String>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "snake_case")]
+#[facet(rename_all = "snake_case")]
+#[repr(C)]
+pub enum PlaybackPlatform {
+    Android,
+    AndroidTv,
+    Desktop,
+    Web,
+    Tizen,
+    Webos,
+    Roku,
+    Vizio,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackClient {
+    pub platform: PlaybackPlatform,
+    pub can_play_direct: bool,
+    pub max_width: u32,
+    pub max_height: u32,
+    pub video_codecs: Vec<String>,
+    pub audio_codecs: Vec<String>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackV2Request {
+    #[serde(default)]
+    pub conversion: PlaybackConversion,
+    pub request_id: String,
+    pub stream_id: String,
+    pub client: PlaybackClient,
+    #[serde(default)]
+    pub position: f64,
+    #[serde(default)]
+    pub force_gateway: bool,
+    pub audio_track: Option<u32>,
+    pub subtitle_track: Option<u32>,
+    pub audio_language: Option<String>,
+    pub preferred_audio_language: Option<String>,
+    pub preferred_subtitle_language: Option<String>,
+    #[serde(default)]
+    pub subtitles_off: bool,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "snake_case")]
+#[facet(rename_all = "snake_case")]
+#[repr(C)]
+pub enum PlaybackConversion {
+    #[default]
+    Auto,
+    Audio,
+    Video,
+    AudioVideo,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackAuthorization {
@@ -218,6 +333,37 @@ pub struct DiscoverPage {
     pub unsupported_count: Option<u32>,
     pub has_more: bool,
     pub next_skip: Option<f64>,
+}
+
+/// Raw provider order; no synchronous totals or client-side playlist index.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct LiveCatalogPage {
+    pub catalog_id: Option<String>,
+    pub generation: Option<String>,
+    pub items: Vec<MediaItem>,
+    pub next_cursor: Option<String>,
+    pub previous_cursor: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct LiveCatalogCategory {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct LiveCatalogCategories {
+    pub catalog_id: Option<String>,
+    pub generation: Option<String>,
+    pub items: Vec<LiveCatalogCategory>,
+    pub next_cursor: Option<String>,
+    pub previous_cursor: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]

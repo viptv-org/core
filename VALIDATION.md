@@ -1,3 +1,115 @@
+# Source quality reference and policy hardening — 2026-09-30
+
+With no reported device maxHeight, sourceMatch/continuationSource now rank "best"
+against the highest resolution the device is likely to play among the compared
+sources (optional sourceMatch `candidates`; a lone source is judged on its own).
+A reported maxHeight remains the reference and no quality cap returns. Policy
+regexes compile once per process; two FFI-reachable unwraps were removed;
+viptv-provider (backend-only) moved to edition 2024.
+
+Formatting, strict default/all-feature workspace Clippy, all 66 workspace tests
+(default and all features), the actual WASM suite, nine runtime tests plus strict
+TypeScript, and the 35-operation retirement parity against `fba95c8` passed. A
+1,912-case policy corpus is byte-identical to the previous WASM except no-limit
+sourceMatch results. Typegen, native Kotlin and wasm-bindgen glue regenerate
+byte-identically; only the WASM binary changed. The backend suite (215 tests)
+passed against the updated provider crate in a scratch copy; the backend's
+vendored copy is not re-synced here. No consumer or device qualification follows.
+
+# Application-facing local provider retirement — 2026-09-30
+
+Core `8ae9f81` removes the retired application provider/add-on bridge and feature
+selection while retaining the standalone provider parser used by the backend.
+The provided native/WASM generators were rerun; frozen v2 event/JSON declarations
+remain byte-identical. Workspace default/all-feature tests, runtime tests, strict
+Clippy and 35 baseline/candidate native plus actual WASM operations passed. See
+[LOCAL_RETIREMENT.md](LOCAL_RETIREMENT.md) for exact evidence and boundaries.
+
+Reviewed consumers now pin this source: TV-web `db9c5ab`, desktop `54854cf` and the
+isolated Android handoff `75bbacf`. The user's Android checkout remains untouched.
+These checks do not qualify physical-device media, installed Windows playback,
+production migration or deployment.
+
+# Reverse guide cursors and uncapped source matching — 2026-09-29
+
+Live channel/category DTOs now carry nullable previousCursor alongside the next
+cursor. Reverse tokens use the same bounded opaque syntax. Source matching no
+longer combines decoder dimensions with the retired profile quality preference,
+and unknown decoder height no longer invents a 1080p ceiling. Actual reported
+decoder limits still reject unsupported sources.
+
+All 64 workspace tests, strict Clippy, Kotlin/native generation, release WASM
+and actual WASM contracts passed. TV-web and Android imported code revision
+fba95c8f3ba00e97fbc460acc746d23a912795bc. Client guide adoption and physical 4K
+playback remain separate acceptance gates.
+
+# Raw live v2 contracts — 2026-09-29
+
+Generated LiveCatalogPage/LiveCatalogCategories preserve account catalog and
+snapshot generation, provider order, HTTP logos and opaque next cursors. No exact
+total is fabricated. Canonical request operations handle raw channel/category
+pages, exact live source and guide reads, rejecting offset/US/family filters,
+oversized pages/tokens and invalid collection choices. Favorites/Recent remain
+explicit personal subsets, not whole-playlist indexing. Exact live source decoding
+accepts an opaque IPTV card and rejects media URL/header authority at this seam.
+
+All 63 workspace tests, strict Clippy, Kotlin/native generation, release WASM and
+actual WASM contracts passed. Four new native fixtures cover default/cursor,
+empty/malformed/legacy pages, HTTP logos, 4K-neutral data and private source cards.
+Consumer adoption and activation are recorded separately; this does not claim
+ordinary guide migration, physical playback or a production deployment.
+
+# Backend v2 player-option mapping — 2026-09-29
+
+PlaybackV2Request now includes the gateway's closed conversion enum, track
+language preferences and subtitle-off choice. playbackV2Intent is the shared
+bridge from measured player capabilities/options to this canonical request;
+Tauri/HTML platform aliases, scoped audio/video conversion and explicit track
+choices are normalized once. Reported 4K dimensions remain unchanged and profile
+quality is excluded. Native direct lease normalization retains bounded language
+preferences without restoring the removed quality cap. Contradictory subtitle
+choices and malformed language tags fail validation.
+
+All 59 workspace tests, strict Clippy, native/Kotlin generation, release WASM
+and actual WASM contracts passed. Ordinary player activation and backend profile
+preference integration remain open; this checkpoint supplies their shared
+contract, not end-to-end playback or hardware qualification.
+
+# Backend v2 playback lease contract — 2026-09-29
+
+Generated PlaybackLease/PlaybackV2Request/PlaybackClient and closed platform,
+lease-status and delivery-kind enums now describe the backend contract. The
+playbackV2 normalizer preserves native HTTP direct URLs/validated source headers,
+requires absolute HTTPS gateway delivery without attached credential headers,
+keeps processing mode distinct from delivery kind, and exposes no session URL
+for pending or terminal leases. Provider error text is replaced with safe shared
+messages. Lease expiry is explicit Unix milliseconds; renewal is seconds.
+
+Canonical request/start/status/heartbeat/stop operations validate the current
+v2 wire contract. Real 4K decoder dimensions survive unchanged. Unknown legacy
+options (including forceTranscode) are rejected, not silently discarded: backend
+conversion/preference parity and client lifecycle adoption remain required.
+This is a shared protocol checkpoint, not a completed playback cutover.
+
+All 57 workspace tests, strict all-target Clippy, generated native Kotlin and
+release WASM builds, and the actual WASM suite passed. Five new native fixtures
+cover direct/gateway policy, safe failures, malformed envelopes and canonical
+request serialization. Both consumers must pin this same committed revision.
+
+# Backend v2 source discovery — 2026-09-29
+
+Explicit sourcesV2/sourcesPollV2 request operations preserve exact movie/episode
+identity. Generated Kotlin/TypeScript poll state carries bounded, deduplicated
+source failures with closed human-readable messages; raw provider error text is
+not displayed. Healthy sources remain available when another provider fails.
+Legacy operations remain temporarily for live discovery pending its coordinated
+catalog/playback cutover; this checkpoint does not complete that migration.
+
+Type generation, native bindings, release WASM, all 52 workspace tests, strict
+all-target Clippy and the actual WASM contract suite passed. Android and TV-web
+must adopt this same immutable revision; application and device acceptance is
+recorded separately in their repositories. HTTP provider support is unchanged.
+
 # Native playback metadata follow-up — AND-036
 
 Source display projections now include stable provider group keys and labels;

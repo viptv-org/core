@@ -4,6 +4,7 @@ use serde_json::{Map, Value, json};
 
 mod api_error;
 mod identity;
+mod live_v2;
 mod media;
 mod playback;
 mod streams;
@@ -108,6 +109,9 @@ pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value
         "sourcesPollStep" => streams::sources_poll_step(v),
         "live" => streams::live(v),
         "liveCategories" => streams::live_categories(v),
+        "liveCatalogV2" => live_v2::page(v, false),
+        "liveCategoriesV2" => live_v2::page(v, true),
+        "liveSourceV2" => live_v2::source(v),
         "guide" => streams::guide(v),
         "profile" => profile(v),
         "identity" => identity(v),
@@ -118,6 +122,7 @@ pub fn normalize_value(kind_name: &str, v: &Value, origin: &str) -> Result<Value
         "mediaArray" => streams::media_array(v),
         "preferencesRequest" => crate::policy::normalize(kind_name, v),
         "playback" => playback(v, origin),
+        "playbackV2" => playback::playback_v2(v, origin),
         "clean" => Ok(clean(v)),
         "catalogs" => streams::catalogs(v),
         "discover" => streams::discover(v),

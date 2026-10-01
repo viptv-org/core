@@ -258,6 +258,22 @@ export function matchJsonValue<R>(value: JsonValue, cases: {
     return cases[value.kind as JsonValue["kind"]](value as never);
 }
 
+export class LiveCatalogCategories {
+    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<LiveCatalogCategory>, public nextCursor: Optional<str>, public previousCursor: Optional<str>) {
+    }
+}
+
+export class LiveCatalogCategory {
+    constructor (public id: str, public name: str) {
+    }
+}
+
+/// Raw provider order; no synchronous totals or client-side playlist index.
+export class LiveCatalogPage {
+    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public items: Seq<MediaItem>, public nextCursor: Optional<str>, public previousCursor: Optional<str>) {
+    }
+}
+
 export class MediaItem {
     constructor (public id: str, public type: MediaKind, public name: str, public title: str, public poster: Optional<str>, public background: Optional<str>, public thumbnail: Optional<str>, public titleLogo: Optional<str>, public imdbRating: Optional<str>, public credits: Optional<str>, public posterShape: Optional<str>, public updatedAtMillis: Optional<float64>, public releasedAtMillis: Optional<float64>, public episodes: Seq<MediaItem>, public description: Optional<str>, public year: Optional<float64>, public runtime: Optional<str>, public genres: Seq<str>, public position: Optional<float64>, public duration: Optional<float64>, public watched: Optional<bool>, public season: Optional<float64>, public episode: Optional<float64>, public episodeTitle: Optional<str>, public seriesId: Optional<str>, public queueStatus: Optional<str>, public previousEpisode: Optional<MediaItem>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public sourceFingerprint: Optional<str>, public sourceBingeGroup: Optional<str>, public sourceReleaseGroup: Optional<str>, public sourceQuality: Optional<str>, public sourceAudio: Optional<str>, public raw: Map<str,JsonValue>) {
     }
@@ -345,8 +361,127 @@ export class PlaybackAuthorization {
     }
 }
 
+export class PlaybackClient {
+    constructor (public platform: PlaybackPlatform, public canPlayDirect: bool, public maxWidth: uint32, public maxHeight: uint32, public videoCodecs: Seq<str>, public audioCodecs: Seq<str>) {
+    }
+}
+
+export type PlaybackConversion =
+    | { kind: "auto" }
+    | { kind: "audio" }
+    | { kind: "video" }
+    | { kind: "audio_video" };
+
+export const playbackConversionAuto = (): PlaybackConversion => ({ kind: "auto" });
+
+export const playbackConversionAudio = (): PlaybackConversion => ({ kind: "audio" });
+
+export const playbackConversionVideo = (): PlaybackConversion => ({ kind: "video" });
+
+export const playbackConversionAudioVideo = (): PlaybackConversion => ({ kind: "audio_video" });
+
+export function matchPlaybackConversion<R>(value: PlaybackConversion, cases: {
+    auto: (v: Extract<PlaybackConversion, { kind: "auto" }>) => R;
+    audio: (v: Extract<PlaybackConversion, { kind: "audio" }>) => R;
+    video: (v: Extract<PlaybackConversion, { kind: "video" }>) => R;
+    audio_video: (v: Extract<PlaybackConversion, { kind: "audio_video" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackConversion["kind"]](value as never);
+}
+
+export type PlaybackDeliveryKind =
+    | { kind: "direct" }
+    | { kind: "gateway" };
+
+export const playbackDeliveryKindDirect = (): PlaybackDeliveryKind => ({ kind: "direct" });
+
+export const playbackDeliveryKindGateway = (): PlaybackDeliveryKind => ({ kind: "gateway" });
+
+export function matchPlaybackDeliveryKind<R>(value: PlaybackDeliveryKind, cases: {
+    direct: (v: Extract<PlaybackDeliveryKind, { kind: "direct" }>) => R;
+    gateway: (v: Extract<PlaybackDeliveryKind, { kind: "gateway" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackDeliveryKind["kind"]](value as never);
+}
+
+export class PlaybackLease {
+    constructor (public id: str, public status: PlaybackLeaseStatus, public expiresAt: float64, public renewAfterSeconds: uint32, public session: Optional<PlaybackSession>, public errorCode: Optional<str>, public error: Optional<str>) {
+    }
+}
+
+export type PlaybackLeaseStatus =
+    | { kind: "starting" }
+    | { kind: "ready" }
+    | { kind: "failed" }
+    | { kind: "expired" }
+    | { kind: "released" };
+
+export const playbackLeaseStatusStarting = (): PlaybackLeaseStatus => ({ kind: "starting" });
+
+export const playbackLeaseStatusReady = (): PlaybackLeaseStatus => ({ kind: "ready" });
+
+export const playbackLeaseStatusFailed = (): PlaybackLeaseStatus => ({ kind: "failed" });
+
+export const playbackLeaseStatusExpired = (): PlaybackLeaseStatus => ({ kind: "expired" });
+
+export const playbackLeaseStatusReleased = (): PlaybackLeaseStatus => ({ kind: "released" });
+
+export function matchPlaybackLeaseStatus<R>(value: PlaybackLeaseStatus, cases: {
+    starting: (v: Extract<PlaybackLeaseStatus, { kind: "starting" }>) => R;
+    ready: (v: Extract<PlaybackLeaseStatus, { kind: "ready" }>) => R;
+    failed: (v: Extract<PlaybackLeaseStatus, { kind: "failed" }>) => R;
+    expired: (v: Extract<PlaybackLeaseStatus, { kind: "expired" }>) => R;
+    released: (v: Extract<PlaybackLeaseStatus, { kind: "released" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackLeaseStatus["kind"]](value as never);
+}
+
+export type PlaybackPlatform =
+    | { kind: "android" }
+    | { kind: "android_tv" }
+    | { kind: "desktop" }
+    | { kind: "web" }
+    | { kind: "tizen" }
+    | { kind: "webos" }
+    | { kind: "roku" }
+    | { kind: "vizio" };
+
+export const playbackPlatformAndroid = (): PlaybackPlatform => ({ kind: "android" });
+
+export const playbackPlatformAndroidTv = (): PlaybackPlatform => ({ kind: "android_tv" });
+
+export const playbackPlatformDesktop = (): PlaybackPlatform => ({ kind: "desktop" });
+
+export const playbackPlatformWeb = (): PlaybackPlatform => ({ kind: "web" });
+
+export const playbackPlatformTizen = (): PlaybackPlatform => ({ kind: "tizen" });
+
+export const playbackPlatformWebos = (): PlaybackPlatform => ({ kind: "webos" });
+
+export const playbackPlatformRoku = (): PlaybackPlatform => ({ kind: "roku" });
+
+export const playbackPlatformVizio = (): PlaybackPlatform => ({ kind: "vizio" });
+
+export function matchPlaybackPlatform<R>(value: PlaybackPlatform, cases: {
+    android: (v: Extract<PlaybackPlatform, { kind: "android" }>) => R;
+    android_tv: (v: Extract<PlaybackPlatform, { kind: "android_tv" }>) => R;
+    desktop: (v: Extract<PlaybackPlatform, { kind: "desktop" }>) => R;
+    web: (v: Extract<PlaybackPlatform, { kind: "web" }>) => R;
+    tizen: (v: Extract<PlaybackPlatform, { kind: "tizen" }>) => R;
+    webos: (v: Extract<PlaybackPlatform, { kind: "webos" }>) => R;
+    roku: (v: Extract<PlaybackPlatform, { kind: "roku" }>) => R;
+    vizio: (v: Extract<PlaybackPlatform, { kind: "vizio" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackPlatform["kind"]](value as never);
+}
+
 export class PlaybackSession {
-    constructor (public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public maximumHeight: Optional<uint32>, public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
+    constructor (public deliveryKind: Optional<PlaybackDeliveryKind>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public maximumHeight: Optional<uint32>, public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
+    }
+}
+
+export class PlaybackV2Request {
+    constructor (public conversion: PlaybackConversion, public requestId: str, public streamId: str, public client: PlaybackClient, public position: float64, public forceGateway: bool, public audioTrack: Optional<uint32>, public subtitleTrack: Optional<uint32>, public audioLanguage: Optional<str>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public subtitlesOff: bool) {
     }
 }
 
@@ -392,9 +527,24 @@ export class Session {
     }
 }
 
+export class SourceFailure {
+    constructor (public source: str, public code: Optional<str>, public message: str) {
+    }
+}
+
 /// Safe source labels shared by native and web renderers, separate from source identity.
 export class SourcePresentation {
     constructor (public title: str, public body: str, public providerKey: str, public providerLabel: str) {
+    }
+}
+
+export class SourcesPollState {
+    constructor (public after: float64, public sources: Seq<MediaSource>, public polls: uint32, public errors: Optional<Seq<SourceFailure>>) {
+    }
+}
+
+export class SourcesPollStep {
+    constructor (public state: SourcesPollState, public sources: Seq<MediaSource>, public done: bool) {
     }
 }
 

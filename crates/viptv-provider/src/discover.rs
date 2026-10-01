@@ -1,12 +1,12 @@
 //! Addon catalog discovery planning and aggregation, plus episode artwork
-//! enrichment, shared by the backend and fat clients.
+//! enrichment, for the backend.
 use crate::extras::{catalog_extras, extra_name};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
 use url::Url;
 
-/// The wire shape of a catalog browse/search request. Fat clients serialize
-/// this into the native core bridge; the backend constructs it from the API.
+/// The wire shape of a catalog browse/search request, constructed by the
+/// backend from its API.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DiscoveryRequest {
     pub kind: String,
@@ -324,12 +324,10 @@ pub fn enrich_episode_art(primary: &mut Value, alternate: &Value) {
                     && !video["episode"].is_null()
                     && candidate["season"] == video["season"]
                     && candidate["episode"] == video["episode"])
-        }) {
-            if let Some(image) = public_episode_art(&candidate["thumbnail"]) {
-                if !image.contains("episodes.metahub.space") {
-                    video["thumbnail"] = json!(image);
-                }
-            }
+        }) && let Some(image) = public_episode_art(&candidate["thumbnail"])
+            && !image.contains("episodes.metahub.space")
+        {
+            video["thumbnail"] = json!(image);
         }
     }
 }

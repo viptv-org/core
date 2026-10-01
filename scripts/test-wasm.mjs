@@ -33,7 +33,37 @@ assert.deepEqual(catalogs.map(catalog => catalog.type), ['movie', 'unsupported']
 assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: '/api/elsewhere'}), 'https://example.test'));
 assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: 'https://user:pass@evil.test/media/s'}), 'https://example.test'));
 console.log(`WASM: ${vectors.length} shared native/WASM startup vectors and domain boundary checks passed`);
+const v2Request=JSON.parse(core.normalize('request',JSON.stringify({operation:'sourcesV2',item:{id:'tt1234567:1:2',type:'series',season:1,episode:2}}),''));
+assert.equal(v2Request.path,'/api/v2/streams');
+const v2Poll=JSON.parse(core.normalize('sourcesPollStep',JSON.stringify({poll:{done:true,events:[{seq:1,source:'iptv:1',streams:[],error_code:'provider_connection_limit',error:'https://provider.invalid/private-token'}]}}),''));
+assert.equal(v2Poll.state.errors[0].code,'provider_connection_limit');
+assert.ok(v2Poll.state.errors[0].message.includes('Stop another stream'));
+assert.ok(!JSON.stringify(v2Poll).includes('private-token'));
 const domain = (kind, value) => JSON.parse(core.normalize(kind, JSON.stringify(value), 'https://example.test'));
+const rawLive = domain('liveCatalogV2', {catalog_id:2,generation:0,items:[{id:'iptv:2:7',name:'News',logo:'http://provider.example/news.png'}],next_cursor:'opaque_next'});
+assert.equal(rawLive.catalogId,'2');
+assert.equal(rawLive.items[0].poster,'http://provider.example/news.png');
+assert.equal(rawLive.nextCursor,'opaque_next');
+assert.ok(!('total' in rawLive));
+assert.equal(domain('request',{operation:'livePageV2',cursor:'opaque_next'}).path,'/api/v2/iptv/live/channels?limit=50&cursor=opaque_next');
+assert.equal(domain('request',{operation:'livePageV2',collection:'favorites'}).path,'/api/v2/iptv/live/channels?limit=50&collection=favorites');
+assert.equal(domain('liveSourceV2',{source:{id:'opaque_live',source:'iptv:2',source_addon_id:'iptv:2',name:'Provider',title:'News'}}).id,'opaque_live');
+assert.equal(domain('request',{operation:'liveSourceV2',id:'iptv:2:7'}).path,'/api/v2/iptv/live/iptv%3A2%3A7/source');
+assert.throws(()=>domain('request',{operation:'livePageV2',offset:40}));
+console.log('WASM: raw live pages/source requests preserve defaults, cursor bounds and HTTP logos');
+const leaseV2 = {id:'pb2_wasm',status:'ready',expires_at:1800000060,renew_after_seconds:20,delivery:{kind:'direct',url:'http://provider.example/movie.mp4',headers:{'User-Agent':'Native fixture'},position:12,live:false,format:'original'}};
+const leaseView = domain('playbackV2',leaseV2);
+const conversionIntent = domain('playbackV2Intent',{requestId:'wasm_request',platform:'tauri',playback:{streamId:'source',capabilities:{maxWidth:3840,maxHeight:2160,h264:true,aac:true,directUrls:true},forceTranscode:true,conversionReason:'audio-codec'}});
+assert.equal(conversionIntent.conversion,'audio');
+assert.equal(conversionIntent.client.platform,'desktop');
+assert.equal(domain('request',{operation:'playbackV2',playback:conversionIntent}).body.client.max_height,2160);
+assert.equal(leaseView.session.deliveryKind,'direct');
+assert.equal(leaseView.session.authorization.userAgent,'Native fixture');
+assert.equal(leaseView.expiresAt,1800000060000);
+assert.equal(domain('playbackV2',{...leaseV2,status:'expired'}).session,null);
+assert.ok(domain('playbackV2',{...leaseV2,status:'expired'}).error.includes('expired'));
+assert.equal(domain('request',{operation:'playbackV2Heartbeat',id:'pb2_wasm'}).path,'/api/v2/playback/pb2_wasm/heartbeat');
+assert.throws(()=>domain('playbackV2',{...leaseV2,delivery:{...leaseV2.delivery,kind:'gateway'}}));
 const portrait = {id:'m',type:'movie',name:'Movie',poster:'portrait.jpg',position:20,duration:100};
 assert.equal(domain('presentation',portrait).heroImage,null);
 assert.equal(domain('presentation',{...portrait,background:'landscape.jpg'}).heroImage,'landscape.jpg');
@@ -116,31 +146,6 @@ assert.equal(failedLandscapeCard.image,null);
 assert.equal(failedLandscapeCard.imageRole,'none');
 console.log('WASM: failed episode artwork falls back through shared landscape policy');
 
-// The provider bridge exports must round-trip the backend's negotiation rules
-// for local-mode web bundles.
-{
-  const manifest = { id:'express', catalogs:[{ type:'movie', id:'top', name:'Top', extra:[{ name:'genre', isRequired:false, options:['Action','Drama'] }] }], resources:['catalog','meta','stream'], types:['movie'] };
-  const entries = JSON.stringify([[1,'https://example.test/manifest.json',manifest]]);
-  const request = JSON.stringify({ kind:'movie', catalog:'top', skip:0, extras:{} });
-  const plan = JSON.parse(core.discoverPlan(entries, request));
-  assert.equal(plan.endpoints.length, 1);
-  assert.equal(plan.endpoints[0], 'https://example.test/catalog/movie/top.json');
-  assert.ok(plan.single_catalog && !plan.pageable && !plan.aggregated);
-  const responses = JSON.stringify([{ metas:[{ type:'movie', id:'m1', name:'Alpha' }] }]);
-  const page = JSON.parse(core.discoverAggregate(responses, JSON.stringify(plan), 0n));
-  assert.equal(page.metas.length, 1);
-  assert.equal(page.has_more, false);
-  assert.equal(core.addonSupports(JSON.stringify(manifest), 'catalog', 'movie', 'top'), true);
-  assert.equal(core.addonSupports(JSON.stringify(manifest), 'catalog', 'series', 'top'), false);
-  const extras = JSON.parse(core.addonCatalogExtras(JSON.stringify(manifest.catalogs[0])));
-  assert.equal(extras[0].name, 'genre');
-  const row = { name:'Test Movie (2010)', stream_id:101, container_extension:'mp4' };
-  const candidate = JSON.parse(core.providerCandidate(7n, 'movie', JSON.stringify(row)));
-  assert.equal(candidate.id, 'iptv:7:movie:101');
-  const request2 = JSON.stringify({ id:'tt0123456', name:'Test Movie', year:2010, imdb_id:'tt0123456' });
-  const picked = JSON.parse(core.providerSelectCandidates('movie', request2, JSON.stringify([candidate])));
-  assert.equal(picked.length, 1);
-  const provider = JSON.stringify({ url:'https://example.test', username:'demo', password:'secret' });
-  assert.equal(core.providerMediaUrl(provider, 'movie', '101', 'mp4'), 'https://example.test/movie/demo/secret/101.mp4');
-  console.log('WASM: provider bridge plan/aggregate/candidate/media helpers round-trip');
-}
+// BE-002 removes application-facing anonymous provider bridge exports.
+for (const name of ["addonEndpoint","addonCatalogExtras","addonSupports","discoverPlan","discoverAggregate","providerCandidate","providerSelectCandidates","providerMediaUrl"]) assert.equal(core[name], undefined, name);
+console.log("WASM: retired provider bridge exports absent");
