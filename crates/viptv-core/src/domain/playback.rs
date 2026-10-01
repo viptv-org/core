@@ -250,14 +250,6 @@ pub fn playback(v: &Value, origin: &str) -> Result<Value> {
             "preferredSubtitleLanguage",
         );
     }
-    if let Some(height) = match v["preferences"]["quality"].as_str() {
-        Some("1080p") => Some(1080),
-        Some("720p") => Some(720),
-        Some("480p") => Some(480),
-        _ => None,
-    } {
-        out["maximumHeight"] = json!(height);
-    }
     Ok(out)
 }
 

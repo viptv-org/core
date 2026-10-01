@@ -190,7 +190,6 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `deliveryKind`: PlaybackDeliveryKind? = null,
     val `preferredAudioLanguage`: String? = null,
     val `preferredSubtitleLanguage`: String? = null,
-    val `maximumHeight`: Long? = null,
     val `headers`: Map<String, String> = emptyMap(),
     val `id`: String,
     val `url`: String,

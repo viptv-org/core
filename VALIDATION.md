@@ -1,3 +1,17 @@
+# Dead maximumHeight session field removed — 2026-09-30
+
+Playback normalization no longer maps the retired profile quality preference
+onto a `maximumHeight` session field, and `PlaybackSession` drops it (design
+BACKEND_V2.md: maximum-quality feature removed, actual device limits retained).
+No consumer reads it; the video controller already dropped it from its session
+view. Preferences still normalize `quality` because the backend stores it.
+
+Typegen, native Kotlin bindings and the WASM build were regenerated: the
+TypeScript wire/types, Kotlin wire/types and WASM binary changed; UniFFI Kotlin
+and wasm-bindgen glue are byte-identical. Formatting, strict default and
+all-feature workspace Clippy, 66 workspace tests (default and all features) and
+the actual WASM suite passed. No consumer or device qualification follows.
+
 # Source quality reference and policy hardening — 2026-09-30
 
 With no reported device maxHeight, sourceMatch/continuationSource now rank "best"
