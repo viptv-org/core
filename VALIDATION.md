@@ -1,3 +1,21 @@
+# Source quality reference and policy hardening — 2026-09-30
+
+With no reported device maxHeight, sourceMatch/continuationSource now rank "best"
+against the highest resolution the device is likely to play among the compared
+sources (optional sourceMatch `candidates`; a lone source is judged on its own).
+A reported maxHeight remains the reference and no quality cap returns. Policy
+regexes compile once per process; two FFI-reachable unwraps were removed;
+viptv-provider (backend-only) moved to edition 2024.
+
+Formatting, strict default/all-feature workspace Clippy, all 66 workspace tests
+(default and all features), the actual WASM suite, nine runtime tests plus strict
+TypeScript, and the 35-operation retirement parity against `fba95c8` passed. A
+1,912-case policy corpus is byte-identical to the previous WASM except no-limit
+sourceMatch results. Typegen, native Kotlin and wasm-bindgen glue regenerate
+byte-identically; only the WASM binary changed. The backend suite (215 tests)
+passed against the updated provider crate in a scratch copy; the backend's
+vendored copy is not re-synced here. No consumer or device qualification follows.
+
 # Application-facing local provider retirement — 2026-09-30
 
 Core `8ae9f81` removes the retired application provider/add-on bridge and feature
