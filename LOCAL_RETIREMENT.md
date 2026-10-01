@@ -3,10 +3,12 @@
 Baseline: `fba95c8f3ba00e97fbc460acc746d23a912795bc`. The optional application
 `provider` feature, its eight provider/addon exports and Tauri forwarding feature
 are removed. Generated native Kotlin and actual WASM are rebuilt by the provided
-scripts, not edited manually. The standalone provider crate and its tests remain;
-the four removed provider-bridge unit tests and old WASM bridge block tested the
-retired wrappers, not authenticated v2 playback. Domain/Stremio normalizers,
-Crux session/events/effects, runtime transports and SmartCast are unchanged.
+scripts, not edited manually. The standalone provider crate remains because the
+backend vendors it (`backend/scripts/sync-provider.sh`); it has no tests here, and
+its behaviour is covered by the backend's suite. The four removed provider-bridge
+unit tests and old WASM bridge block tested the retired wrappers, not
+authenticated v2 playback. Domain/Stremio normalizers, Crux session/events/effects,
+runtime transports and SmartCast are unchanged.
 
 `node scripts/test-v2-retirement-parity.mjs BASELINE_CORE_CHECKOUT` compares 35
 v2/request/response/startup operations across baseline/candidate native and actual

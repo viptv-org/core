@@ -1,5 +1,5 @@
-//! Catalog "extra" capability negotiation shared by the backend and fat clients.
-use serde_json::{json, Value};
+//! Catalog "extra" capability negotiation for the backend.
+use serde_json::{Value, json};
 use std::collections::HashSet;
 
 const MAX_CATALOG_EXTRAS: usize = 16;
@@ -111,12 +111,11 @@ pub fn catalog_extras(catalog: &Value) -> Vec<CatalogExtra> {
         };
         if let Some(name) = name {
             merge_extra(&mut extras, name.clone(), required, options, limit);
-            if let Some(default) = bounded_exact_text(&value["default"], MAX_EXTRA_OPTION) {
-                if let Some(extra) = extras.iter_mut().find(|e| e.name == name) {
-                    if extra.options.is_empty() || extra.options.contains(&default) {
-                        extra.default = Some(default);
-                    }
-                }
+            if let Some(default) = bounded_exact_text(&value["default"], MAX_EXTRA_OPTION)
+                && let Some(extra) = extras.iter_mut().find(|e| e.name == name)
+                && (extra.options.is_empty() || extra.options.contains(&default))
+            {
+                extra.default = Some(default);
             }
         }
     }
