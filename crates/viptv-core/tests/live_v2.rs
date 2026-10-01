@@ -43,6 +43,70 @@ fn source_matching_ignores_retired_quality_caps_but_retains_measured_limits() {
 }
 
 #[test]
+fn best_quality_is_the_device_limit_when_one_is_reported() {
+    let prefs = json!({"audioLanguage":"en"});
+    let caps = json!({"maxHeight":1080});
+    let full = run("sourceMatch", json!({"source":{"name":"1080p h264 English audio"},"capabilities":caps,"preferences":prefs})).unwrap();
+    assert_eq!(full["best"], true);
+    assert_eq!(full["rank"], 40.0);
+    // A reported device limit stays the reference even when every compared
+    // source is lower, so candidates do not change the result.
+    let lower = json!({"source":{"name":"720p h264 English audio"},"capabilities":caps,"preferences":prefs,"candidates":[{"name":"720p h264"}]});
+    let lower = run("sourceMatch", lower).unwrap();
+    assert_eq!(lower["likely"], true);
+    assert_eq!(lower["best"], false);
+    assert_eq!(lower["rank"], 41.0);
+}
+
+#[test]
+fn best_quality_without_a_device_limit_is_the_highest_likely_source_offered() {
+    let prefs = json!({"audioLanguage":"en"});
+    let caps = json!({"hevcSdr":false});
+    let candidates = json!([
+        {"name":"720p h264 English audio"},
+        {"name":"1080p h264 English audio"},
+        {"name":"2160p hevc English audio"}
+    ]);
+    let check = |name: &str| {
+        run("sourceMatch", json!({"source":{"name":name},"capabilities":caps,"preferences":prefs,"candidates":candidates})).unwrap()
+    };
+    // 2160p HEVC is not likely without HEVC support, so 1080p is the best on offer.
+    let full = check("1080p h264 English audio");
+    assert_eq!(
+        (full["best"].clone(), full["rank"].clone()),
+        (json!(true), json!(40.0))
+    );
+    let lower = check("720p h264 English audio");
+    assert_eq!(
+        (lower["best"].clone(), lower["rank"].clone()),
+        (json!(false), json!(41.0))
+    );
+    let unplayable = check("2160p hevc English audio");
+    assert_eq!(
+        (unplayable["likely"].clone(), unplayable["rank"].clone()),
+        (json!(false), json!(45.0))
+    );
+    // Without candidates or a limit, a likely source is judged on its own and
+    // carries no quality penalty.
+    let alone = run("sourceMatch", json!({"source":{"name":"720p h264 English audio"},"capabilities":caps,"preferences":prefs})).unwrap();
+    assert_eq!(
+        (alone["best"].clone(), alone["rank"].clone()),
+        (json!(true), json!(40.0))
+    );
+    // Continuation prefers the highest likely quality among equal-language sources.
+    let sources = json!([
+        {"id":"sd","name":"720p h264 English audio","sourceAddonId":"addon:a"},
+        {"id":"hd","name":"1080p h264 English audio","sourceAddonId":"addon:b"}
+    ]);
+    let chosen = run(
+        "continuationSource",
+        json!({"sources":sources,"current":{},"capabilities":caps,"preferences":prefs}),
+    )
+    .unwrap();
+    assert_eq!(chosen["id"], "hd");
+}
+
+#[test]
 fn empty_account_and_malformed_or_legacy_pages_are_distinct() {
     assert!(
         run(

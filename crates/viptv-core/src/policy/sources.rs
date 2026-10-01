@@ -149,7 +149,17 @@ pub(super) fn continuation_source(v: &Value) -> Result {
                 .iter()
                 .find(|s| text(s, "sourceAddonId") == provider)
         } else {
-            sources.iter().filter(|s|text(s,"sourceAddonId").starts_with("addon:")).min_by(|a,b|num(&source_match(&json!({"source":a,"capabilities":v["capabilities"],"preferences":v["preferences"]})),"rank").total_cmp(&num(&source_match(&json!({"source":b,"capabilities":v["capabilities"],"preferences":v["preferences"]})),"rank")))
+            let (caps, prefs) = (&v["capabilities"], &v["preferences"]);
+            let addons = sources
+                .iter()
+                .filter(|s| text(s, "sourceAddonId").starts_with("addon:"))
+                .map(|s| (s, source_fit(s, caps, prefs)))
+                .collect::<Vec<_>>();
+            let reference = reference_height(caps, || addons.iter().map(|(_, fit)| *fit));
+            addons
+                .iter()
+                .min_by(|(_, a), (_, b)| a.rank(reference).total_cmp(&b.rank(reference)))
+                .map(|(s, _)| *s)
         };
         found
             .map(|s| {
@@ -163,14 +173,75 @@ pub(super) fn continuation_source(v: &Value) -> Result {
     })
 }
 
+/// Ranks one source. Optional `candidates` are the sources it is compared
+/// with; they only set the quality reference when the device reports no
+/// `maxHeight` (see [`reference_height`]).
 pub(super) fn source_match(v: &Value) -> Value {
-    let s = &v["source"];
-    let caps = &v["capabilities"];
-    let prefs = &v["preferences"];
-    let height = caps["maxHeight"]
-        .as_f64()
-        .filter(|n| *n > 0.0)
-        .unwrap_or(f64::INFINITY);
+    let (caps, prefs) = (&v["capabilities"], &v["preferences"]);
+    let fit = source_fit(&v["source"], caps, prefs);
+    let reference = reference_height(caps, || {
+        v["candidates"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .map(|s| source_fit(s, caps, prefs))
+            .chain([fit])
+    });
+    json!({
+        "rank": fit.rank(reference),
+        "likely": fit.likely,
+        "best": fit.likely && fit.score >= 4.0 && fit.resolution == reference,
+    })
+}
+
+/// What one source label says about its audio language and playability.
+#[derive(Clone, Copy)]
+struct SourceFit {
+    /// Preferred-audio-language evidence, 0 to 9.
+    score: f64,
+    /// Labelled vertical resolution, or 0 when unknown.
+    resolution: f64,
+    /// The label suggests this device can play it directly.
+    likely: bool,
+}
+
+impl SourceFit {
+    fn rank(self, reference: f64) -> f64 {
+        let quality = if self.likely && self.resolution == reference {
+            0.0
+        } else if self.likely {
+            1.0
+        } else {
+            5.0
+        };
+        (9.0 - self.score) * 10.0 + quality
+    }
+}
+
+/// The measured device height limit. Profile quality caps were retired
+/// (design BACKEND_V2.md); only actual decoder/display limits remain.
+fn device_max_height(caps: &Value) -> Option<f64> {
+    caps["maxHeight"].as_f64().filter(|n| *n > 0.0)
+}
+
+/// The resolution a likely source must have to rank as the best quality: the
+/// device `maxHeight` when reported, otherwise the highest resolution among
+/// the compared sources that the device is likely to play. Without a limit
+/// there is no fixed target, so the best quality actually on offer wins.
+fn reference_height<I: IntoIterator<Item = SourceFit>>(
+    caps: &Value,
+    compared: impl FnOnce() -> I,
+) -> f64 {
+    device_max_height(caps).unwrap_or_else(|| {
+        compared()
+            .into_iter()
+            .filter(|fit| fit.likely)
+            .fold(0.0, |high, fit| f64::max(high, fit.resolution))
+    })
+}
+
+fn source_fit(s: &Value, caps: &Value, prefs: &Value) -> SourceFit {
+    let height = device_max_height(caps).unwrap_or(f64::INFINITY);
     let words = [
         text(s, "name"),
         text(s, "title"),
@@ -237,5 +308,9 @@ pub(super) fn source_match(v: &Value) -> Value {
         && resolution <= height
         && (h264 || (h265 && caps["hevcSdr"] == true))
         && !heavy;
-    json!({"rank":(9.0-score)*10.0+if likely&&resolution==height{0.0}else if likely{1.0}else{5.0},"likely":likely,"best":likely&&score>=4.0&&resolution==height})
+    SourceFit {
+        score,
+        resolution,
+        likely,
+    }
 }
