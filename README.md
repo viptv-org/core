@@ -22,7 +22,7 @@ backend reuse; normalization, authenticated session/v2 wire and SmartCast remain
 Consumers must adopt the regenerated native bindings and WASM together. See
 `scripts/test-v2-retirement-parity.mjs` for baseline native/actual-WASM comparison.
 
-Use a current Rust toolchain and the WASM target. Run `cargo run -p viptv-typegen` to generate protocol types, `bash scripts/build-native-bindings.sh` for native Kotlin bindings, and `bash scripts/build-wasm.sh` with the matching wasm-bindgen CLI to build the browser artifact. Cargo.lock pins the dependency graph. CI builds native/WASM interfaces and publishes revision-named artifacts.
+Use a current Rust toolchain and the WASM target. Run `cargo run -p viptv-typegen` to generate protocol types, `bash scripts/build-native-bindings.sh` for native Kotlin bindings, and `bash scripts/build-wasm.sh` with the matching wasm-bindgen CLI to build the browser artifact. Cargo.lock pins the dependency graph. This repository has no hosted CI and publishes no artifacts: run the generators and the local checks in VALIDATION.md, then commit the regenerated output with the source change.
 
 Consumers adopt an immutable core commit together with its generated bindings and runtime. TV-web imports artifacts using `node scripts/core-sync.mjs sync ../core`, records CORE_REF and checks their hashes on build. Update Rust data handling here and regenerate once; consumer applications then adopt and rebuild. Installed apps still require an app update.
 
@@ -62,7 +62,7 @@ Rust work, run `cargo run --release -p viptv-core --example normalization_profil
 
 Android and TV-web adopt the native and WASM library respectively. Both use shared response normalization and presentation/policy outputs; the Crux session model governs restoration. Canonical artwork roles, continuation, source selection and request/response handling live in Rust. UI navigation, input/focus, device storage/network execution and player lifecycle stay in platform shells. Refer to consumer validation records for exact coverage rather than treating a binding build as adoption.
 
-Android vendors a hash-checked committed source snapshot and generated Kotlin, then hosted CI builds the host test library and three Android ABIs with cargo-ndk. TV-web vendors the WASM module, generated TypeScript and shared effect runtime. Both record CORE_REF. Edit the owning Rust source here, regenerate, commit, and explicitly sync the same immutable revision into each consumer; do not edit vendor copies. This reduces duplicate rules, but generated code and reproducible source snapshots can increase checkout size.
+Android vendors a hash-checked committed source snapshot and generated Kotlin; its own `scripts/prepare-core.sh` builds the host test library and three Android ABIs with cargo-ndk, locally or in the Android repository's build workflow. TV-web vendors the WASM module, generated TypeScript and shared effect runtime. Both record CORE_REF. Edit the owning Rust source here, regenerate, commit, and explicitly sync the same immutable revision into each consumer; do not edit vendor copies. This reduces duplicate rules, but generated code and reproducible source snapshots can increase checkout size.
 
 Tauri's native command and native-fetch adapters are available and tested through their injected ports. No installed desktop application migration is claimed in this Android/web delivery.
 
