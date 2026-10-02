@@ -1,3 +1,16 @@
+# Successful response validation keeps HTTP status — 2026-10-02
+
+Malformed successful identity/token responses now retain the actual HTTP status
+in the session error view. A received HTTP200 with an empty required account name
+was previously projected with no status and misclassified by consumers as a
+connection refusal. The public CoreBridge regression reproduces null before the
+fix and200 afterward while retaining saved-session retry.
+
+Formatting, strict workspace/all-targets Clippy,67 native workspace tests and
+the actual WASM suite pass. Typegen/native binding output stays byte-identical;
+the WASM binary is regenerated. This is a response-classification change, not an
+identity-validation relaxation, transport policy change or native playback claim.
+
 # Dead maximumHeight session field removed — 2026-09-30
 
 Playback normalization no longer maps the retired profile quality preference

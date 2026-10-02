@@ -62,6 +62,15 @@ pub(super) fn fail(model: &mut Model, message: &str) -> Command<Effect, Event> {
     model.view.error_status = None;
     render()
 }
+pub(super) fn fail_response(
+    model: &mut Model,
+    status: u16,
+    message: &str,
+) -> Command<Effect, Event> {
+    let command = fail(model, message);
+    model.view.error_status = Some(status);
+    command
+}
 pub(super) fn save(model: &Model, purpose: StoragePurpose) -> Command<Effect, Event> {
     storage(
         model,

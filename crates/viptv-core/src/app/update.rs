@@ -1,4 +1,4 @@
-use super::commands::{fail, finish_identity, me, request, save, select, storage};
+use super::commands::{fail, fail_response, finish_identity, me, request, save, select, storage};
 use super::types::*;
 use crate::domain;
 use crux_core::{App, Command, render::render};
@@ -208,14 +208,20 @@ impl App for Viptv {
                     return command;
                 }
                 if response.body.len() > 2 * 1024 * 1024 {
-                    return fail(model, "Invalid server response");
+                    return fail_response(model, response.status, "Invalid server response");
                 }
                 let payload = if response.body.is_empty() {
                     json!({})
                 } else {
                     match serde_json::from_slice(&response.body) {
                         Ok(v) => v,
-                        Err(_) => return fail(model, "Invalid server response"),
+                        Err(_) => {
+                            return fail_response(
+                                model,
+                                response.status,
+                                "Invalid server response",
+                            );
+                        }
                     }
                 };
                 match purpose {
@@ -225,7 +231,9 @@ impl App for Viptv {
                         });
                         match identity {
                             Ok(identity) => finish_identity(model, identity),
-                            Err(_) => fail(model, "Invalid server response"),
+                            Err(_) => {
+                                fail_response(model, response.status, "Invalid server response")
+                            }
                         }
                     }
                     HttpPurpose::Refresh => {
@@ -247,7 +255,9 @@ impl App for Viptv {
                                 model.tokens = Some(session);
                                 save(model, StoragePurpose::Refresh)
                             }
-                            Err(_) => fail(model, "Invalid server response"),
+                            Err(_) => {
+                                fail_response(model, response.status, "Invalid server response")
+                            }
                         }
                     }
                     HttpPurpose::Select(id) => {
