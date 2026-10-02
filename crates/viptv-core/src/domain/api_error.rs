@@ -60,9 +60,9 @@ pub fn api_error(v: &Value) -> Value {
         "source_configuration_changed" => {
             Some("The source configuration changed. Refresh the sources and try again.")
         }
-        "source_format_unsupported" => Some(
-            "Only HTTP(S) streams are supported here. Choose another source or configure a resolver.",
-        ),
+        "source_format_unsupported" => {
+            Some("This source format is not supported. Choose another source.")
+        }
         "source_route_migration_required" => Some(
             "This source still uses a retired routing configuration. Ask the server operator to update it.",
         ),
