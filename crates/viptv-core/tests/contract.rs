@@ -70,6 +70,24 @@ fn identity_restores_authorized_profile_without_auth_flash() {
     assert!(!c.view().unwrap().contains("fake-access"));
 }
 #[test]
+fn malformed_successful_identity_is_a_response_error_not_a_network_outage() {
+    let core = CoreBridge::new();
+    let request = restored(&core, json!("profile-1"));
+    let mut malformed = me(json!("profile-1"));
+    malformed["account"]["name"] = json!("");
+    http(&core, &request, 200, malformed);
+    assert_eq!(view(&core)["phase"], "Error");
+    assert_eq!(view(&core)["error"], "Invalid server response");
+    assert_eq!(view(&core)["errorStatus"], 200);
+    let retry = effect(&event(&core, json!("Retry")), "Http");
+    assert!(
+        retry["effect"]["Http"]["url"]
+            .as_str()
+            .unwrap()
+            .ends_with("/api/auth/me")
+    );
+}
+#[test]
 fn transient_failure_retains_tokens_for_retry() {
     let c = CoreBridge::new();
     let request = restored(&c, json!("profile-1"));
