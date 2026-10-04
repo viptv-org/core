@@ -45,6 +45,9 @@ pub(super) fn merge_episode_progress(v: &Value) -> Result {
                             "position",
                             "duration",
                             "watched",
+                            "resumeActive",
+                            "watchDateKnown",
+                            "completionOnly",
                             "sourceAddonId",
                             "sourceName",
                             "sourceFingerprint",
@@ -86,9 +89,17 @@ pub(super) fn initial_episode(v: &Value) -> Result {
         let latest = eps
             .iter()
             .enumerate()
-            .filter(|(_, e)| updated(e) > 0.0)
+            .filter(|(_, e)| e["completionOnly"] != true && updated(e) > 0.0)
             .max_by(|(_, a), (_, b)| updated(a).total_cmp(&updated(b)));
-        if let Some((index, latest)) = latest {
+        let active = eps
+            .iter()
+            .filter(|e| {
+                e["resumeActive"] == true && e["completionOnly"] != true && updated(e) > 0.0
+            })
+            .max_by(|a, b| updated(a).total_cmp(&updated(b)));
+        if let Some(active) = active {
+            active.clone()
+        } else if let Some((index, latest)) = latest {
             if watched(latest) {
                 eps.iter()
                     .skip(index + 1)
@@ -113,12 +124,13 @@ pub(super) fn initial_episode(v: &Value) -> Result {
             }
         } else {
             eps.iter()
-                .find(|e| num(e, "position") > 0.0 && !watched(e))
+                .find(|e| e["completionOnly"] != true && num(e, "position") > 0.0 && !watched(e))
                 .or_else(|| {
                     eps.iter().find(|e| {
                         !v["original"]["episode"].is_null()
                             && e["season"] == v["original"]["season"]
                             && e["episode"] == v["original"]["episode"]
+                            && !watched(e)
                     })
                 })
                 .or_else(|| eps.iter().find(|e| !watched(e) && e["season"] != 0))

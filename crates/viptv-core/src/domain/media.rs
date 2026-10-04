@@ -208,6 +208,15 @@ pub fn media(v: &Value) -> Result<Value> {
     if v["watched"].is_boolean() {
         copy(v, &mut out, "watched", "watched");
     }
+    for (snake, camel) in [
+        ("resume_active", "resumeActive"),
+        ("watch_date_known", "watchDateKnown"),
+        ("completion_only", "completionOnly"),
+    ] {
+        if let Some(value) = v[snake].as_bool().or_else(|| v[camel].as_bool()) {
+            out[camel] = json!(value);
+        }
+    }
     if v["previous_episode"].is_object() {
         out["previousEpisode"] = media(&v["previous_episode"])?;
     }

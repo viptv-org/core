@@ -19,10 +19,12 @@ pub(super) fn presentation(v: &Value) -> Result {
         };
         let live = text(m, "type") == "live";
         let next = text(m, "queueStatus") == "next";
-        let resume = !live && num(m, "position") > 0.0;
+        let resume = !live
+            && m["completionOnly"] != true
+            && (m["resumeActive"] == true || num(m, "position") > 0.0);
         let action = if live {
             "play"
-        } else if next {
+        } else if next && m["resumeActive"] != true {
             "next"
         } else if resume {
             "resume"
@@ -66,11 +68,11 @@ pub(super) fn card_presentation(v: &Value) -> Result {
             })
             .unwrap_or((Value::Null, "none"));
         let status = match text(m, "queueStatus") {
-            "next" => "Play next episode".to_owned(),
+            "next" if m["resumeActive"] != true => "Play next episode".to_owned(),
             "caught_up" => "You're caught up".to_owned(),
             "upcoming" => "Next episode coming soon".to_owned(),
             "pending" | "unavailable" => "Find next episode".to_owned(),
-            _ if !live && num(m, "position") > 0.0 => {
+            _ if !live && m["completionOnly"] != true && num(m, "position") > 0.0 => {
                 let seconds = num(m, "position").floor() as u64;
                 format!("Resume at {}:{:02}", seconds / 60, seconds % 60)
             }

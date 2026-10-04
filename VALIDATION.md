@@ -1,3 +1,28 @@
+# Tagged watched completion and active rewatch projections — 2026-10-04
+
+The `media` DTO now projects the backend's optional `resume_active`,
+`watch_date_known`, and `completion_only` booleans as typed camelCase facts on
+movies, episodes and previous episodes. Missing flags remain absent. Episode
+history merge retains these facts. `initialEpisode` ignores completion-only
+sorting dates as activity, prefers the most recent real active resume even when
+`watched=true`, and otherwise retains completed-to-next navigation and an
+unwatched metadata fallback. Home enrichment retains the exact occurrence's
+watched/resume facts; queue and hero actions prioritize active rewatch over
+`next` without inventing completion dates or modifying the backend import policy.
+
+New native regressions failed 2/3 before the fix (missing DTO/merged facts), then
+passed 3/3. `cargo fmt --all -- --check`, `cargo test --workspace --locked`
+(70 tests), `cargo test --workspace --all-features --locked` (70 tests),
+`cargo clippy --workspace --all-targets --locked -- -D warnings`, and the
+actual WASM suite (`node scripts/test-wasm.mjs`, including import facts and
+active rewatch vectors) pass. `cargo run --locked -p viptv-typegen` regenerates
+wire Kotlin/TypeScript; native UniFFI generation from the Windows DLL changes
+only template trailing whitespace, so the existing checked-in UniFFI bridge
+stays unchanged. `cargo build --locked -p viptv-core --release --target
+wasm32-unknown-unknown` and wasm-bindgen CLI 0.2.92 regenerate the real binary.
+No consumer
+adoption, server repair, deployment or hardware claim follows from these checks.
+
 # Successful response validation keeps HTTP status — 2026-10-02
 
 Malformed successful identity/token responses now retain the actual HTTP status
