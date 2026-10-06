@@ -40,6 +40,30 @@ assert.equal(v2Poll.state.errors[0].code,'provider_connection_limit');
 assert.ok(v2Poll.state.errors[0].message.includes('Stop another stream'));
 assert.ok(!JSON.stringify(v2Poll).includes('private-token'));
 const domain = (kind, value) => JSON.parse(core.normalize(kind, JSON.stringify(value), 'https://example.test'));
+const playbackErrors = JSON.parse(await readFile(new URL('tests/playback-error-vectors.json', root), 'utf8'));
+const failedPlayback = code => ({id:'pb2_error_fixture',status:'failed',expires_at:1800000060,renew_after_seconds:20,error_code:code,error:'https://provider.invalid/private-token Authorization: Bearer private-token',delivery:{url:'https://provider.invalid/private-token',headers:{Cookie:'private-token'}}});
+for (const {code,status,message} of playbackErrors) {
+  for (const httpStatus of [status,502]) {
+    for (const error of ['A different upstream explanation','https://private.invalid/token']) {
+      assert.deepEqual(domain('apiError',{status:httpStatus,error_code:code,error}),{code,message});
+    }
+  }
+  const failed = domain('playbackV2',failedPlayback(code));
+  assert.equal(failed.errorCode,code);
+  assert.equal(failed.error,message);
+  assert.equal(failed.session,null);
+  assert.ok(!JSON.stringify(failed).includes('private-token'));
+}
+for (const [code,expected] of [['future_gateway_failure','future_gateway_failure'],['https://private.invalid/token',''],['gateway_startup_timeout\nprivate-token',''],['x'.repeat(65),''],[null,'playback_failed']]) {
+  const failed = domain('playbackV2',failedPlayback(code));
+  assert.equal(failed.errorCode,expected);
+  assert.equal(failed.error,expected === 'playback_failed' ? 'The selected source could not start. Try another source or retry playback.' : 'The server or provider is temporarily unavailable. Try again or choose another source.');
+  assert.equal(failed.session,null);
+  assert.ok(!JSON.stringify(failed).includes('private-token'));
+  assert.ok(!JSON.stringify(failed).includes('private.invalid'));
+}
+assert.deepEqual(domain('apiError',{status:429}),{code:'',message:'Too many requests. Wait a moment and try again.'});
+console.log(`WASM: ${playbackErrors.length} canonical playback error vectors, HTTP/lease consistency and diagnostic redaction passed`);
 const rawLive = domain('liveCatalogV2', {catalog_id:2,generation:0,items:[{id:'iptv:2:7',name:'News',logo:'http://provider.example/news.png'}],next_cursor:'opaque_next'});
 assert.equal(rawLive.catalogId,'2');
 assert.equal(rawLive.items[0].poster,'http://provider.example/news.png');

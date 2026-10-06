@@ -13,6 +13,28 @@ Crux Rust application behavior and API normalization for browser, Android and Ta
 
 `crates/viptv-core::vizio` ports the MIT-licensed `get-air/vizio` SmartCast protocol into Rust. `SmartCastBridge` is a serialized native workflow for Android mobile and Tauri desktop: platform code executes one exact-TV-origin HTTPS request at a time and returns status/body, while Rust owns pairing-token adoption, input freshness, setting validation/retry and command payloads. Android adapter source includes a dedicated scoped-TLS OkHttp client and Android Keystore token store. Tauri adapter source includes a native reqwest client and OS keyring. SmartCast is not a playback backend and is not wired into browser, Android TV, Tizen, Vizio-hosted, or Roku applications.
 
+## Playback error normalization
+
+`normalize("apiError", ...)` maps stable backend `error_code` values to canonical,
+user-safe messages. `normalize("playbackV2", ...)` uses the same mapping for failed
+and expired leases, so HTTP refusal and asynchronous preparation failure retain
+one explanation across native and WASM consumers. Gateway access/scope, capacity,
+cleanup, startup timeout, processing, protocol and connectivity failures stay
+separate from provider limits, source access/configuration and unsupported delivery.
+A bare HTTP 429 is rate limiting, not evidence of a provider connection limit.
+
+Known codes take precedence over upstream text. Terminal leases never expose raw
+error text or delivery credentials; unknown codes use a safe fallback. HTTP errors
+retain the existing bounded/redacted text fallback for compatibility. The output
+contracts remain `message`/`code` for API errors and `error`/`errorCode` for leases.
+These messages do not select another source or prescribe automatic retry. Native
+player/decoder facts still belong to platform adapters; core does not infer their
+cause from backend status codes.
+
+`tests/playback-error-vectors.json` supplies the canonical cases to the native
+`playback_errors` integration tests and the actual WASM suite. Consumer adoption
+requires the same immutable core revision and rebuilt native/WASM artifacts.
+
 ## Build and adoption
 
 BE-002 retires the application-facing anonymous addon/provider bridge. Core

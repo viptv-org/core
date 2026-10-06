@@ -36,6 +36,39 @@ pub fn api_error(v: &Value) -> Value {
         "gateway_capacity" => {
             Some("Playback capacity is currently full. Stop another stream or try again shortly.")
         }
+        "gateway_cleanup_pending" => {
+            Some("The previous stream is still being closed. Try again shortly.")
+        }
+        "gateway_startup_timeout" => Some(
+            "The gateway took too long to prepare this source. Try again or choose another source.",
+        ),
+        "gateway_processing_failed" => Some(
+            "The gateway could not prepare this stream. Choose another source or check the gateway.",
+        ),
+        "gateway_key_rejected" => {
+            Some("The gateway rejected this integration key. Check that it is active.")
+        }
+        "gateway_scope_missing" => {
+            Some("The gateway key must allow this namespace and all required playback operations.")
+        }
+        "gateway_protocol_invalid" => {
+            Some("The gateway returned an incompatible response. Check its service version.")
+        }
+        "gateway_redirect_rejected" => Some(
+            "Use the gateway's final HTTPS endpoint; control requests cannot follow redirects.",
+        ),
+        "gateway_not_ready" | "gateway_dns_unavailable" | "gateway_unavailable" => Some(
+            "The gateway is not ready or could not be reached securely. Try again or check its address.",
+        ),
+        "gateway_storage_unavailable" => {
+            Some("Gateway settings are temporarily unavailable. Try again.")
+        }
+        "invalid_playback_request" => {
+            Some("Check the source, playback position and device capabilities.")
+        }
+        "playback_conflict" => Some(
+            "This playback request ID was already used for a different request. Start a new request.",
+        ),
         "provider_rate_limited" => {
             Some("The IPTV provider is limiting API requests. Wait before trying again.")
         }
@@ -63,6 +96,12 @@ pub fn api_error(v: &Value) -> Value {
         "source_format_unsupported" => {
             Some("This source format is not supported. Choose another source.")
         }
+        "source_headers_unsupported" => Some(
+            "This source requires unsupported or invalid request headers. Choose another source.",
+        ),
+        "source_credentials_migration_required" => Some(
+            "This source needs an ownership and encryption migration before it can be used. Ask the server operator to migrate it and configure the encryption keyring.",
+        ),
         "source_route_migration_required" => Some(
             "This source still uses a retired routing configuration. Ask the server operator to update it.",
         ),
@@ -112,9 +151,9 @@ pub fn api_error(v: &Value) -> Value {
         "source_access_denied" => Some(
             "The provider rejected access to this stream. Check the provider account or choose another source.",
         ),
-        "source_unavailable" => {
-            Some("The provider could not be reached. Try again or choose another source.")
-        }
+        "source_unavailable" => Some(
+            "The source could not be reached or inspected. Try again or choose another source.",
+        ),
         "delivery_unsupported" => Some(
             "This source cannot be played with the current playback configuration. Choose another source.",
         ),
