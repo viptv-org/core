@@ -35,6 +35,12 @@ cause from backend status codes.
 `playback_errors` integration tests and the actual WASM suite. Consumer adoption
 requires the same immutable core revision and rebuilt native/WASM artifacts.
 
+## Playback protocol foundation
+
+The closed `playbackProtocolV2` raw-text normalizer and bodyless protocol/request-ID
+cancellation operations are documented in [docs/playback-protocol.md](docs/playback-protocol.md).
+They expose protocol support only; native grants, admission and capability remain inactive.
+
 ## Build and adoption
 
 BE-002 retires the application-facing anonymous addon/provider bridge. Core

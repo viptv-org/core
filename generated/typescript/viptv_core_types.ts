@@ -680,6 +680,12 @@ export function matchPlaybackPlatform<R>(value: PlaybackPlatform, cases: {
     return cases[value.kind as PlaybackPlatform["kind"]](value as never);
 }
 
+/// Validated protocol support only; no account admission, grants or qualification.
+export class PlaybackProtocol {
+    constructor (public version: uint32, public nativeTorrentVersions: Seq<uint32>) {
+    }
+}
+
 export class PlaybackRecoveryFacts {
     constructor (public serverManaged: bool, public networkFailure: bool, public alreadyAttempted: bool) {
     }

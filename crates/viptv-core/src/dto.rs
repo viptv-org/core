@@ -253,6 +253,15 @@ pub enum PlaybackLeaseStatus {
     Expired,
     Released,
 }
+/// Validated protocol support only; no account admission, grants or qualification.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct PlaybackProtocol {
+    pub version: u32,
+    pub native_torrent_versions: Vec<u32>,
+}
+
 #[derive(Clone, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]

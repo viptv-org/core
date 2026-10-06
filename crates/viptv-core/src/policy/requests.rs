@@ -60,6 +60,18 @@ pub(super) fn request(v: &Value) -> Result {
                 body = snake(&v["playback"]);
                 ("POST", "/api/playback".into())
             }
+            "playbackProtocolV2" => {
+                body = Value::Null;
+                ("GET", "/api/v2/playback-protocol".into())
+            }
+            "playbackV2CancelRequest" => {
+                let id = text(v, "requestId");
+                if !crate::domain::playback_protocol::valid_identifier(id) {
+                    return Err(CoreError::InvalidInput);
+                }
+                body = Value::Null;
+                ("DELETE", format!("/api/v2/playback-requests/{id}"))
+            }
             "playbackV2" => {
                 body = playback_v2_request(&v["playback"])?;
                 ("POST", "/api/v2/playback".into())

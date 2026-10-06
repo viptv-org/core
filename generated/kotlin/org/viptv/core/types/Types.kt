@@ -613,6 +613,12 @@ enum class PlaybackPlatform {
     VIZIO;
 }
 
+/// Validated protocol support only; no account admission, grants or qualification.
+data class PlaybackProtocol(
+    val version: UInt,
+    val nativeTorrentVersions: List<UInt>,
+)
+
 data class PlaybackRecoveryFacts(
     val serverManaged: Boolean,
     val networkFailure: Boolean,

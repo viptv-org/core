@@ -65,7 +65,21 @@ pub fn normalize(kind: String, input: String, origin: String) -> Result<String, 
     if input.len() > 2 * 1024 * 1024 {
         return Err(CoreError::InvalidInput);
     }
-    let value = serde_json::from_str(&input).map_err(|_| CoreError::InvalidInput)?;
+    // Closed protocol validation must precede Value's loss of duplicate fields/tokens.
+    if kind == "playbackProtocolV2" {
+        return serde_json::to_string(&domain::playback_protocol::parse(&input)?)
+            .map_err(|_| CoreError::InvalidInput);
+    }
+    let value: serde_json::Value =
+        serde_json::from_str(&input).map_err(|_| CoreError::InvalidInput)?;
+    if kind == "request"
+        && matches!(
+            value["operation"].as_str(),
+            Some("playbackProtocolV2" | "playbackV2CancelRequest")
+        )
+    {
+        domain::playback_protocol::validate_request(&input)?;
+    }
     let normalized = domain::normalize_owned(&kind, value, &origin)?;
     validate_normalized(&kind, &normalized)?;
     serde_json::to_string(&normalized).map_err(|_| CoreError::InvalidInput)

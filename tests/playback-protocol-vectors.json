@@ -1,0 +1,581 @@
+[
+  {
+    "name": "supported",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1]}",
+    "output": {
+      "version": 1,
+      "nativeTorrentVersions": [
+        1
+      ]
+    }
+  },
+  {
+    "name": "unsupported",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[]}",
+    "output": {
+      "version": 1,
+      "nativeTorrentVersions": []
+    }
+  },
+  {
+    "name": "whitespace and order",
+    "kind": "playbackProtocolV2",
+    "input": " \n {\"native_torrent_versions\" : [ 1 ], \"version\" : 1 }\t",
+    "output": {
+      "version": 1,
+      "nativeTorrentVersions": [
+        1
+      ]
+    }
+  },
+  {
+    "name": "escaped field names",
+    "kind": "playbackProtocolV2",
+    "input": "{\"vers\\u0069on\":1,\"native_torrent_versions\":[1]}",
+    "output": {
+      "version": 1,
+      "nativeTorrentVersions": [
+        1
+      ]
+    }
+  },
+  {
+    "name": "exact body limit",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1]}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     ",
+    "output": {
+      "version": 1,
+      "nativeTorrentVersions": [
+        1
+      ]
+    }
+  },
+  {
+    "name": "over body limit",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1]}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "missing version",
+    "kind": "playbackProtocolV2",
+    "input": "{\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "missing versions",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "null versions",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":null}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "non-array versions",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":1}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "multiple versions",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1,1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "duplicate version",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"version\":1,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "duplicate versions",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[],\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "escaped duplicate",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"vers\\u0069on\":1,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "unknown field",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1],\"diagnostic\":\"synthetic-private-value\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "mixed variant",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1],\"grant\":{}}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "empty",
+    "kind": "playbackProtocolV2",
+    "input": "",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "null",
+    "kind": "playbackProtocolV2",
+    "input": "null",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "array",
+    "kind": "playbackProtocolV2",
+    "input": "[]",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "trailing value",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1]}{}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "truncated",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1]",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid token replacement character",
+    "kind": "playbackProtocolV2",
+    "input": "�{\"version\":1,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "unknown version",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":2,\"native_torrent_versions\":[]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 1.0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1.0,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 1.0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1.0]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 1e0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1e0,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 1e0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1e0]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 1E+0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1E+0,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 1E+0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1E+0]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 1e-0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1e-0,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 1e-0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[1e-0]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 01",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":01,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 01",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[01]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token +1",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":+1,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token +1",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[+1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token -0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":-0,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token -0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[-0]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token -1",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":-1,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token -1",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[-1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":0,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 0",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[0]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 2",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":2,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 2",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[2]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 9007199254740993",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":9007199254740993,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 9007199254740993",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[9007199254740993]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token 18446744073709551616",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":18446744073709551616,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token 18446744073709551616",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[18446744073709551616]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token true",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":true,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token true",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[true]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token false",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":false,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token false",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[false]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token null",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":null,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token null",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[null]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token \"1\"",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":\"1\",\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token \"1\"",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[\"1\"]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token {}",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":{},\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token {}",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[{}]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token []",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":[],\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token []",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[[]]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token NaN",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":NaN,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token NaN",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[NaN]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "version token Infinity",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":Infinity,\"native_torrent_versions\":[1]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "list token Infinity",
+    "kind": "playbackProtocolV2",
+    "input": "{\"version\":1,\"native_torrent_versions\":[Infinity]}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "protocol request",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackProtocolV2\"}",
+    "output": {
+      "method": "GET",
+      "path": "/api/v2/playback-protocol",
+      "body": null
+    }
+  },
+  {
+    "name": "cancel minimum id",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2CancelRequest\",\"requestId\":\"a\"}",
+    "output": {
+      "method": "DELETE",
+      "path": "/api/v2/playback-requests/a",
+      "body": null
+    }
+  },
+  {
+    "name": "cancel identifier alphabet",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"azAZ09_-\"}",
+    "output": {
+      "method": "DELETE",
+      "path": "/api/v2/playback-requests/azAZ09_-",
+      "body": null
+    }
+  },
+  {
+    "name": "cancel maximum id",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"}",
+    "output": {
+      "method": "DELETE",
+      "path": "/api/v2/playback-requests/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "body": null
+    }
+  },
+  {
+    "name": "invalid cancel id ''",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'a/b'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"a/b\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id '../a'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"../a\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'a.b'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"a.b\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'a%2Fb'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"a%2Fb\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'a?b'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"a?b\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'a#b'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"a#b\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'a b'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"a b\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'a\\nb'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"a\\nb\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'é'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"\\u00e9\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 'Ａ'",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"\\uff21\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id 1",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": 1}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id None",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": null}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "invalid cancel id True",
+    "kind": "request",
+    "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": true}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "cancel missing id",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2CancelRequest\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "cancel wrong alias",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2CancelRequest\",\"id\":\"a\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "cancel duplicate id",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2CancelRequest\",\"requestId\":\"a\",\"requestId\":\"b\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "cancel duplicate operation",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2Stop\",\"operation\":\"playbackV2CancelRequest\",\"requestId\":\"a\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "protocol duplicate operation",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2Stop\",\"operation\":\"playbackProtocolV2\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "protocol body",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackProtocolV2\",\"body\":{}}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "cancel body",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2CancelRequest\",\"requestId\":\"a\",\"body\":{}}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "protocol unexpected id",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackProtocolV2\",\"requestId\":\"a\"}",
+    "error": "Invalid server response or input"
+  }
+]

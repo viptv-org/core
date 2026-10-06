@@ -88,6 +88,7 @@ pub fn generate(registry: &Registry) -> String {
                     | "SourcePresentation"
                     | "PlaybackSession"
                     | "PlaybackLease"
+                    | "PlaybackProtocol"
                     | "PlaybackV2Request"
                     | "PlaybackClient"
                     | "PlaybackAuthorization"

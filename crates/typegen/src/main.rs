@@ -70,6 +70,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::SourcesPollStep>()?
         .register_type::<viptv_core::dto::PlaybackSession>()?
         .register_type::<viptv_core::dto::PlaybackLease>()?
+        .register_type::<viptv_core::dto::PlaybackProtocol>()?
         .register_type::<viptv_core::dto::PlaybackV2Request>()?
         .register_type::<viptv_core::dto::DiscoverPage>()?
         .register_type::<viptv_core::dto::LiveCatalogPage>()?

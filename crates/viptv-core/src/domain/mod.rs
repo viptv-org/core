@@ -7,6 +7,7 @@ mod identity;
 mod live_v2;
 mod media;
 mod playback;
+pub(crate) mod playback_protocol;
 mod streams;
 
 pub use api_error::api_error;

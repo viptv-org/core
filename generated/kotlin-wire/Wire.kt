@@ -318,6 +318,10 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `launchPositionMillis`: Long,
     val `playWhenReady`: Boolean
 )
+@Serializable data class PlaybackProtocol(
+    val `version`: Long,
+    val `nativeTorrentVersions`: List<Long> = emptyList()
+)
 @Serializable data class PlaybackRecoveryFacts(
     val `serverManaged`: Boolean,
     val `networkFailure`: Boolean,
