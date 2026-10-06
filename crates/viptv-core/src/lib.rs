@@ -225,6 +225,13 @@ fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreErro
     }
     match kind {
         "cardPresentation" => check::<dto::CardPresentation>(v),
+        "homeActions" => check::<dto::HomeActions>(v),
+        "episodeWatching" => check::<dto::EpisodeWatching>(v),
+        "phonePresentation" => check::<dto::PhonePresentation>(v),
+        "sourceRanks" => check::<dto::SourceRanks>(v),
+        "sourceProducerLabels" => check::<Vec<dto::SourceProducerOutcome>>(v),
+        "sourcesPollStep" => check::<dto::SourcesPollStep>(v),
+        "discoverPolicy" => check::<dto::DiscoverPolicyProjection>(v),
         "catalog" => check::<dto::Catalog>(v),
         "catalogs" => check::<Vec<dto::Catalog>>(v),
         "media" => check::<dto::MediaItem>(v),

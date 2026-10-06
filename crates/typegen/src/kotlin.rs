@@ -47,6 +47,37 @@ pub fn generate(registry: &Registry) -> String {
             && matches!(
                 name.name.as_str(),
                 "MediaItem"
+                    | "HomeActions"
+                    | "EpisodeWatching"
+                    | "PhonePresentation"
+                    | "SourceRank"
+                    | "SourceRanks"
+                    | "SourceProducerOutcome"
+                    | "DiscoverPolicyProjection"
+                    | "ForegroundAuthorityInput"
+                    | "HomeRevisionInput"
+                    | "PreviewScopeInput"
+                    | "PreviewScopeDecision"
+                    | "PreviewInput"
+                    | "UpNextPlaybackInput"
+                    | "UpNextPlaybackDecision"
+                    | "UpNextGateInput"
+                    | "UpNextGateDecision"
+                    | "CountdownInput"
+                    | "CountdownDecision"
+                    | "PlaybackTimelineFacts"
+                    | "PlaybackTimelineProjection"
+                    | "PlaybackSeekFacts"
+                    | "PlaybackPauseFacts"
+                    | "PlaybackPauseDecision"
+                    | "PlaybackRecoveryFacts"
+                    | "PlaybackDeliveryFacts"
+                    | "PlaybackLeaseFacts"
+                    | "PlaybackAuthorityFacts"
+                    | "PlaybackAuthorityBudget"
+                    | "PlaybackFailureFacts"
+                    | "PlaybackFailureDecision"
+                    | "LivePageValidationFacts"
                     | "SourceFailure"
                     | "SourcesPollState"
                     | "SourcesPollStep"
@@ -104,4 +135,46 @@ pub fn generate(registry: &Registry) -> String {
         }
     }
     s
+}
+
+#[cfg(test)]
+mod tests {
+    use super::generate;
+    use crux_core::type_generation::facet::TypeRegistry;
+
+    #[test]
+    fn registered_policy_dtos_generate_serializable_kotlin_structs() {
+        let generator = TypeRegistry::new()
+            .register_type::<viptv_core::dto::HomeActions>()
+            .unwrap()
+            .register_type::<viptv_core::dto::SourceRanks>()
+            .unwrap()
+            .register_type::<viptv_core::policy::shell_lifecycle::ForegroundAuthorityInput>()
+            .unwrap()
+            .register_type::<viptv_core::policy::shell_lifecycle::UpNextPlaybackDecision>()
+            .unwrap()
+            .register_type::<viptv_core::policy::shell_lifecycle::CountdownDecision>()
+            .unwrap()
+            .register_type::<viptv_core::policy::playback_control::PlaybackTimelineFacts>()
+            .unwrap()
+            .build()
+            .unwrap();
+        let output = generate(&generator.registry());
+        for name in [
+            "HomeActions",
+            "SourceRank",
+            "SourceRanks",
+            "ForegroundAuthorityInput",
+            "UpNextPlaybackDecision",
+            "CountdownDecision",
+            "PlaybackTimelineFacts",
+        ] {
+            assert!(
+                output.contains(&format!("@Serializable data class {name}(")),
+                "Missing {name}"
+            );
+        }
+        assert!(output.contains("val `remainingMillis`: Long"));
+        assert!(output.contains("val `resumeAwaitingKey`: String? = null"));
+    }
 }

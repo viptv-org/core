@@ -64,7 +64,8 @@ for (const [code,expected] of [['future_gateway_failure','future_gateway_failure
 }
 assert.deepEqual(domain('apiError',{status:429}),{code:'',message:'Too many requests. Wait a moment and try again.'});
 console.log(`WASM: ${playbackErrors.length} canonical playback error vectors, HTTP/lease consistency and diagnostic redaction passed`);
-const rawLive = domain('liveCatalogV2', {catalog_id:2,generation:0,items:[{id:'iptv:2:7',name:'News',logo:'http://provider.example/news.png'}],next_cursor:'opaque_next'});
+await import('./test-policy-migration.mjs');
+const rawLive = domain('liveCatalogV2', {catalog_id:2,generation:0,items:[{id:'iptv:2:7',name:'News',logo:'http://provider.example/news.png'}],next_cursor:'opaque_next',previous_cursor:null});
 assert.equal(rawLive.catalogId,'2');
 assert.equal(rawLive.items[0].poster,'http://provider.example/news.png');
 assert.equal(rawLive.nextCursor,'opaque_next');

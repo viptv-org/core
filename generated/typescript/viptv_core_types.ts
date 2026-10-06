@@ -1,6 +1,7 @@
 type bool = boolean;
 type bytes = Uint8Array;
 type float64 = number;
+type int32 = number;
 type int64 = bigint;
 type Optional<T> = T | null;
 type Seq<T> = T[];
@@ -36,8 +37,42 @@ export class CatalogExtra {
     }
 }
 
+export type CountdownAction =
+    | { kind: "Begin" }
+    | { kind: "Advance" }
+    | { kind: "Cancel" };
+
+export const countdownActionBegin = (): CountdownAction => ({ kind: "Begin" });
+
+export const countdownActionAdvance = (): CountdownAction => ({ kind: "Advance" });
+
+export const countdownActionCancel = (): CountdownAction => ({ kind: "Cancel" });
+
+export function matchCountdownAction<R>(value: CountdownAction, cases: {
+    Begin: (v: Extract<CountdownAction, { kind: "Begin" }>) => R;
+    Advance: (v: Extract<CountdownAction, { kind: "Advance" }>) => R;
+    Cancel: (v: Extract<CountdownAction, { kind: "Cancel" }>) => R;
+}): R {
+    return cases[value.kind as CountdownAction["kind"]](value as never);
+}
+
+export class CountdownDecision {
+    constructor (public remainingMillis: int64, public seconds: int64, public active: bool, public done: bool) {
+    }
+}
+
+export class CountdownInput {
+    constructor (public action: CountdownAction, public remainingMillis: int64, public active: bool, public elapsedMillis: int64, public progressing: bool, public scopeMatches: bool) {
+    }
+}
+
 export class DiscoverPage {
     constructor (public items: Seq<MediaItem>, public unsupportedCount: Optional<uint32>, public hasMore: bool, public nextSkip: Optional<float64>) {
+    }
+}
+
+export class DiscoverPolicyProjection {
+    constructor (public group: str, public groupLabel: str, public firstCatalogIndex: Optional<uint32>, public defaults: Map<str,str>) {
     }
 }
 
@@ -58,6 +93,11 @@ export function matchEffect<R>(value: Effect, cases: {
     Storage: (v: Extract<Effect, { kind: "Storage" }>) => R;
 }): R {
     return cases[value.kind as Effect["kind"]](value as never);
+}
+
+export class EpisodeWatching {
+    constructor (public watching: bool, public progress: float64) {
+    }
 }
 
 export type Event =
@@ -85,6 +125,72 @@ export function matchEvent<R>(value: Event, cases: {
     SignOut: (v: Extract<Event, { kind: "SignOut" }>) => R;
 }): R {
     return cases[value.kind as Event["kind"]](value as never);
+}
+
+export type ForegroundAuthorityDecision =
+    | { kind: "Valid" }
+    | { kind: "Revoked" }
+    | { kind: "ProfileUnavailable" };
+
+export const foregroundAuthorityDecisionValid = (): ForegroundAuthorityDecision => ({ kind: "Valid" });
+
+export const foregroundAuthorityDecisionRevoked = (): ForegroundAuthorityDecision => ({ kind: "Revoked" });
+
+export const foregroundAuthorityDecisionProfileUnavailable = (): ForegroundAuthorityDecision => ({ kind: "ProfileUnavailable" });
+
+export function matchForegroundAuthorityDecision<R>(value: ForegroundAuthorityDecision, cases: {
+    Valid: (v: Extract<ForegroundAuthorityDecision, { kind: "Valid" }>) => R;
+    Revoked: (v: Extract<ForegroundAuthorityDecision, { kind: "Revoked" }>) => R;
+    ProfileUnavailable: (v: Extract<ForegroundAuthorityDecision, { kind: "ProfileUnavailable" }>) => R;
+}): R {
+    return cases[value.kind as ForegroundAuthorityDecision["kind"]](value as never);
+}
+
+export class ForegroundAuthorityInput {
+    constructor (public expected: Identity, public current: Identity, public profileId: Optional<str>) {
+    }
+}
+
+/// Home actions are semantic intents; shells execute navigation and player effects.
+export class HomeActions {
+    constructor (public canManage: bool, public managePrevious: bool, public canResume: bool, public hasResolvedNext: bool, public opensQueueManage: bool, public opensSourcesFromHero: bool, public cardPrimaryAction: str, public heroPrimaryAction: str, public heroPrimaryActionLabel: str, public showHeroProgress: bool) {
+    }
+}
+
+export type HomeRevisionDecision =
+    | { kind: "Unchanged" }
+    | { kind: "Refresh" }
+    | { kind: "Refreshed" }
+    | { kind: "RetryLater" }
+    | { kind: "Unsupported" }
+    | { kind: "ScopeLost" };
+
+export const homeRevisionDecisionUnchanged = (): HomeRevisionDecision => ({ kind: "Unchanged" });
+
+export const homeRevisionDecisionRefresh = (): HomeRevisionDecision => ({ kind: "Refresh" });
+
+export const homeRevisionDecisionRefreshed = (): HomeRevisionDecision => ({ kind: "Refreshed" });
+
+export const homeRevisionDecisionRetryLater = (): HomeRevisionDecision => ({ kind: "RetryLater" });
+
+export const homeRevisionDecisionUnsupported = (): HomeRevisionDecision => ({ kind: "Unsupported" });
+
+export const homeRevisionDecisionScopeLost = (): HomeRevisionDecision => ({ kind: "ScopeLost" });
+
+export function matchHomeRevisionDecision<R>(value: HomeRevisionDecision, cases: {
+    Unchanged: (v: Extract<HomeRevisionDecision, { kind: "Unchanged" }>) => R;
+    Refresh: (v: Extract<HomeRevisionDecision, { kind: "Refresh" }>) => R;
+    Refreshed: (v: Extract<HomeRevisionDecision, { kind: "Refreshed" }>) => R;
+    RetryLater: (v: Extract<HomeRevisionDecision, { kind: "RetryLater" }>) => R;
+    Unsupported: (v: Extract<HomeRevisionDecision, { kind: "Unsupported" }>) => R;
+    ScopeLost: (v: Extract<HomeRevisionDecision, { kind: "ScopeLost" }>) => R;
+}): R {
+    return cases[value.kind as HomeRevisionDecision["kind"]](value as never);
+}
+
+export class HomeRevisionInput {
+    constructor (public scopeValid: bool, public observedRevision: Optional<str>, public renderedRevision: Optional<str>, public refreshSucceeded: Optional<bool>) {
+    }
 }
 
 /// An error produced when an HTTP request fails.
@@ -274,6 +380,32 @@ export class LiveCatalogPage {
     }
 }
 
+export type LivePageValidationDecision =
+    | { kind: "valid" }
+    | { kind: "catalog_changed" }
+    | { kind: "invalid" };
+
+export const livePageValidationDecisionValid = (): LivePageValidationDecision => ({ kind: "valid" });
+
+export const livePageValidationDecisionCatalogChanged = (): LivePageValidationDecision => ({ kind: "catalog_changed" });
+
+export const livePageValidationDecisionInvalid = (): LivePageValidationDecision => ({ kind: "invalid" });
+
+export function matchLivePageValidationDecision<R>(value: LivePageValidationDecision, cases: {
+    valid: (v: Extract<LivePageValidationDecision, { kind: "valid" }>) => R;
+    catalog_changed: (v: Extract<LivePageValidationDecision, { kind: "catalog_changed" }>) => R;
+    invalid: (v: Extract<LivePageValidationDecision, { kind: "invalid" }>) => R;
+}): R {
+    return cases[value.kind as LivePageValidationDecision["kind"]](value as never);
+}
+
+/// Validation facts for a normalized page and the exact request/snapshot being extended.
+/// A shell retains its own viewport budget and fences request/profile revisions before adoption.
+export class LivePageValidationFacts {
+    constructor (public catalogId: Optional<str>, public generation: Optional<str>, public ids: Seq<str>, public names: Seq<str>, public categories: bool, public nextCursor: Optional<str>, public previousCursor: Optional<str>, public requestedCatalogId: Optional<str>, public limit: uint32, public checkSnapshot: bool, public snapshotCatalogId: Optional<str>, public snapshotGeneration: Optional<str>, public knownIds: Seq<str>, public cursor: Optional<str>, public previous: bool, public extendingWindow: bool) {
+    }
+}
+
 export class MediaItem {
     constructor (public id: str, public type: MediaKind, public name: str, public title: str, public poster: Optional<str>, public background: Optional<str>, public thumbnail: Optional<str>, public titleLogo: Optional<str>, public imdbRating: Optional<str>, public credits: Optional<str>, public posterShape: Optional<str>, public updatedAtMillis: Optional<float64>, public releasedAtMillis: Optional<float64>, public episodes: Seq<MediaItem>, public description: Optional<str>, public year: Optional<float64>, public runtime: Optional<str>, public genres: Seq<str>, public position: Optional<float64>, public duration: Optional<float64>, public watched: Optional<bool>, public resumeActive: Optional<bool>, public watchDateKnown: Optional<bool>, public completionOnly: Optional<bool>, public season: Optional<float64>, public episode: Optional<float64>, public episodeTitle: Optional<str>, public seriesId: Optional<str>, public queueStatus: Optional<str>, public previousEpisode: Optional<MediaItem>, public sourceAddonId: Optional<str>, public sourceName: Optional<str>, public sourceFingerprint: Optional<str>, public sourceBingeGroup: Optional<str>, public sourceReleaseGroup: Optional<str>, public sourceQuality: Optional<str>, public sourceAudio: Optional<str>, public raw: Map<str,JsonValue>) {
     }
@@ -356,6 +488,22 @@ export function matchPhase<R>(value: Phase, cases: {
     return cases[value.kind as Phase["kind"]](value as never);
 }
 
+/// Phone copy only; geometry, artwork and focus remain renderer responsibilities.
+export class PhonePresentation {
+    constructor (public shelfHeading: str, public cardContext: str, public contentTypeLabel: str) {
+    }
+}
+
+export class PlaybackAuthorityBudget {
+    constructor (public remainingMillis: int64, public delayMillis: int64) {
+    }
+}
+
+export class PlaybackAuthorityFacts {
+    constructor (public expiresAtMillis: int64, public nowMillis: int64, public elapsedMillis: int64, public observationCapMillis: int64, public waitMillis: int64) {
+    }
+}
+
 export class PlaybackAuthorization {
     constructor (public cookie: Optional<str>, public userAgent: Optional<str>, public headers: Optional<Map<str,str>>) {
     }
@@ -389,6 +537,11 @@ export function matchPlaybackConversion<R>(value: PlaybackConversion, cases: {
     return cases[value.kind as PlaybackConversion["kind"]](value as never);
 }
 
+export class PlaybackDeliveryFacts {
+    constructor (public directDelivery: bool, public canPlayDirect: bool, public forceGateway: bool, public automaticConversion: bool) {
+    }
+}
+
 export type PlaybackDeliveryKind =
     | { kind: "direct" }
     | { kind: "gateway" };
@@ -404,8 +557,50 @@ export function matchPlaybackDeliveryKind<R>(value: PlaybackDeliveryKind, cases:
     return cases[value.kind as PlaybackDeliveryKind["kind"]](value as never);
 }
 
+export class PlaybackFailureDecision {
+    constructor (public retryRenewal: bool, public reconcileAndRelease: bool) {
+    }
+}
+
+export class PlaybackFailureFacts {
+    constructor (public gatewayError: bool, public status: int32, public invalidResponse: bool, public ioError: bool, public hasLeaseId: bool) {
+    }
+}
+
 export class PlaybackLease {
     constructor (public id: str, public status: PlaybackLeaseStatus, public expiresAt: float64, public renewAfterSeconds: uint32, public session: Optional<PlaybackSession>, public errorCode: Optional<str>, public error: Optional<str>) {
+    }
+}
+
+export type PlaybackLeaseDecision =
+    | { kind: "invalid" }
+    | { kind: "terminal" }
+    | { kind: "expired" }
+    | { kind: "pending" }
+    | { kind: "ready" };
+
+export const playbackLeaseDecisionInvalid = (): PlaybackLeaseDecision => ({ kind: "invalid" });
+
+export const playbackLeaseDecisionTerminal = (): PlaybackLeaseDecision => ({ kind: "terminal" });
+
+export const playbackLeaseDecisionExpired = (): PlaybackLeaseDecision => ({ kind: "expired" });
+
+export const playbackLeaseDecisionPending = (): PlaybackLeaseDecision => ({ kind: "pending" });
+
+export const playbackLeaseDecisionReady = (): PlaybackLeaseDecision => ({ kind: "ready" });
+
+export function matchPlaybackLeaseDecision<R>(value: PlaybackLeaseDecision, cases: {
+    invalid: (v: Extract<PlaybackLeaseDecision, { kind: "invalid" }>) => R;
+    terminal: (v: Extract<PlaybackLeaseDecision, { kind: "terminal" }>) => R;
+    expired: (v: Extract<PlaybackLeaseDecision, { kind: "expired" }>) => R;
+    pending: (v: Extract<PlaybackLeaseDecision, { kind: "pending" }>) => R;
+    ready: (v: Extract<PlaybackLeaseDecision, { kind: "ready" }>) => R;
+}): R {
+    return cases[value.kind as PlaybackLeaseDecision["kind"]](value as never);
+}
+
+export class PlaybackLeaseFacts {
+    constructor (public expectedId: str, public actualId: str, public status: str, public hasSession: bool, public expiresAtMillis: float64, public nowMillis: int64, public heartbeat: bool, public sameDeliveryUrl: bool, public sameDeliveryKind: bool) {
     }
 }
 
@@ -434,6 +629,16 @@ export function matchPlaybackLeaseStatus<R>(value: PlaybackLeaseStatus, cases: {
     released: (v: Extract<PlaybackLeaseStatus, { kind: "released" }>) => R;
 }): R {
     return cases[value.kind as PlaybackLeaseStatus["kind"]](value as never);
+}
+
+export class PlaybackPauseDecision {
+    constructor (public usesAnchor: bool, public replaceOnResume: bool, public anchorAfterOpenMillis: Optional<int64>) {
+    }
+}
+
+export class PlaybackPauseFacts {
+    constructor (public deliveryMode: str, public live: bool, public anchorMillis: Optional<int64>, public launchPositionMillis: int64, public playWhenReady: bool) {
+    }
 }
 
 export type PlaybackPlatform =
@@ -475,13 +680,133 @@ export function matchPlaybackPlatform<R>(value: PlaybackPlatform, cases: {
     return cases[value.kind as PlaybackPlatform["kind"]](value as never);
 }
 
+export class PlaybackRecoveryFacts {
+    constructor (public serverManaged: bool, public networkFailure: bool, public alreadyAttempted: bool) {
+    }
+}
+
+export class PlaybackSeekFacts {
+    constructor (public currentMillis: int64, public deltaMillis: int64, public durationMillis: Optional<int64>, public rangeStartMillis: Optional<int64>, public rangeEndMillis: Optional<int64>) {
+    }
+}
+
 export class PlaybackSession {
     constructor (public deliveryKind: Optional<PlaybackDeliveryKind>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
     }
 }
 
+export class PlaybackTimelineFacts {
+    constructor (public deliveryMode: str, public launchPositionMillis: int64, public segmentPositionMillis: int64, public titleOffsetMillis: int64, public titlePositionMillis: int64, public nativeDurationMillis: Optional<int64>, public titleDurationMillis: Optional<int64>, public pauseAnchorMillis: Optional<int64>, public playerError: bool, public trustedPositionMillis: int64) {
+    }
+}
+
+export class PlaybackTimelineProjection {
+    constructor (public launchOffsetMillis: int64, public positionMillis: int64, public segmentPositionMillis: int64, public durationMillis: Optional<int64>, public updateTrustedPosition: bool) {
+    }
+}
+
 export class PlaybackV2Request {
     constructor (public conversion: PlaybackConversion, public requestId: str, public streamId: str, public client: PlaybackClient, public position: float64, public forceGateway: bool, public audioTrack: Optional<uint32>, public subtitleTrack: Optional<uint32>, public audioLanguage: Optional<str>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public subtitlesOff: bool) {
+    }
+}
+
+export type PreviewAction =
+    | { kind: "Start" }
+    | { kind: "Adopt" }
+    | { kind: "Update" }
+    | { kind: "Result" };
+
+export const previewActionStart = (): PreviewAction => ({ kind: "Start" });
+
+export const previewActionAdopt = (): PreviewAction => ({ kind: "Adopt" });
+
+export const previewActionUpdate = (): PreviewAction => ({ kind: "Update" });
+
+export const previewActionResult = (): PreviewAction => ({ kind: "Result" });
+
+export function matchPreviewAction<R>(value: PreviewAction, cases: {
+    Start: (v: Extract<PreviewAction, { kind: "Start" }>) => R;
+    Adopt: (v: Extract<PreviewAction, { kind: "Adopt" }>) => R;
+    Update: (v: Extract<PreviewAction, { kind: "Update" }>) => R;
+    Result: (v: Extract<PreviewAction, { kind: "Result" }>) => R;
+}): R {
+    return cases[value.kind as PreviewAction["kind"]](value as never);
+}
+
+export type PreviewDecision =
+    | { kind: "Retain" }
+    | { kind: "BeginSettled" }
+    | { kind: "BeginImmediate" }
+    | { kind: "Accept" }
+    | { kind: "Reject" }
+    | { kind: "Cancelled" }
+    | { kind: "Failed" }
+    | { kind: "Ready" };
+
+export const previewDecisionRetain = (): PreviewDecision => ({ kind: "Retain" });
+
+export const previewDecisionBeginSettled = (): PreviewDecision => ({ kind: "BeginSettled" });
+
+export const previewDecisionBeginImmediate = (): PreviewDecision => ({ kind: "BeginImmediate" });
+
+export const previewDecisionAccept = (): PreviewDecision => ({ kind: "Accept" });
+
+export const previewDecisionReject = (): PreviewDecision => ({ kind: "Reject" });
+
+export const previewDecisionCancelled = (): PreviewDecision => ({ kind: "Cancelled" });
+
+export const previewDecisionFailed = (): PreviewDecision => ({ kind: "Failed" });
+
+export const previewDecisionReady = (): PreviewDecision => ({ kind: "Ready" });
+
+export function matchPreviewDecision<R>(value: PreviewDecision, cases: {
+    Retain: (v: Extract<PreviewDecision, { kind: "Retain" }>) => R;
+    BeginSettled: (v: Extract<PreviewDecision, { kind: "BeginSettled" }>) => R;
+    BeginImmediate: (v: Extract<PreviewDecision, { kind: "BeginImmediate" }>) => R;
+    Accept: (v: Extract<PreviewDecision, { kind: "Accept" }>) => R;
+    Reject: (v: Extract<PreviewDecision, { kind: "Reject" }>) => R;
+    Cancelled: (v: Extract<PreviewDecision, { kind: "Cancelled" }>) => R;
+    Failed: (v: Extract<PreviewDecision, { kind: "Failed" }>) => R;
+    Ready: (v: Extract<PreviewDecision, { kind: "Ready" }>) => R;
+}): R {
+    return cases[value.kind as PreviewDecision["kind"]](value as never);
+}
+
+export class PreviewInput {
+    constructor (public action: PreviewAction, public requestedKey: str, public activeKey: Optional<str>, public running: bool, public hasSources: bool, public done: bool, public failed: bool, public ownerMatches: bool) {
+    }
+}
+
+export type PreviewRoute =
+    | { kind: "Details" }
+    | { kind: "Sources" }
+    | { kind: "Player" }
+    | { kind: "Other" };
+
+export const previewRouteDetails = (): PreviewRoute => ({ kind: "Details" });
+
+export const previewRouteSources = (): PreviewRoute => ({ kind: "Sources" });
+
+export const previewRoutePlayer = (): PreviewRoute => ({ kind: "Player" });
+
+export const previewRouteOther = (): PreviewRoute => ({ kind: "Other" });
+
+export function matchPreviewRoute<R>(value: PreviewRoute, cases: {
+    Details: (v: Extract<PreviewRoute, { kind: "Details" }>) => R;
+    Sources: (v: Extract<PreviewRoute, { kind: "Sources" }>) => R;
+    Player: (v: Extract<PreviewRoute, { kind: "Player" }>) => R;
+    Other: (v: Extract<PreviewRoute, { kind: "Other" }>) => R;
+}): R {
+    return cases[value.kind as PreviewRoute["kind"]](value as never);
+}
+
+export class PreviewScopeDecision {
+    constructor (public key: Optional<str>, public keep: bool) {
+    }
+}
+
+export class PreviewScopeInput {
+    constructor (public profileId: Optional<str>, public mediaType: str, public mediaId: str, public hasEpisode: bool, public activeKey: Optional<str>, public route: PreviewRoute, public releasing: bool) {
     }
 }
 
@@ -538,13 +863,29 @@ export class SourcePresentation {
     }
 }
 
+export class SourceProducerOutcome {
+    constructor (public sourceId: str, public label: str, public errorCode: Optional<str>, public errorMessage: Optional<str>) {
+    }
+}
+
+export class SourceRank {
+    constructor (public rank: float64, public likely: bool, public best: bool) {
+    }
+}
+
+/// One rank per input source and a stable display order; never a playback choice.
+export class SourceRanks {
+    constructor (public ranks: Seq<SourceRank>, public orderedIndices: Seq<uint32>) {
+    }
+}
+
 export class SourcesPollState {
-    constructor (public after: float64, public sources: Seq<MediaSource>, public polls: uint32, public errors: Optional<Seq<SourceFailure>>) {
+    constructor (public after: float64, public sources: Seq<MediaSource>, public polls: uint32, public errors: Optional<Seq<SourceFailure>>, public producers: Seq<SourceProducerOutcome>) {
     }
 }
 
 export class SourcesPollStep {
-    constructor (public state: SourcesPollState, public sources: Seq<MediaSource>, public done: bool) {
+    constructor (public state: SourcesPollState, public sources: Seq<MediaSource>, public done: bool, public producers: Seq<SourceProducerOutcome>) {
     }
 }
 
@@ -580,6 +921,26 @@ export function matchStorageResult<R>(value: StorageResult, cases: {
     Err: (v: Extract<StorageResult, { kind: "Err" }>) => R;
 }): R {
     return cases[value.kind as StorageResult["kind"]](value as never);
+}
+
+export class UpNextGateDecision {
+    constructor (public attemptedKey: Optional<str>, public resumeAwaitingKey: Optional<str>, public start: bool) {
+    }
+}
+
+export class UpNextGateInput {
+    constructor (public mediaKey: str, public attemptedKey: Optional<str>, public resumeAwaitingKey: Optional<str>, public ended: bool, public eligible: bool, public continuationBusy: bool, public blocked: bool) {
+    }
+}
+
+export class UpNextPlaybackDecision {
+    constructor (public attemptedKey: Optional<str>, public resumeAwaitingKey: Optional<str>) {
+    }
+}
+
+export class UpNextPlaybackInput {
+    constructor (public mediaKey: str, public previousKey: Optional<str>, public attemptedKey: Optional<str>, public resumeAwaitingKey: Optional<str>, public explicitResume: bool, public positionMillis: int64, public durationMillis: Optional<int64>) {
+    }
 }
 
 export class ViewModel {

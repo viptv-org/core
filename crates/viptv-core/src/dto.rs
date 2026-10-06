@@ -185,6 +185,8 @@ pub struct SourcesPollState {
     pub sources: Vec<MediaSource>,
     pub polls: u32,
     pub errors: Option<Vec<SourceFailure>>,
+    #[serde(default)]
+    pub producers: Vec<SourceProducerOutcome>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
@@ -193,6 +195,8 @@ pub struct SourcesPollStep {
     pub state: SourcesPollState,
     pub sources: Vec<MediaSource>,
     pub done: bool,
+    #[serde(default)]
+    pub producers: Vec<SourceProducerOutcome>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
@@ -414,4 +418,77 @@ pub struct SourcePresentation {
     pub body: String,
     pub provider_key: String,
     pub provider_label: String,
+}
+
+/// Home actions are semantic intents; shells execute navigation and player effects.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct HomeActions {
+    pub can_manage: bool,
+    pub manage_previous: bool,
+    pub can_resume: bool,
+    pub has_resolved_next: bool,
+    pub opens_queue_manage: bool,
+    pub opens_sources_from_hero: bool,
+    pub card_primary_action: String,
+    pub hero_primary_action: String,
+    pub hero_primary_action_label: String,
+    pub show_hero_progress: bool,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct EpisodeWatching {
+    pub watching: bool,
+    pub progress: f64,
+}
+
+/// Phone copy only; geometry, artwork and focus remain renderer responsibilities.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct PhonePresentation {
+    pub shelf_heading: String,
+    pub card_context: String,
+    pub content_type_label: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SourceRank {
+    pub rank: f64,
+    pub likely: bool,
+    pub best: bool,
+}
+
+/// One rank per input source and a stable display order; never a playback choice.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SourceRanks {
+    pub ranks: Vec<SourceRank>,
+    pub ordered_indices: Vec<u32>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SourceProducerOutcome {
+    pub source_id: String,
+    pub label: String,
+    pub error_code: Option<String>,
+    pub error_message: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct DiscoverPolicyProjection {
+    pub group: String,
+    pub group_label: String,
+    pub first_catalog_index: Option<u32>,
+    pub defaults: BTreeMap<String, String>,
 }

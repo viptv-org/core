@@ -29,6 +29,41 @@ pub(super) fn catalog_filters(kind: &str, v: &Value) -> Value {
     }
 }
 
+pub(super) fn type_group(kind: &str) -> &'static str {
+    match kind {
+        "movie" => "movie",
+        "series" => "series",
+        "anime" => "anime",
+        _ if kind.starts_with("anime.") => "anime",
+        _ => "other",
+    }
+}
+
+pub(super) fn group_label(group: &str) -> &'static str {
+    match group {
+        "movie" => "Movies",
+        "series" => "Series",
+        "anime" => "Anime",
+        _ => "Other",
+    }
+}
+
+pub(super) fn discover_policy(v: &Value) -> Value {
+    let group = type_group(text(v, "type"));
+    let catalogs = v["catalogs"].as_array().map(Vec::as_slice).unwrap_or(&[]);
+    let index = catalogs
+        .iter()
+        .position(|c| text(c, "type") != "live" && type_group(text(c, "type")) == group)
+        .or_else(|| catalogs.iter().position(|c| text(c, "type") != "live"))
+        .or_else(|| (!catalogs.is_empty()).then_some(0));
+    let mut defaults = catalog_filters("catalogDefaults", &v["catalog"]);
+    // Empty defaults are not submitted as a required filter selection.
+    if let Some(values) = defaults.as_object_mut() {
+        values.retain(|_, value| value.as_str().is_some_and(|s| !s.trim().is_empty()));
+    }
+    json!({"group":group,"groupLabel":group_label(group),"firstCatalogIndex":index,"defaults":defaults})
+}
+
 pub(super) fn artwork_url(v: &Value) -> Result {
     Ok({
         let original = text(v, "original");

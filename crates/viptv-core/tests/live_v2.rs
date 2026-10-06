@@ -27,7 +27,7 @@ fn live_pages_preserve_provider_order_and_http_logos_without_fabricating_totals(
     let typed: viptv_core::dto::LiveCatalogPage = serde_json::from_value(out).unwrap();
     assert_eq!(typed.next_cursor.as_deref(), Some("opaque_next"));
     assert_eq!(typed.previous_cursor.as_deref(), Some("opaque_previous"));
-    let categories = run("liveCategoriesV2", json!({"catalog_id":2,"generation":1,"items":[{"id":"8","name":"Sports","count":99999,"url":"private-value"}],"next_cursor":null})).unwrap();
+    let categories = run("liveCategoriesV2", json!({"catalog_id":2,"generation":1,"items":[{"id":"8","name":"Sports","count":99999,"url":"private-value"}],"next_cursor":null,"previous_cursor":null})).unwrap();
     assert_eq!(categories["items"][0], json!({"id":"8","name":"Sports"}));
     let _: viptv_core::dto::LiveCatalogCategories = serde_json::from_value(categories).unwrap();
 }
@@ -111,16 +111,16 @@ fn empty_account_and_malformed_or_legacy_pages_are_distinct() {
     assert!(
         run(
             "liveCatalogV2",
-            json!({"catalog_id":null,"generation":null,"items":[],"next_cursor":null})
+            json!({"catalog_id":null,"generation":null,"items":[],"next_cursor":null,"previous_cursor":null})
         )
         .is_ok()
     );
     for page in [
         json!({"items":[]}),
-        json!({"catalog_id":null,"generation":1,"items":[],"next_cursor":null}),
-        json!({"catalog_id":null,"generation":null,"items":[{"id":"foreign","name":"Hidden"}],"next_cursor":null}),
-        json!({"catalog_id":1,"generation":0,"items":[],"next_cursor":"../../other"}),
-        json!({"catalog_id":1,"generation":0,"items":vec![json!({"id":"x","name":"Channel"});201],"next_cursor":null}),
+        json!({"catalog_id":null,"generation":1,"items":[],"next_cursor":null,"previous_cursor":null}),
+        json!({"catalog_id":null,"generation":null,"items":[{"id":"foreign","name":"Hidden"}],"next_cursor":null,"previous_cursor":null}),
+        json!({"catalog_id":1,"generation":0,"items":[],"next_cursor":"../../other","previous_cursor":null}),
+        json!({"catalog_id":1,"generation":0,"items":vec![json!({"id":"x","name":"Channel"});201],"next_cursor":null,"previous_cursor":null}),
     ] {
         assert!(run("liveCatalogV2", page).is_err());
     }

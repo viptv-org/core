@@ -117,10 +117,8 @@ pub(super) fn stream_poll(v: &Value) -> Result<Value> {
     Ok(json!({"events":events,"done":boolean(v,"done")?}))
 }
 
-/// Both TV clients previously reimplemented stream-discovery polling with
-/// hand-copied cursor, deduplication, budget and completion rules; the rules
-/// live here so every platform runs the identical loop. The platform owns
-/// only transport, cancellation and the fixed poll interval.
+/// Shared cursor, deduplication, producer outcomes, budget and completion rules.
+/// The platform owns transport, cancellation and the fixed poll interval.
 pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
     if v["poll"].as_object().is_none() {
         return Err(invalid());
@@ -147,9 +145,45 @@ pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
         let error=api_error(&json!({"status":502,"error":e["message"],"error_code":e["code"]}));
         Some(json!({"source":source_label(source),"message":error["message"],"code":error["code"]}))
     }).collect();
+    let valid_producer = |id: &str| {
+        id.split_once(':').is_some_and(|(kind, number)| {
+            matches!(kind, "addon" | "iptv")
+                && !number.is_empty()
+                && id.len() <= 128
+                && number.bytes().all(|b| b.is_ascii_digit())
+        })
+    };
+    // Bound bridge display state independently of stream rows and poll completion.
+    const MAX_PRODUCERS: usize = 256;
+    let mut producers: Vec<Value> = state.and_then(|s| s.get("producers"))
+        .and_then(Value::as_array).into_iter().flatten()
+        .filter_map(|p| {
+            let id = p["sourceId"].as_str().filter(|id| valid_producer(id))?;
+            let failed = p["errorCode"].is_string() || p["errorMessage"].is_string();
+            let error = api_error(&json!({"status":502,"error":p["errorMessage"],"error_code":p["errorCode"]}));
+            Some(json!({"sourceId":id,"label":id,"errorCode":if failed {error["code"].clone()} else {Value::Null},
+                "errorMessage":if failed {error["message"].clone()} else {Value::Null}}))
+        }).take(MAX_PRODUCERS).collect();
     let mut done = boolean(&page, "done")?;
     for event in array(&page, "events")? {
         let sequence = number(event, "sequence")? as i64;
+        let producer_id = event["source"].as_str().unwrap_or("");
+        if valid_producer(producer_id)
+            && (producers.len() < MAX_PRODUCERS
+                || producers.iter().any(|p| p["sourceId"] == producer_id))
+        {
+            let index = producers.iter().position(|p| p["sourceId"] == producer_id).unwrap_or_else(|| {
+                producers.push(json!({"sourceId":producer_id,"label":producer_id,"errorCode":null,"errorMessage":null}));
+                producers.len() - 1
+            });
+            // A later successful event does not erase an earlier partial failure.
+            if event["errorCode"].is_string() {
+                producers[index]["errorCode"] = event["errorCode"].clone();
+            }
+            if event["error"].is_string() {
+                producers[index]["errorMessage"] = event["error"].clone();
+            }
+        }
         if sequence > cursor {
             cursor = sequence;
         }
@@ -178,9 +212,10 @@ pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
         done = true;
     }
     let mut out = json!({
-        "state":{"after":cursor,"sources":sources,"polls":polls},
+        "state":{"after":cursor,"sources":sources,"polls":polls,"producers":producers},
         "sources":sources,
         "done":done,
+        "producers":producers,
     });
     out["state"]["errors"] = if errors.is_empty() {
         Value::Null

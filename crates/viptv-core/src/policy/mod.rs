@@ -13,9 +13,11 @@ macro_rules! policy_regex {
 }
 
 mod catalog;
+pub mod playback_control;
 mod presentation;
 mod progress;
 mod requests;
+pub mod shell_lifecycle;
 pub(crate) use requests::valid_live_cursor;
 mod sources;
 
@@ -86,6 +88,11 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
     Ok(match kind {
         "presentation" => presentation::presentation(v)?,
         "cardPresentation" => presentation::card_presentation(v)?,
+        "homeActions" => presentation::home_actions(v),
+        "episodeWatching" => presentation::episode_watching(v),
+        "phonePresentation" => presentation::phone_presentation(v),
+        "shellLifecycle" => shell_lifecycle::shell_lifecycle(v)?,
+        "playbackControl" => playback_control::normalize(v)?,
         "itemRequest" => item_request(v),
         "playbackRequest" | "preferencesRequest" => snake(v),
         "request" => requests::request(v)?,
@@ -98,10 +105,13 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
         "resume" => progress::resume(v)?,
         "autoNext" => sources::auto_next(v),
         "sourceMatch" => sources::source_match(v),
+        "sourceRanks" => sources::source_ranks(v),
+        "sourceProducerLabels" => sources::source_producer_labels(v),
         "sourceDisplay" => sources::source_display(v),
         "sourceIdentity" => sources::source_identity(v),
         "continuationSource" => sources::continuation_source(v)?,
         "catalogFilters" | "catalogDefaults" => catalog::catalog_filters(kind, v),
+        "discoverPolicy" => catalog::discover_policy(v),
         "artworkUrl" => catalog::artwork_url(v)?,
         _ => return Err(CoreError::InvalidInput),
     })

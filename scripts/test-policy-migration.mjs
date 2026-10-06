@@ -1,0 +1,73 @@
+// Exercise the same public JSON bridge in native Rust and the actual browser WASM.
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+const root = resolve(import.meta.dirname, '..');
+const source = readFileSync(resolve(root, 'generated/wasm/viptv_core.js'));
+const core = await import(`data:text/javascript;base64,${source.toString('base64')}#policy-migration`);
+await core.default(readFileSync(resolve(root, 'generated/wasm/viptv_core_bg.wasm')));
+const requests = [], expected = [];
+const check = (kind, input, verify) => {
+  const value = JSON.parse(core.normalize(kind, JSON.stringify(input), 'https://fixture.invalid'));
+  verify(value);
+  requests.push({op:'normalize',kind,input,origin:'https://fixture.invalid'});
+  expected.push({ok:true,result:value});
+};
+const lifecycle = (operation, facts, verify) => check('shellLifecycle', {operation,...facts}, verify);
+const playback = (operation, facts, verify) => check('playbackControl', {operation,...facts}, verify);
+const equal = wanted => actual => assert.deepEqual(actual, wanted);
+const item = {id:'e',type:'episode',seriesId:'s',season:2,episode:7,position:42,duration:100,watched:true,resumeActive:true,completionOnly:false,watchDateKnown:false};
+check('mergeEpisodeProgress',{seriesId:'s',episodes:[{id:'e',season:2,episode:7}],history:[item]}, value => {
+  assert.equal(value[0].resumeActive,true); assert.equal(value[0].watchDateKnown,false);
+});
+check('mergeEpisodeProgress',{seriesId:'s',episodes:[{...item,sourceAddonId:'prior',sourceFingerprint:'prior',updatedAtMillis:2000}],history:[{id:'e',seriesId:'s',position:0,watched:false}]},value => {
+  for(const key of ['sourceAddonId','sourceFingerprint','updatedAtMillis','resumeActive','completionOnly','watchDateKnown']) assert.equal(value[0][key],null);
+  assert.equal(value[0].duration,100);
+});
+check('enrichDetail',{original:item,metadata:{id:'s',type:'series',position:0,season:1,episode:1,resumeActive:false}}, value => {
+  assert.equal(value.season,2); assert.equal(value.episode,7); assert.equal(value.position,42); assert.equal(value.resumeActive,true);
+});
+check('homeActions',{item:{...item,queueStatus:'next',previousEpisode:{id:'previous',type:'episode'}},queueShelf:true}, value => {
+  assert.equal(value.heroPrimaryAction,'resume'); assert.equal(value.cardPrimaryAction,'resume');
+});
+check('episodeWatching',item,value => {assert.equal(value.watching,true);assert.equal(value.progress,0.42);});
+check('episodeWatching',{...item,resumeActive:false,completionOnly:true},value => assert.equal(value.watching,false));
+check('sourceRanks',{sources:[{name:'1080p h264 English audio'},{name:'1080p h264 English audio'},{name:'2160p h264 English audio'}],capabilities:{maxHeight:1080},preferences:{audioLanguage:'en'}},value => assert.deepEqual(value.orderedIndices,[0,1,2]));
+check('phonePresentation',{item:{season:2,episode:7},shelf:{title:'Queue',isQueueShelf:true}},value => assert.equal(value.cardContext,'S2 E7'));
+check('discoverPolicy',{type:'anime.series',catalog:{extras:[{name:'genre',required:true,options:['Drama']}]},catalogs:[{type:'movie'},{type:'anime.series'}]},value => {assert.equal(value.group,'anime');assert.equal(value.firstCatalogIndex,1);assert.equal(value.defaults.genre,'Drama');});
+check('sourcesPollStep',{poll:{done:true,events:[{seq:1,source:'addon:4',streams:[],error_code:'source_format_unsupported',error:'private diagnostic'}]}},value => {assert.equal(value.producers[0].sourceId,'addon:4');assert.ok(!JSON.stringify(value).includes('private diagnostic'));});
+const identity={account:{id:'a',username:'fixture',name:'Fixture',role:'member'},profiles:[{id:'p',name:'Profile',kid:false,setupComplete:true}],profileId:'p',restricted:false,profileSetupRequired:false};
+lifecycle('foregroundAuthority',{expected:identity,current:identity,profileId:'p'},equal('Valid'));
+lifecycle('foregroundAuthority',{expected:identity,current:{...identity,account:{...identity.account,id:'replacement'}},profileId:'p'},equal('Revoked'));
+lifecycle('homeRevision',{scopeValid:true,observedRevision:'r2',renderedRevision:'r1',refreshSucceeded:null},equal('Refresh'));
+lifecycle('homeRevision',{scopeValid:true,observedRevision:'r2',renderedRevision:'r1',refreshSucceeded:false},equal('RetryLater'));
+lifecycle('previewScope',{profileId:'p',mediaType:'movie',mediaId:'m',hasEpisode:false,route:'Details',activeKey:null,releasing:false},value => assert.ok(value.key?.includes('m')));
+lifecycle('preview',{action:'Adopt',requestedKey:'p\u0000movie\u0000m',activeKey:'p\u0000movie\u0000m',running:false,hasSources:true,done:true,failed:true,ownerMatches:true},equal('Retain'));
+lifecycle('preview',{action:'Update',requestedKey:'same',activeKey:'same',running:false,hasSources:false,done:false,failed:false,ownerMatches:false},equal('Reject'));
+playback('timeline',{deliveryMode:'managed',launchPositionMillis:42000,segmentPositionMillis:3000,titleOffsetMillis:42000,titlePositionMillis:47000,nativeDurationMillis:78000,titleDurationMillis:120000,pauseAnchorMillis:null,playerError:false,trustedPositionMillis:44000},value => {assert.equal(value.positionMillis,45000);assert.equal(value.durationMillis,120000);});
+playback('seekPreview',{currentMillis:12000,deltaMillis:-15000,durationMillis:null,rangeStartMillis:10000,rangeEndMillis:20000},equal(10000));
+playback('seekPreview',{currentMillis:12000,deltaMillis:499,durationMillis:20000,rangeStartMillis:null,rangeEndMillis:null},equal(null));
+playback('seekCommit',{deliveryMode:'managed',processingMode:'direct'},equal(true));
+playback('pause',{deliveryMode:'managed',live:false,anchorMillis:42000,launchPositionMillis:55000,playWhenReady:false},value => {assert.equal(value.replaceOnResume,true);assert.equal(value.anchorAfterOpenMillis,55000);});
+playback('recovery',{serverManaged:true,networkFailure:true,alreadyAttempted:true},equal(false));
+playback('delivery',{directDelivery:true,canPlayDirect:true,forceGateway:true,automaticConversion:true},equal(false));
+playback('lease',{expectedId:'l',actualId:'replacement',status:'ready',hasSession:true,expiresAtMillis:20000,nowMillis:10000,heartbeat:false,sameDeliveryUrl:true,sameDeliveryKind:true},equal('invalid'));
+playback('lease',{expectedId:'l',actualId:'l',status:'expired',hasSession:false,expiresAtMillis:20000,nowMillis:10000,heartbeat:false,sameDeliveryUrl:true,sameDeliveryKind:true},equal('terminal'));
+playback('authority',{expiresAtMillis:100000,nowMillis:20000,elapsedMillis:55000,observationCapMillis:60000,waitMillis:20000},value => {assert.equal(value.remainingMillis,5000);assert.equal(value.delayMillis,5000);});
+const countdownFacts={action:'Advance',remainingMillis:7750,active:true,elapsedMillis:60000,progressing:false,scopeMatches:true};
+lifecycle('countdown',countdownFacts,equal({remainingMillis:7750,seconds:8,active:true,done:false}));
+lifecycle('countdown',{...countdownFacts,progressing:true,scopeMatches:false},equal({remainingMillis:7750,seconds:8,active:true,done:false}));
+lifecycle('countdown',{...countdownFacts,progressing:true},equal({remainingMillis:0,seconds:0,active:true,done:true}));
+lifecycle('upNextPlayback',{mediaKey:'episode.e',previousKey:'episode.previous',attemptedKey:'episode.previous',resumeAwaitingKey:null,explicitResume:true,positionMillis:95000,durationMillis:100000},equal({attemptedKey:null,resumeAwaitingKey:'episode.e'}));
+lifecycle('upNextGate',{mediaKey:'episode.e',attemptedKey:null,resumeAwaitingKey:'episode.e',ended:false,eligible:true,continuationBusy:false,blocked:false},equal({attemptedKey:null,resumeAwaitingKey:'episode.e',start:false}));
+playback('failure',{gatewayError:true,status:403,invalidResponse:false,ioError:false,hasLeaseId:false},equal({retryRenewal:false,reconcileAndRelease:false}));
+playback('failure',{gatewayError:true,status:408,invalidResponse:false,ioError:false,hasLeaseId:false},equal({retryRenewal:true,reconcileAndRelease:true}));
+const liveFacts={catalogId:'catalog',generation:'generation',ids:['channel'],names:['Channel'],categories:false,nextCursor:null,previousCursor:null,requestedCatalogId:'catalog',limit:200,checkSnapshot:true,snapshotCatalogId:'catalog',snapshotGeneration:'generation',knownIds:[],cursor:'next',previous:false,extendingWindow:true};
+playback('livePage',liveFacts,equal('valid'));
+playback('livePage',{...liveFacts,generation:'replacement'},equal('catalog_changed'));
+playback('livePage',{...liveFacts,knownIds:['channel']},equal('invalid'));
+const native=spawnSync('cargo',['run','--offline','--locked','-p','viptv-core','--example','wasi'],{cwd:root,input:requests.map(value=>JSON.stringify(value)).join('\n')+'\n',encoding:'utf8',maxBuffer:32*1024*1024});
+assert.equal(native.status,0,native.stderr);
+assert.deepEqual(native.stdout.trim().split(/\r?\n/).map(line=>JSON.parse(line)),expected);
+console.log(`PASS ${requests.length} shared-policy vectors identical across native Rust and actual WASM`);

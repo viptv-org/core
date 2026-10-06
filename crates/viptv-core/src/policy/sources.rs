@@ -194,6 +194,57 @@ pub(super) fn source_match(v: &Value) -> Value {
     })
 }
 
+/// Calculate each label fit once and compare against one shared quality reference.
+pub(super) fn source_ranks(v: &Value) -> Value {
+    let (caps, prefs) = (&v["capabilities"], &v["preferences"]);
+    let fits: Vec<_> = v["sources"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .map(|source| source_fit(source, caps, prefs))
+        .collect();
+    let reference = reference_height(caps, || fits.iter().copied());
+    let ranks: Vec<_> = fits
+        .iter()
+        .map(|fit| {
+            json!({"rank":fit.rank(reference),"likely":fit.likely,
+        "best":fit.likely && fit.score>=4.0 && fit.resolution==reference})
+        })
+        .collect();
+    let mut order: Vec<_> = (0..fits.len()).collect();
+    order.sort_by(|a, b| {
+        fits[*a]
+            .rank(reference)
+            .total_cmp(&fits[*b].rank(reference))
+    });
+    json!({"ranks":ranks,"orderedIndices":order})
+}
+
+/// Join names only to observed producers; configured catalog-only addons add no choice.
+pub(super) fn source_producer_labels(v: &Value) -> Value {
+    let addons = v["addons"].as_array().map(Vec::as_slice).unwrap_or(&[]);
+    let sources = v["sources"].as_array().map(Vec::as_slice).unwrap_or(&[]);
+    let displays: Vec<_> = sources.iter().map(source_display).collect();
+    let outcomes: Vec<_> = v["observed"].as_array().into_iter().flatten().filter_map(|producer| {
+        let id = text(producer,"sourceId");
+        let (kind, number) = id.split_once(':')?;
+        if id.len()>128 || !matches!(kind,"addon"|"iptv") || number.is_empty() || !number.bytes().all(|b| b.is_ascii_digit()) {
+            return None;
+        }
+        let key = source_display(&json!({"sourceAddonId":id}))["providerKey"].clone();
+        let configured = addons.iter().rev().find(|addon| format!("addon:{}",text(addon,"id"))==id)
+            .and_then(|addon| addon["name"].as_str());
+        let row = displays.iter().find(|display| display["providerKey"]==key)
+            .and_then(|display| display["providerLabel"].as_str());
+        let label: String = configured.or(row).or_else(|| producer["label"].as_str()).unwrap_or(id).chars().take(180).collect();
+        let failed = producer["errorCode"].is_string() || producer["errorMessage"].is_string();
+        let error = crate::domain::api_error(&json!({"status":502,"error":producer["errorMessage"],"error_code":producer["errorCode"]}));
+        Some(json!({"sourceId":id,"label":label,"errorCode":if failed {error["code"].clone()} else {Value::Null},
+            "errorMessage":if failed {error["message"].clone()} else {Value::Null}}))
+    }).take(256).collect();
+    json!(outcomes)
+}
+
 /// What one source label says about its audio language and playability.
 #[derive(Clone, Copy)]
 struct SourceFit {

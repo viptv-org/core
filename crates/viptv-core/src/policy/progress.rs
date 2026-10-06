@@ -12,6 +12,32 @@ pub(super) fn enrich_detail(v: &Value) -> Value {
                 }
             }
         }
+        // Metadata enriches a title; occurrence coordinates and history facts
+        // retain their authority when the lookup addresses its parent series.
+        for key in [
+            "season",
+            "episode",
+            "seriesId",
+            "watched",
+            "resumeActive",
+            "completionOnly",
+            "watchDateKnown",
+            "updatedAtMillis",
+            "sourceAddonId",
+            "sourceFingerprint",
+            "sourceName",
+            "sourceBingeGroup",
+            "sourceReleaseGroup",
+            "sourceQuality",
+            "sourceAudio",
+        ] {
+            if !v["original"][key].is_null() {
+                out[key] = v["original"][key].clone();
+            }
+        }
+        if num(&v["metadata"], "position") <= 0.0 && num(&v["original"], "position") > 0.0 {
+            out["position"] = v["original"]["position"].clone();
+        }
         let mut raw = v["original"]["raw"]
             .as_object()
             .cloned()
@@ -57,7 +83,9 @@ pub(super) fn merge_episode_progress(v: &Value) -> Result {
                             "sourceAudio",
                             "updatedAtMillis",
                         ] {
-                            if !row[key].is_null() {
+                            // Only duration may fall back to metadata. A matched history row
+                            // replaces activity/source authority even when the fact is unknown.
+                            if key != "duration" || !row[key].is_null() {
                                 out[key] = row[key].clone();
                             }
                         }

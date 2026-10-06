@@ -10,9 +10,15 @@ fn identifier(v: &Value, positive: bool) -> Result<String> {
 
 pub(super) fn page(v: &Value, categories: bool) -> Result<Value> {
     let fields = obj(v)?;
-    if ["catalog_id", "generation", "items", "next_cursor"]
-        .iter()
-        .any(|key| !fields.contains_key(*key))
+    if [
+        "catalog_id",
+        "generation",
+        "items",
+        "next_cursor",
+        "previous_cursor",
+    ]
+    .iter()
+    .any(|key| !fields.contains_key(*key))
     {
         return Err(invalid());
     }
@@ -40,6 +46,10 @@ pub(super) fn page(v: &Value, categories: bool) -> Result<Value> {
         Value::String(value) if crate::policy::valid_live_cursor(value) => Some(value.clone()),
         _ => return Err(invalid()),
     };
+    if categories && items.is_empty() && (cursor.is_some() || previous.is_some()) {
+        return Err(invalid());
+    }
+    let mut seen = std::collections::HashSet::new();
     if catalog.is_some() != generation.is_some()
         || (catalog.is_none() && (!items.is_empty() || cursor.is_some() || previous.is_some()))
     {
@@ -51,7 +61,12 @@ pub(super) fn page(v: &Value, categories: bool) -> Result<Value> {
             obj(value)?;
             let id = string(value, "id")?;
             let name = string(value, "name")?;
-            if id.len() > 256 || id.chars().any(char::is_control) || name.len() > 1024 {
+            if id.len() > 256
+                || id.chars().any(char::is_control)
+                || name.len() > 1024
+                || !seen.insert(id.clone())
+                || categories && (id.trim().is_empty() || name.trim().is_empty())
+            {
                 return Err(invalid());
             }
             if categories {

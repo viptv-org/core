@@ -10,6 +10,41 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::MediaPresentation>()?
         .register_type::<viptv_core::dto::CardPresentation>()?
         .register_type::<viptv_core::dto::SourcePresentation>()?
+        .register_type::<viptv_core::dto::HomeActions>()?
+        .register_type::<viptv_core::dto::EpisodeWatching>()?
+        .register_type::<viptv_core::dto::PhonePresentation>()?
+        .register_type::<viptv_core::dto::SourceRanks>()?
+        .register_type::<viptv_core::dto::SourceProducerOutcome>()?
+        .register_type::<viptv_core::dto::DiscoverPolicyProjection>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::ForegroundAuthorityInput>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::ForegroundAuthorityDecision>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::HomeRevisionInput>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::HomeRevisionDecision>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::PreviewScopeInput>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::PreviewScopeDecision>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::PreviewInput>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::PreviewDecision>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::UpNextGateInput>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::UpNextGateDecision>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::CountdownInput>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::CountdownDecision>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::UpNextPlaybackInput>()?
+        .register_type::<viptv_core::policy::shell_lifecycle::UpNextPlaybackDecision>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackTimelineFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackTimelineProjection>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackSeekFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackPauseFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackPauseDecision>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackRecoveryFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackDeliveryFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackLeaseFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackLeaseDecision>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackAuthorityFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackAuthorityBudget>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackFailureFacts>()?
+        .register_type::<viptv_core::policy::playback_control::PlaybackFailureDecision>()?
+        .register_type::<viptv_core::policy::playback_control::LivePageValidationFacts>()?
+        .register_type::<viptv_core::policy::playback_control::LivePageValidationDecision>()?
         .register_type::<viptv_core::dto::ApiRequest>()?
         .register_type::<viptv_core::vizio::VizioHttpMethod>()?
         .register_type::<viptv_core::vizio::VizioRequest>()?

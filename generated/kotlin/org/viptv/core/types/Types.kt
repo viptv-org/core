@@ -48,11 +48,40 @@ data class CatalogExtra(
     val optionsLimit: Double? = null,
 )
 
+enum class CountdownAction {
+    BEGIN,
+    ADVANCE,
+    CANCEL;
+}
+
+data class CountdownDecision(
+    val remainingMillis: Long,
+    val seconds: Long,
+    val active: Boolean,
+    val done: Boolean,
+)
+
+data class CountdownInput(
+    val action: org.viptv.core.types.CountdownAction,
+    val remainingMillis: Long,
+    val active: Boolean,
+    val elapsedMillis: Long,
+    val progressing: Boolean,
+    val scopeMatches: Boolean,
+)
+
 data class DiscoverPage(
     val items: List<org.viptv.core.types.MediaItem>,
     val unsupportedCount: UInt? = null,
     val hasMore: Boolean,
     val nextSkip: Double? = null,
+)
+
+data class DiscoverPolicyProjection(
+    val group: String,
+    val groupLabel: String,
+    val firstCatalogIndex: UInt? = null,
+    val defaults: Map<String, String>,
 )
 
 sealed interface Effect {
@@ -68,6 +97,11 @@ sealed interface Effect {
         val value: org.viptv.core.types.StorageOperation,
     ) : Effect
 }
+
+data class EpisodeWatching(
+    val watching: Boolean,
+    val progress: Double,
+)
 
 sealed interface Event {
     data class Begin(
@@ -87,6 +121,50 @@ sealed interface Event {
 
     data object SignOut: Event
 }
+
+enum class ForegroundAuthorityDecision {
+    VALID,
+    REVOKED,
+    PROFILEUNAVAILABLE;
+}
+
+data class ForegroundAuthorityInput(
+    val expected: org.viptv.core.types.Identity,
+    val current: org.viptv.core.types.Identity,
+    val profileId: String? = null,
+)
+
+/// Home actions are semantic intents; shells execute navigation and player effects.
+data class HomeActions(
+    val canManage: Boolean,
+    val managePrevious: Boolean,
+    val canResume: Boolean,
+    val hasResolvedNext: Boolean,
+    val opensQueueManage: Boolean,
+    val opensSourcesFromHero: Boolean,
+    val cardPrimaryAction: String,
+    val heroPrimaryAction: String,
+    val heroPrimaryActionLabel: String,
+    val showHeroProgress: Boolean,
+)
+
+enum class HomeRevisionDecision {
+    UNCHANGED,
+    REFRESH,
+    REFRESHED,
+    RETRYLATER,
+    UNSUPPORTED,
+    SCOPELOST;
+}
+
+data class HomeRevisionInput(
+    val scopeValid: Boolean,
+    val observedRevision: String? = null,
+    /// Read after the adapter has joined any active load. Only successful loads acknowledge revisions.
+    val renderedRevision: String? = null,
+    /// Absent before refresh, otherwise the refresh effect's success fact.
+    val refreshSucceeded: Boolean? = null,
+)
 
 /// An error produced when an HTTP request fails.
 /// 
@@ -275,6 +353,33 @@ data class LiveCatalogPage(
     val previousCursor: String? = null,
 )
 
+enum class LivePageValidationDecision {
+    VALID,
+    CATALOG_CHANGED,
+    INVALID;
+}
+
+/// Validation facts for a normalized page and the exact request/snapshot being extended.
+/// A shell retains its own viewport budget and fences request/profile revisions before adoption.
+data class LivePageValidationFacts(
+    val catalogId: String? = null,
+    val generation: String? = null,
+    val ids: List<String>,
+    val names: List<String>,
+    val categories: Boolean,
+    val nextCursor: String? = null,
+    val previousCursor: String? = null,
+    val requestedCatalogId: String? = null,
+    val limit: UInt,
+    val checkSnapshot: Boolean,
+    val snapshotCatalogId: String? = null,
+    val snapshotGeneration: String? = null,
+    val knownIds: List<String>,
+    val cursor: String? = null,
+    val previous: Boolean,
+    val extendingWindow: Boolean,
+)
+
 data class MediaItem(
     val id: String,
     val type: org.viptv.core.types.MediaKind,
@@ -374,6 +479,27 @@ enum class Phase {
     ERROR;
 }
 
+/// Phone copy only; geometry, artwork and focus remain renderer responsibilities.
+data class PhonePresentation(
+    val shelfHeading: String,
+    val cardContext: String,
+    val contentTypeLabel: String,
+)
+
+data class PlaybackAuthorityBudget(
+    val remainingMillis: Long,
+    val delayMillis: Long,
+)
+
+data class PlaybackAuthorityFacts(
+    val expiresAtMillis: Long,
+    val nowMillis: Long,
+    val elapsedMillis: Long,
+    /// Client-specific observation limit, not a protocol lease lifetime.
+    val observationCapMillis: Long,
+    val waitMillis: Long,
+)
+
 data class PlaybackAuthorization(
     val cookie: String? = null,
     val userAgent: String? = null,
@@ -396,10 +522,31 @@ enum class PlaybackConversion {
     AUDIO_VIDEO;
 }
 
+data class PlaybackDeliveryFacts(
+    val directDelivery: Boolean,
+    val canPlayDirect: Boolean,
+    val forceGateway: Boolean,
+    val automaticConversion: Boolean,
+)
+
 enum class PlaybackDeliveryKind {
     DIRECT,
     GATEWAY;
 }
+
+data class PlaybackFailureDecision(
+    val retryRenewal: Boolean,
+    /// Reconcile the exact request and release it; never select a different delivery/source.
+    val reconcileAndRelease: Boolean,
+)
+
+data class PlaybackFailureFacts(
+    val gatewayError: Boolean,
+    val status: Int,
+    val invalidResponse: Boolean,
+    val ioError: Boolean,
+    val hasLeaseId: Boolean,
+)
 
 data class PlaybackLease(
     val id: String,
@@ -412,6 +559,27 @@ data class PlaybackLease(
     val error: String? = null,
 )
 
+enum class PlaybackLeaseDecision {
+    INVALID,
+    TERMINAL,
+    EXPIRED,
+    PENDING,
+    READY;
+}
+
+data class PlaybackLeaseFacts(
+    val expectedId: String,
+    val actualId: String,
+    val status: String,
+    val hasSession: Boolean,
+    val expiresAtMillis: Double,
+    val nowMillis: Long,
+    /// Shell compares sensitive transport values without serializing them here.
+    val heartbeat: Boolean,
+    val sameDeliveryUrl: Boolean,
+    val sameDeliveryKind: Boolean,
+)
+
 enum class PlaybackLeaseStatus {
     STARTING,
     READY,
@@ -419,6 +587,20 @@ enum class PlaybackLeaseStatus {
     EXPIRED,
     RELEASED;
 }
+
+data class PlaybackPauseDecision(
+    val usesAnchor: Boolean,
+    val replaceOnResume: Boolean,
+    val anchorAfterOpenMillis: Long? = null,
+)
+
+data class PlaybackPauseFacts(
+    val deliveryMode: String,
+    val live: Boolean,
+    val anchorMillis: Long? = null,
+    val launchPositionMillis: Long,
+    val playWhenReady: Boolean,
+)
 
 enum class PlaybackPlatform {
     ANDROID,
@@ -430,6 +612,20 @@ enum class PlaybackPlatform {
     ROKU,
     VIZIO;
 }
+
+data class PlaybackRecoveryFacts(
+    val serverManaged: Boolean,
+    val networkFailure: Boolean,
+    val alreadyAttempted: Boolean,
+)
+
+data class PlaybackSeekFacts(
+    val currentMillis: Long,
+    val deltaMillis: Long,
+    val durationMillis: Long? = null,
+    val rangeStartMillis: Long? = null,
+    val rangeEndMillis: Long? = null,
+)
 
 data class PlaybackSession(
     val deliveryKind: org.viptv.core.types.PlaybackDeliveryKind? = null,
@@ -451,6 +647,29 @@ data class PlaybackSession(
     val authorization: org.viptv.core.types.PlaybackAuthorization? = null,
 )
 
+data class PlaybackTimelineFacts(
+    /// Delivery/timeline mode, not processing mode: gateway copy is still managed.
+    val deliveryMode: String,
+    val launchPositionMillis: Long,
+    val segmentPositionMillis: Long,
+    val titleOffsetMillis: Long,
+    val titlePositionMillis: Long,
+    val nativeDurationMillis: Long? = null,
+    val titleDurationMillis: Long? = null,
+    val pauseAnchorMillis: Long? = null,
+    val playerError: Boolean,
+    val trustedPositionMillis: Long,
+)
+
+data class PlaybackTimelineProjection(
+    val launchOffsetMillis: Long,
+    val positionMillis: Long,
+    val segmentPositionMillis: Long,
+    val durationMillis: Long? = null,
+    /// An anchor/error fallback must not overwrite the shell's last trusted native observation.
+    val updateTrustedPosition: Boolean,
+)
+
 data class PlaybackV2Request(
     val conversion: org.viptv.core.types.PlaybackConversion,
     val requestId: String,
@@ -464,6 +683,59 @@ data class PlaybackV2Request(
     val preferredAudioLanguage: String? = null,
     val preferredSubtitleLanguage: String? = null,
     val subtitlesOff: Boolean,
+)
+
+enum class PreviewAction {
+    START,
+    ADOPT,
+    UPDATE,
+    RESULT;
+}
+
+enum class PreviewDecision {
+    RETAIN,
+    BEGINSETTLED,
+    BEGINIMMEDIATE,
+    ACCEPT,
+    REJECT,
+    CANCELLED,
+    FAILED,
+    READY;
+}
+
+data class PreviewInput(
+    val action: org.viptv.core.types.PreviewAction,
+    val requestedKey: String,
+    val activeKey: String? = null,
+    val running: Boolean,
+    val hasSources: Boolean,
+    val done: Boolean,
+    val failed: Boolean,
+    /// Entry identity is a native ownership fact, not merely equality of target keys.
+    val ownerMatches: Boolean,
+)
+
+enum class PreviewRoute {
+    DETAILS,
+    SOURCES,
+    PLAYER,
+    OTHER;
+}
+
+data class PreviewScopeDecision(
+    val key: String? = null,
+    val keep: Boolean,
+)
+
+data class PreviewScopeInput(
+    val profileId: String? = null,
+    val mediaType: String,
+    val mediaId: String,
+    val hasEpisode: Boolean,
+    val activeKey: String? = null,
+    val route: org.viptv.core.types.PreviewRoute,
+    /// Title disposal retains only its own picker/player, not another Title frame.
+    val releasing: Boolean,
 )
 
 data class Profile(
@@ -529,17 +801,38 @@ data class SourcePresentation(
     val providerLabel: String,
 )
 
+data class SourceProducerOutcome(
+    val sourceId: String,
+    val label: String,
+    val errorCode: String? = null,
+    val errorMessage: String? = null,
+)
+
+data class SourceRank(
+    val rank: Double,
+    val likely: Boolean,
+    val best: Boolean,
+)
+
+/// One rank per input source and a stable display order; never a playback choice.
+data class SourceRanks(
+    val ranks: List<org.viptv.core.types.SourceRank>,
+    val orderedIndices: List<UInt>,
+)
+
 data class SourcesPollState(
     val after: Double,
     val sources: List<org.viptv.core.types.MediaSource>,
     val polls: UInt,
     val errors: List<org.viptv.core.types.SourceFailure>? = null,
+    val producers: List<org.viptv.core.types.SourceProducerOutcome>,
 )
 
 data class SourcesPollStep(
     val state: org.viptv.core.types.SourcesPollState,
     val sources: List<org.viptv.core.types.MediaSource>,
     val done: Boolean,
+    val producers: List<org.viptv.core.types.SourceProducerOutcome>,
 )
 
 sealed interface StorageOperation {
@@ -561,6 +854,37 @@ sealed interface StorageResult {
         val value: String,
     ) : StorageResult
 }
+
+data class UpNextGateDecision(
+    val attemptedKey: String? = null,
+    val resumeAwaitingKey: String? = null,
+    val start: Boolean,
+)
+
+data class UpNextGateInput(
+    val mediaKey: String,
+    val attemptedKey: String? = null,
+    val resumeAwaitingKey: String? = null,
+    val ended: Boolean,
+    val eligible: Boolean,
+    val continuationBusy: Boolean,
+    val blocked: Boolean,
+)
+
+data class UpNextPlaybackDecision(
+    val attemptedKey: String? = null,
+    val resumeAwaitingKey: String? = null,
+)
+
+data class UpNextPlaybackInput(
+    val mediaKey: String,
+    val previousKey: String? = null,
+    val attemptedKey: String? = null,
+    val resumeAwaitingKey: String? = null,
+    val explicitResume: Boolean,
+    val positionMillis: Long,
+    val durationMillis: Long? = null,
+)
 
 data class ViewModel(
     val phase: org.viptv.core.types.Phase,
