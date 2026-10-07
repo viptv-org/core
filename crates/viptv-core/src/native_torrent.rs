@@ -143,12 +143,103 @@ pub fn negotiation_decision(
         _ => Legacy,
     }
 }
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct AuthorizationScope {
+    server_origin: String,
+    account_id: String,
+    profile_id: String,
+    device_authorization_epoch: String,
+}
+impl fmt::Debug for AuthorizationScope {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("NativeAuthorizationScope(<redacted>)")
+    }
+}
+impl AuthorizationScope {
+    fn canonical(&self) -> Option<(String, &str, &str, &str)> {
+        if self.server_origin.len() > 2048
+            || self.server_origin.trim() != self.server_origin
+            || !identifier(&self.account_id)
+            || !identifier(&self.profile_id)
+            || !identifier(&self.device_authorization_epoch)
+        {
+            return None;
+        }
+        let origin = url::Url::parse(&self.server_origin).ok()?;
+        if origin.scheme() != "https"
+            || origin.host_str().is_none()
+            || !origin.username().is_empty()
+            || origin.password().is_some()
+            || origin.query().is_some()
+            || origin.fragment().is_some()
+            || origin.path() != "/"
+        {
+            return None;
+        }
+        Some((
+            origin.to_string(),
+            &self.account_id,
+            &self.profile_id,
+            &self.device_authorization_epoch,
+        ))
+    }
+}
+
+fn authorization_scope(input: &str) -> Result<String> {
+    fn nullable_scope<'de, D: serde::Deserializer<'de>>(
+        d: D,
+    ) -> std::result::Result<Option<AuthorizationScope>, D::Error> {
+        Option::<AuthorizationScope>::deserialize(d)
+    }
+    #[derive(Deserialize)]
+    #[serde(deny_unknown_fields)]
+    struct Facts {
+        operation: String,
+        #[serde(deserialize_with = "nullable_scope")]
+        previous: Option<AuthorizationScope>,
+        #[serde(deserialize_with = "nullable_scope")]
+        current: Option<AuthorizationScope>,
+        revoked: bool,
+    }
+    if input.len() > 8192 {
+        return Err(invalid());
+    }
+    let facts: Facts = parse(input)?;
+    if facts.operation != "authorizationScope" {
+        return Err(invalid());
+    }
+    let previous = facts.previous.as_ref().map(AuthorizationScope::canonical);
+    let current = facts.current.as_ref().map(AuthorizationScope::canonical);
+    let decision = if previous.as_ref().is_some_and(Option::is_none)
+        || current.as_ref().is_some_and(Option::is_none)
+    {
+        "reject"
+    } else if facts.revoked || current.is_none() {
+        if previous.is_some() {
+            "retire"
+        } else {
+            "reject"
+        }
+    } else if previous.is_none() {
+        "create"
+    } else if previous == current {
+        "keep"
+    } else {
+        "retire"
+    };
+    serde_json::to_string(decision).map_err(|_| invalid())
+}
 pub(crate) fn negotiation(input: &str) -> Result<String> {
     #[derive(Deserialize)]
     struct Operation {
         operation: String,
     }
     let operation: Operation = parse(input)?;
+    if operation.operation == "authorizationScope" {
+        return authorization_scope(input);
+    }
     if operation.operation == "recovery" {
         #[derive(Deserialize)]
         #[serde(deny_unknown_fields)]

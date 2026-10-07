@@ -7947,6 +7947,142 @@
           "value": null
         }
       ]
+    },
+    {
+      "name": "authorization_scope_stable_epoch_decisions",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": null, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://FIXTURE.invalid:443/\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": null, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": true}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": null, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": true}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://other.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"different_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"different_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"different_fixture\"}, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"http://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": "create"
+        },
+        {
+          "ok": true,
+          "value": "keep"
+        },
+        {
+          "ok": true,
+          "value": "retire"
+        },
+        {
+          "ok": true,
+          "value": "retire"
+        },
+        {
+          "ok": true,
+          "value": "reject"
+        },
+        {
+          "ok": true,
+          "value": "retire"
+        },
+        {
+          "ok": true,
+          "value": "retire"
+        },
+        {
+          "ok": true,
+          "value": "retire"
+        },
+        {
+          "ok": true,
+          "value": "retire"
+        },
+        {
+          "ok": true,
+          "value": "reject"
+        }
+      ]
+    },
+    {
+      "name": "authorization_scope_closed_transient_facts",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false, \"generation\": 7}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false, \"accessToken\": \"synthetic_sensitive_token\"}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"revoked\": false}"
+        },
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"authorizationScope\", \"previous\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": \"epoch_fixture\"}, \"current\": {\"serverOrigin\": \"https://fixture.invalid\", \"accountId\": \"account_fixture\", \"profileId\": \"profile_fixture\", \"deviceAuthorizationEpoch\": 1}, \"revoked\": false}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        },
+        {
+          "ok": false
+        },
+        {
+          "ok": false
+        },
+        {
+          "ok": false
+        }
+      ]
     }
   ]
 }

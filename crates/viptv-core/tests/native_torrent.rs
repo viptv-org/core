@@ -97,6 +97,39 @@ fn measured_receipt_clock_is_derived_after_strict_raw_validation() {
 }
 
 #[test]
+fn native_authorization_scope_keeps_only_the_same_stable_epoch() {
+    let scope = json!({"serverOrigin":"https://fixture.invalid", "accountId":"account_fixture", "profileId":"profile_fixture", "deviceAuthorizationEpoch":"epoch_fixture"});
+    let decide = |previous: Value, current: Value, revoked: bool| {
+        let output = normalize("nativeTorrent".into(), json!({"operation":"authorizationScope","previous":previous,"current":current,"revoked":revoked}).to_string(), String::new()).unwrap();
+        serde_json::from_str::<Value>(&output).unwrap()
+    };
+    assert_eq!(decide(Value::Null, scope.clone(), false), "create");
+    let mut canonical_origin = scope.clone();
+    canonical_origin["serverOrigin"] = json!("https://FIXTURE.invalid:443/");
+    assert_eq!(decide(scope.clone(), canonical_origin, false), "keep");
+    for field in [
+        "serverOrigin",
+        "accountId",
+        "profileId",
+        "deviceAuthorizationEpoch",
+    ] {
+        let mut changed = scope.clone();
+        changed[field] = json!(if field == "serverOrigin" {
+            "https://other.invalid"
+        } else {
+            "different_fixture"
+        });
+        assert_eq!(decide(scope.clone(), changed, false), "retire");
+    }
+    assert_eq!(decide(scope.clone(), Value::Null, false), "retire");
+    assert_eq!(decide(scope.clone(), scope.clone(), true), "retire");
+    assert_eq!(decide(Value::Null, scope.clone(), true), "reject");
+    let mut invalid = scope.clone();
+    invalid["serverOrigin"] = json!("http://fixture.invalid");
+    assert_eq!(decide(scope, invalid, false), "reject");
+}
+
+#[test]
 fn backend_admission_compares_caller_source_and_request_resource_sessions() {
     use viptv_core::native_torrent_policy::*;
     let request: viptv_core::dto::PlaybackV2Request =
