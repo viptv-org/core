@@ -468,6 +468,101 @@ data class MediaTrack(
     val selectable: Boolean,
 )
 
+/// Support advertisement only; negotiation and qualification remain observed facts.
+data class NativeTorrentCapability(
+    val version: UInt,
+    val networkPolicy: String,
+)
+
+data class NativeTorrentClock(
+    val scope: String,
+    val generation: ULong,
+    val nowMillis: ULong,
+    val trustedWallUpperUnixMillis: ULong? = null,
+    val backendRevalidated: Boolean,
+    val suspendAware: Boolean,
+)
+
+data class NativeTorrentContext(
+    val origin: String,
+    val scope: String,
+    val generation: ULong,
+    val qualified: Boolean,
+    val negotiated: Boolean,
+    val vod: Boolean,
+    val request: org.viptv.core.types.PlaybackV2Request,
+)
+
+enum class NativeTorrentControlOperation {
+    START,
+    POLL,
+    HEARTBEAT;
+}
+
+enum class NativeTorrentNegotiationDecision {
+    REJECTSTALE,
+    AUTHRECOVERY,
+    LEGACY,
+    ADVERTISE;
+}
+
+data class NativeTorrentNegotiationFacts(
+    val platform: org.viptv.core.types.PlaybackPlatform,
+    val qualified: Boolean,
+    val scopeMatches: Boolean,
+    val status: UShort? = null,
+    val authorizationRefused: Boolean,
+    val body: String,
+) { override fun toString(): String = "NativeTorrentNegotiationFacts(<redacted>)" }
+
+data class NativeTorrentObservation(
+    val scope: String,
+    val generation: ULong,
+    val sequence: ULong,
+    val operation: org.viptv.core.types.NativeTorrentControlOperation,
+    val receivedAtMillis: ULong,
+    val roundTripMillis: ULong,
+    val uncertaintyMillis: ULong? = null,
+    val maxUncertaintyMillis: ULong,
+    val trustedWallUpperUnixMillis: ULong? = null,
+    val suspendAware: Boolean,
+)
+
+enum class NativeTorrentRecoveryAction {
+    RETRY,
+    CHOOSESOURCE,
+    BACK;
+}
+
+enum class NativeTorrentRecoveryDecision {
+    WAITFORRETIREMENT,
+    AUTHRECOVERY,
+    CHOOSESOURCE,
+    BACK,
+    ORDINARYRETRY,
+    FORCEGATEWAYRETRY;
+}
+
+data class NativeTorrentRecoveryFacts(
+    val admitted: Boolean,
+    val authorityRetired: Boolean,
+    val authorizationRefused: Boolean,
+    val selectionRefused: Boolean,
+    val action: org.viptv.core.types.NativeTorrentRecoveryAction,
+)
+
+/// Safe transport state only; not a player launch/session/history projection.
+data class NativeTorrentState(
+    val status: String,
+    val deadlineMillis: ULong? = null,
+    val expiresAtUnixMillis: ULong? = null,
+    val position: Double? = null,
+    val audioLanguage: String? = null,
+    val subtitleLanguage: String? = null,
+    val subtitlesEnabled: Boolean? = null,
+    val error: String? = null,
+)
+
 enum class Phase {
     STARTING,
     RESTORING,
@@ -513,6 +608,7 @@ data class PlaybackClient(
     val maxHeight: UInt,
     val videoCodecs: List<String>,
     val audioCodecs: List<String>,
+    val nativeTorrent: org.viptv.core.types.NativeTorrentCapability? = null,
 )
 
 enum class PlaybackConversion {

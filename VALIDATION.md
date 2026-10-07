@@ -355,3 +355,28 @@ Production read-only manifest counts showed 78 catalogs, including 15 AIOMetadat
 Bounded, read-only AIOMetadata GETs verified the configured catalog namespaces independently from their returned media types: anime returned 25 series, anime.series search returned 7 series, anime.movie search returned 1 movie, and collection search returned 5 movies. The latter three manifests require search. Following an anime result through its exact series metadata path returned 65 videos; a collection result through its exact movie metadata path returned 6 videos. No token, provider URL or account data was recorded. These are metadata checks, not playback qualification.
 
 The response contract retains returned movie/series identity and reports optional unsupportedCount for unknown media types instead of silently treating a nonempty unknown response as an empty catalog. Known rows in mixed responses remain available. Rust response fixtures cover all four observed namespace/type pairs.
+# Native torrent private transport and decisions — 2026-10-07
+
+Design pin: `83d338b6ffc1fc5e7f14ad4059f6159b8ee84509`,
+SRC-TORRENT-NATIVE-001. Closed private grant/input parsing, original UTF-8 byte
+validation, canonical v1 metainfo/hash/file checks, scoped negotiation,
+admission/idempotency, grant clocks/renewal and explicit recovery decisions live
+in Rust. Dedicated native/WASM holders redact Debug/Display/toString and keep
+private input out of ordinary session/source/presentation models. Native
+advertisement remains gated by qualified Android facts; consumers do not gain
+qualification or activation from adopting these interfaces.
+
+Final source batch passed: 116 workspace tests with all features, strict
+workspace/all-target/all-feature Clippy, formatting, type generation, native
+UniFFI/Kotlin generation, release WASM generation and the full actual-WASM
+suite. Its 410 native torrent vectors match the native Rust runner exactly,
+alongside 90 protocol vectors, 37 shared-policy vectors and existing startup,
+normalization and presentation regressions. Generation used wasm-bindgen CLI
+0.2.92 and checks used Node 24; Cargo ran one job. Build scripts honor the
+configured Cargo target directory so generation consumes the freshly compiled
+artifact. Logs are local at `target/native-torrent-05/`.
+
+Android and TV-web adoption/checks are recorded in their repositories. These
+core checks execute no peer transport, network effects, Android device playback
+or production deployment. JNI/artifact, complete backend integration and
+physical/public-peer qualification remain separate tickets.

@@ -71,6 +71,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::PlaybackSession>()?
         .register_type::<viptv_core::dto::PlaybackLease>()?
         .register_type::<viptv_core::dto::PlaybackProtocol>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentContext>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentObservation>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentClock>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentState>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentNegotiationFacts>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentNegotiationDecision>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentRecoveryFacts>()?
+        .register_type::<viptv_core::native_torrent::NativeTorrentRecoveryDecision>()?
         .register_type::<viptv_core::dto::PlaybackV2Request>()?
         .register_type::<viptv_core::dto::DiscoverPage>()?
         .register_type::<viptv_core::dto::LiveCatalogPage>()?
@@ -96,6 +104,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     facet_generate::generation::kotlin::Installer::new("org.viptv.core.types", root.join("kotlin"))
         .generate(&kotlin_registry)?;
+    // Raw negotiation text may be a malicious reflected private response.
+    // Keep declaration-only data classes redacted as well as the live wire DTO.
+    let declaration = root.join("kotlin/org/viptv/core/types/Types.kt");
+    let mut text = std::fs::read_to_string(&declaration)?;
+    let start = text
+        .find("data class NativeTorrentNegotiationFacts(")
+        .ok_or("Missing negotiation declaration")?;
+    let end = start
+        + text[start..]
+            .find("\n)\n")
+            .ok_or("Missing negotiation declaration end")?
+        + 2;
+    text.insert_str(
+        end,
+        " { override fun toString(): String = \"NativeTorrentNegotiationFacts(<redacted>)\" }",
+    );
+    std::fs::write(declaration, text)?;
     // Generate without invoking an unrelated package manager or building JS.
     facet_generate::generation::typescript::Installer::new(
         "viptv_core_types",

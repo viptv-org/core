@@ -46,6 +46,12 @@ enum ProtocolRequest {
         #[serde(rename = "requestId")]
         request_id: String,
     },
+    #[serde(rename = "playbackV2Status")]
+    Poll { id: String },
+    #[serde(rename = "playbackV2Heartbeat")]
+    Heartbeat { id: String },
+    #[serde(rename = "playbackV2Stop")]
+    Release { id: String },
 }
 
 /// Keep the added bodyless bridge inputs closed without tightening legacy inputs.
@@ -53,6 +59,13 @@ pub(crate) fn validate_request(input: &str) -> Result<(), CoreError> {
     match serde_json::from_str::<ProtocolRequest>(input).map_err(|_| CoreError::InvalidInput)? {
         ProtocolRequest::Protocol {} => Ok(()),
         ProtocolRequest::Cancel { request_id } if valid_identifier(&request_id) => Ok(()),
+        ProtocolRequest::Poll { id }
+        | ProtocolRequest::Heartbeat { id }
+        | ProtocolRequest::Release { id }
+            if valid_identifier(&id) =>
+        {
+            Ok(())
+        }
         _ => Err(CoreError::InvalidInput),
     }
 }

@@ -449,6 +449,135 @@ export class MediaTrack {
     }
 }
 
+/// Support advertisement only; negotiation and qualification remain observed facts.
+export class NativeTorrentCapability {
+    constructor (public version: uint32, public networkPolicy: str) {
+    }
+}
+
+export class NativeTorrentClock {
+    constructor (public scope: str, public generation: uint64, public nowMillis: uint64, public trustedWallUpperUnixMillis: Optional<uint64>, public backendRevalidated: bool, public suspendAware: bool) {
+    }
+}
+
+export class NativeTorrentContext {
+    constructor (public origin: str, public scope: str, public generation: uint64, public qualified: bool, public negotiated: bool, public vod: bool, public request: PlaybackV2Request) {
+    }
+}
+
+export type NativeTorrentControlOperation =
+    | { kind: "start" }
+    | { kind: "poll" }
+    | { kind: "heartbeat" };
+
+export const nativeTorrentControlOperationStart = (): NativeTorrentControlOperation => ({ kind: "start" });
+
+export const nativeTorrentControlOperationPoll = (): NativeTorrentControlOperation => ({ kind: "poll" });
+
+export const nativeTorrentControlOperationHeartbeat = (): NativeTorrentControlOperation => ({ kind: "heartbeat" });
+
+export function matchNativeTorrentControlOperation<R>(value: NativeTorrentControlOperation, cases: {
+    start: (v: Extract<NativeTorrentControlOperation, { kind: "start" }>) => R;
+    poll: (v: Extract<NativeTorrentControlOperation, { kind: "poll" }>) => R;
+    heartbeat: (v: Extract<NativeTorrentControlOperation, { kind: "heartbeat" }>) => R;
+}): R {
+    return cases[value.kind as NativeTorrentControlOperation["kind"]](value as never);
+}
+
+export type NativeTorrentNegotiationDecision =
+    | { kind: "rejectStale" }
+    | { kind: "authRecovery" }
+    | { kind: "legacy" }
+    | { kind: "advertise" };
+
+export const nativeTorrentNegotiationDecisionRejectStale = (): NativeTorrentNegotiationDecision => ({ kind: "rejectStale" });
+
+export const nativeTorrentNegotiationDecisionAuthRecovery = (): NativeTorrentNegotiationDecision => ({ kind: "authRecovery" });
+
+export const nativeTorrentNegotiationDecisionLegacy = (): NativeTorrentNegotiationDecision => ({ kind: "legacy" });
+
+export const nativeTorrentNegotiationDecisionAdvertise = (): NativeTorrentNegotiationDecision => ({ kind: "advertise" });
+
+export function matchNativeTorrentNegotiationDecision<R>(value: NativeTorrentNegotiationDecision, cases: {
+    rejectStale: (v: Extract<NativeTorrentNegotiationDecision, { kind: "rejectStale" }>) => R;
+    authRecovery: (v: Extract<NativeTorrentNegotiationDecision, { kind: "authRecovery" }>) => R;
+    legacy: (v: Extract<NativeTorrentNegotiationDecision, { kind: "legacy" }>) => R;
+    advertise: (v: Extract<NativeTorrentNegotiationDecision, { kind: "advertise" }>) => R;
+}): R {
+    return cases[value.kind as NativeTorrentNegotiationDecision["kind"]](value as never);
+}
+
+export class NativeTorrentNegotiationFacts {
+    constructor (public platform: PlaybackPlatform, public qualified: bool, public scopeMatches: bool, public status: Optional<uint16>, public authorizationRefused: bool, public body: str) {
+    }
+}
+
+export class NativeTorrentObservation {
+    constructor (public scope: str, public generation: uint64, public sequence: uint64, public operation: NativeTorrentControlOperation, public receivedAtMillis: uint64, public roundTripMillis: uint64, public uncertaintyMillis: Optional<uint64>, public maxUncertaintyMillis: uint64, public trustedWallUpperUnixMillis: Optional<uint64>, public suspendAware: bool) {
+    }
+}
+
+export type NativeTorrentRecoveryAction =
+    | { kind: "retry" }
+    | { kind: "chooseSource" }
+    | { kind: "back" };
+
+export const nativeTorrentRecoveryActionRetry = (): NativeTorrentRecoveryAction => ({ kind: "retry" });
+
+export const nativeTorrentRecoveryActionChooseSource = (): NativeTorrentRecoveryAction => ({ kind: "chooseSource" });
+
+export const nativeTorrentRecoveryActionBack = (): NativeTorrentRecoveryAction => ({ kind: "back" });
+
+export function matchNativeTorrentRecoveryAction<R>(value: NativeTorrentRecoveryAction, cases: {
+    retry: (v: Extract<NativeTorrentRecoveryAction, { kind: "retry" }>) => R;
+    chooseSource: (v: Extract<NativeTorrentRecoveryAction, { kind: "chooseSource" }>) => R;
+    back: (v: Extract<NativeTorrentRecoveryAction, { kind: "back" }>) => R;
+}): R {
+    return cases[value.kind as NativeTorrentRecoveryAction["kind"]](value as never);
+}
+
+export type NativeTorrentRecoveryDecision =
+    | { kind: "waitForRetirement" }
+    | { kind: "authRecovery" }
+    | { kind: "chooseSource" }
+    | { kind: "back" }
+    | { kind: "ordinaryRetry" }
+    | { kind: "forceGatewayRetry" };
+
+export const nativeTorrentRecoveryDecisionWaitForRetirement = (): NativeTorrentRecoveryDecision => ({ kind: "waitForRetirement" });
+
+export const nativeTorrentRecoveryDecisionAuthRecovery = (): NativeTorrentRecoveryDecision => ({ kind: "authRecovery" });
+
+export const nativeTorrentRecoveryDecisionChooseSource = (): NativeTorrentRecoveryDecision => ({ kind: "chooseSource" });
+
+export const nativeTorrentRecoveryDecisionBack = (): NativeTorrentRecoveryDecision => ({ kind: "back" });
+
+export const nativeTorrentRecoveryDecisionOrdinaryRetry = (): NativeTorrentRecoveryDecision => ({ kind: "ordinaryRetry" });
+
+export const nativeTorrentRecoveryDecisionForceGatewayRetry = (): NativeTorrentRecoveryDecision => ({ kind: "forceGatewayRetry" });
+
+export function matchNativeTorrentRecoveryDecision<R>(value: NativeTorrentRecoveryDecision, cases: {
+    waitForRetirement: (v: Extract<NativeTorrentRecoveryDecision, { kind: "waitForRetirement" }>) => R;
+    authRecovery: (v: Extract<NativeTorrentRecoveryDecision, { kind: "authRecovery" }>) => R;
+    chooseSource: (v: Extract<NativeTorrentRecoveryDecision, { kind: "chooseSource" }>) => R;
+    back: (v: Extract<NativeTorrentRecoveryDecision, { kind: "back" }>) => R;
+    ordinaryRetry: (v: Extract<NativeTorrentRecoveryDecision, { kind: "ordinaryRetry" }>) => R;
+    forceGatewayRetry: (v: Extract<NativeTorrentRecoveryDecision, { kind: "forceGatewayRetry" }>) => R;
+}): R {
+    return cases[value.kind as NativeTorrentRecoveryDecision["kind"]](value as never);
+}
+
+export class NativeTorrentRecoveryFacts {
+    constructor (public admitted: bool, public authorityRetired: bool, public authorizationRefused: bool, public selectionRefused: bool, public action: NativeTorrentRecoveryAction) {
+    }
+}
+
+/// Safe transport state only; not a player launch/session/history projection.
+export class NativeTorrentState {
+    constructor (public status: str, public deadlineMillis: Optional<uint64>, public expiresAtUnixMillis: Optional<uint64>, public position: Optional<float64>, public audioLanguage: Optional<str>, public subtitleLanguage: Optional<str>, public subtitlesEnabled: Optional<bool>, public error: Optional<str>) {
+    }
+}
+
 export type Phase =
     | { kind: "Starting" }
     | { kind: "Restoring" }
@@ -510,7 +639,7 @@ export class PlaybackAuthorization {
 }
 
 export class PlaybackClient {
-    constructor (public platform: PlaybackPlatform, public canPlayDirect: bool, public maxWidth: uint32, public maxHeight: uint32, public videoCodecs: Seq<str>, public audioCodecs: Seq<str>) {
+    constructor (public platform: PlaybackPlatform, public canPlayDirect: bool, public maxWidth: uint32, public maxHeight: uint32, public videoCodecs: Seq<str>, public audioCodecs: Seq<str>, public nativeTorrent: Optional<NativeTorrentCapability>) {
     }
 }
 

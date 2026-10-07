@@ -34,7 +34,7 @@ fn malformed_protocol_and_requests_fail_with_static_errors() {
 }
 
 #[test]
-fn legacy_start_and_normalizers_do_not_admit_native_capability_or_grants() {
+fn legacy_models_do_not_project_private_grants() {
     let playback = json!({"requestId":"request_fixture","streamId":"opaque-source","client":{"platform":"android_tv","canPlayDirect":true,"maxWidth":3840,"maxHeight":2160,"videoCodecs":["h264"],"audioCodecs":["aac"]},"position":120});
     let invoke = |kind: &str, value: Value| {
         normalize(
@@ -62,7 +62,7 @@ fn legacy_start_and_normalizers_do_not_admit_native_capability_or_grants() {
             "request",
             json!({"operation":"playbackV2","playback":native})
         )
-        .is_err()
+        .is_ok()
     );
     assert!(invoke("playbackV2", json!({"id":"playback_fixture","status":"ready","expires_at":1800000060_u64,"renew_after_seconds":20,"delivery":{"kind":"native_torrent","grant":{}}})).is_err());
 }

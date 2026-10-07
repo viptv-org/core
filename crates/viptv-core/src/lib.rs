@@ -2,6 +2,9 @@
 pub mod app;
 pub mod domain;
 pub mod dto;
+mod native_metainfo;
+pub mod native_torrent;
+pub mod native_torrent_policy;
 pub mod policy;
 pub mod vizio;
 pub use app::*;
@@ -9,6 +12,7 @@ use crux_core::{
     Core,
     bridge::{Bridge, EffectId, JsonFfiFormat},
 };
+pub use native_torrent::NativeTorrentBridge;
 
 #[derive(Debug, thiserror::Error)]
 #[cfg_attr(feature = "native", derive(uniffi::Error))]
@@ -70,15 +74,33 @@ pub fn normalize(kind: String, input: String, origin: String) -> Result<String, 
         return serde_json::to_string(&domain::playback_protocol::parse(&input)?)
             .map_err(|_| CoreError::InvalidInput);
     }
+    if kind == "nativeTorrent" {
+        return native_torrent::negotiation(&input);
+    }
     let value: serde_json::Value =
         serde_json::from_str(&input).map_err(|_| CoreError::InvalidInput)?;
+    if kind != "request" && native_torrent::contains_private_transport(&value) {
+        return Err(CoreError::InvalidInput);
+    }
     if kind == "request"
         && matches!(
             value["operation"].as_str(),
-            Some("playbackProtocolV2" | "playbackV2CancelRequest")
+            Some(
+                "playbackProtocolV2"
+                    | "playbackV2CancelRequest"
+                    | "playbackV2Status"
+                    | "playbackV2Heartbeat"
+                    | "playbackV2Stop"
+            )
         )
     {
         domain::playback_protocol::validate_request(&input)?;
+    }
+    if kind == "request"
+        && value["operation"] == "playbackV2"
+        && value["playback"]["client"].get("nativeTorrent").is_some()
+    {
+        native_torrent::validate_start(&input)?;
     }
     let normalized = domain::normalize_owned(&kind, value, &origin)?;
     validate_normalized(&kind, &normalized)?;

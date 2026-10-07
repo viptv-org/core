@@ -198,7 +198,23 @@ fn live_catalog_request(v: &Value, categories: bool) -> std::result::Result<Stri
 fn playback_v2_request(input: &Value) -> Result {
     let request: crate::dto::PlaybackV2Request =
         serde_json::from_value(input.clone()).map_err(|_| CoreError::InvalidInput)?;
-    if request.request_id.is_empty()
+    validate_playback_v2(&request)?;
+    serde_json::to_value(request)
+        .map(|v| snake(&v))
+        .map_err(|_| CoreError::InvalidInput)
+}
+
+pub(crate) fn validate_playback_v2(
+    request: &crate::dto::PlaybackV2Request,
+) -> std::result::Result<(), CoreError> {
+    if request.client.native_torrent.as_ref().is_some_and(|cap| {
+        cap.version != 1
+            || cap.network_policy != "public_dht_tcp_v1"
+            || !matches!(
+                request.client.platform,
+                crate::dto::PlaybackPlatform::Android | crate::dto::PlaybackPlatform::AndroidTv
+            )
+    }) || request.request_id.is_empty()
         || request.request_id.len() > 128
         || !request
             .request_id
@@ -243,9 +259,7 @@ fn playback_v2_request(input: &Value) -> Result {
     {
         return Err(CoreError::InvalidInput);
     }
-    serde_json::to_value(request)
-        .map(|v| snake(&v))
-        .map_err(|_| CoreError::InvalidInput)
+    Ok(())
 }
 
 /// Shared bridge from measured player facts/options to the canonical v2 request.

@@ -70,6 +70,7 @@ pub fn generate(registry: &Registry) -> String {
                 | "MediaTrack"
                 | "DiscoverPage"
                 | "Profile"
+                | "PlaybackClient"
                 | "PlaybackSession"
                 | "PlaybackAuthorization"
         );

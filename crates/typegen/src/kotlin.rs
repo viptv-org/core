@@ -89,6 +89,13 @@ pub fn generate(registry: &Registry) -> String {
                     | "PlaybackSession"
                     | "PlaybackLease"
                     | "PlaybackProtocol"
+                    | "NativeTorrentCapability"
+                    | "NativeTorrentContext"
+                    | "NativeTorrentObservation"
+                    | "NativeTorrentClock"
+                    | "NativeTorrentState"
+                    | "NativeTorrentNegotiationFacts"
+                    | "NativeTorrentRecoveryFacts"
                     | "PlaybackV2Request"
                     | "PlaybackClient"
                     | "PlaybackAuthorization"
@@ -117,7 +124,7 @@ pub fn generate(registry: &Registry) -> String {
             )
         {
             s.push_str(&format!(
-                "@Serializable data class {}(\n{}\n)\n",
+                "@Serializable data class {}(\n{}\n){}\n",
                 name.name,
                 fields
                     .iter()
@@ -131,7 +138,8 @@ pub fn generate(registry: &Registry) -> String {
                         format!("    val `{}`: {}{}", f.name, ty(&f.value), default)
                     })
                     .collect::<Vec<_>>()
-                    .join(",\n")
+                    .join(",\n"),
+                if name.name == "NativeTorrentNegotiationFacts" { " { override fun toString(): String = \"NativeTorrentNegotiationFacts(<redacted>)\" }" } else { "" }
             ));
         }
     }

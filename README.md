@@ -39,7 +39,9 @@ requires the same immutable core revision and rebuilt native/WASM artifacts.
 
 The closed `playbackProtocolV2` raw-text normalizer and bodyless protocol/request-ID
 cancellation operations are documented in [docs/playback-protocol.md](docs/playback-protocol.md).
-They expose protocol support only; native grants, admission and capability remain inactive.
+The private native grant bridge and shared admission/recovery decisions are
+documented there. Capability activation and platform/backend effects remain
+separate qualification work; TV-web never advertises native delivery.
 
 ## Build and adoption
 

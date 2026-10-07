@@ -275,7 +275,7 @@ pub struct PlaybackLease {
     pub error_code: Option<String>,
     pub error: Option<String>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[derive(Clone, Debug, Serialize, Deserialize, Facet, PartialEq)]
 #[serde(rename_all = "snake_case")]
 #[facet(rename_all = "snake_case")]
 #[repr(C)]
@@ -289,18 +289,40 @@ pub enum PlaybackPlatform {
     Roku,
     Vizio,
 }
-#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+/// Support advertisement only; negotiation and qualification remain observed facts.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[facet(rename_all = "camelCase")]
+pub struct NativeTorrentCapability {
+    pub version: u32,
+    pub network_policy: String,
+}
+
+fn native_capability<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<Option<NativeTorrentCapability>, D::Error> {
+    NativeTorrentCapability::deserialize(d).map(Some)
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Facet, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackClient {
     pub platform: PlaybackPlatform,
+    #[serde(default)]
     pub can_play_direct: bool,
     pub max_width: u32,
     pub max_height: u32,
     pub video_codecs: Vec<String>,
     pub audio_codecs: Vec<String>,
+    #[serde(
+        default,
+        deserialize_with = "native_capability",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub native_torrent: Option<NativeTorrentCapability>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[derive(Clone, Debug, Serialize, Deserialize, Facet, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[facet(rename_all = "camelCase")]
 pub struct PlaybackV2Request {
@@ -321,7 +343,7 @@ pub struct PlaybackV2Request {
     #[serde(default)]
     pub subtitles_off: bool,
 }
-#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, Facet)]
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, Facet, PartialEq)]
 #[serde(rename_all = "snake_case")]
 #[facet(rename_all = "snake_case")]
 #[repr(C)]

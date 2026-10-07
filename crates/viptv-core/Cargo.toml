@@ -16,6 +16,9 @@ native = ["dep:uniffi"]
 bindgen = ["native", "uniffi/cli"]
 
 [dependencies]
+base64 = "0.22.1"
+sha1 = "0.10.6"
+unicode-normalization = "0.1.24"
 chrono = { version = "0.4", default-features = false, features = ["std"] }
 regex = "1"
 crux_core.workspace = true

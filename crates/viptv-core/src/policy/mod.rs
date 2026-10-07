@@ -18,7 +18,7 @@ mod presentation;
 mod progress;
 mod requests;
 pub mod shell_lifecycle;
-pub(crate) use requests::valid_live_cursor;
+pub(crate) use requests::{valid_live_cursor, validate_playback_v2};
 mod sources;
 
 type Result = std::result::Result<Value, CoreError>;

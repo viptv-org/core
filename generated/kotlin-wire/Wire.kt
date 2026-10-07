@@ -12,6 +12,10 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
 @Serializable enum class HomeRevisionDecision { @SerialName("Unchanged") UNCHANGED, @SerialName("Refresh") REFRESH, @SerialName("Refreshed") REFRESHED, @SerialName("RetryLater") RETRYLATER, @SerialName("Unsupported") UNSUPPORTED, @SerialName("ScopeLost") SCOPELOST }
 @Serializable enum class LivePageValidationDecision { @SerialName("valid") VALID, @SerialName("catalog_changed") CATALOG_CHANGED, @SerialName("invalid") INVALID }
 @Serializable enum class MediaKind { @SerialName("movie") MOVIE, @SerialName("series") SERIES, @SerialName("live") LIVE, @SerialName("episode") EPISODE }
+@Serializable enum class NativeTorrentControlOperation { @SerialName("start") START, @SerialName("poll") POLL, @SerialName("heartbeat") HEARTBEAT }
+@Serializable enum class NativeTorrentNegotiationDecision { @SerialName("rejectStale") REJECTSTALE, @SerialName("authRecovery") AUTHRECOVERY, @SerialName("legacy") LEGACY, @SerialName("advertise") ADVERTISE }
+@Serializable enum class NativeTorrentRecoveryAction { @SerialName("retry") RETRY, @SerialName("chooseSource") CHOOSESOURCE, @SerialName("back") BACK }
+@Serializable enum class NativeTorrentRecoveryDecision { @SerialName("waitForRetirement") WAITFORRETIREMENT, @SerialName("authRecovery") AUTHRECOVERY, @SerialName("chooseSource") CHOOSESOURCE, @SerialName("back") BACK, @SerialName("ordinaryRetry") ORDINARYRETRY, @SerialName("forceGatewayRetry") FORCEGATEWAYRETRY }
 @Serializable enum class Phase { @SerialName("Starting") STARTING, @SerialName("Restoring") RESTORING, @SerialName("Checking") CHECKING, @SerialName("Selecting") SELECTING, @SerialName("Ready") READY, @SerialName("Profiles") PROFILES, @SerialName("Pairing") PAIRING, @SerialName("Error") ERROR }
 @Serializable enum class PlaybackConversion { @SerialName("auto") AUTO, @SerialName("audio") AUDIO, @SerialName("video") VIDEO, @SerialName("audio_video") AUDIO_VIDEO }
 @Serializable enum class PlaybackDeliveryKind { @SerialName("direct") DIRECT, @SerialName("gateway") GATEWAY }
@@ -240,6 +244,64 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `supported`: Boolean,
     val `selectable`: Boolean
 )
+@Serializable data class NativeTorrentCapability(
+    val `version`: Long,
+    val `networkPolicy`: String
+)
+@Serializable data class NativeTorrentClock(
+    val `scope`: String,
+    val `generation`: Long,
+    val `nowMillis`: Long,
+    val `trustedWallUpperUnixMillis`: Long? = null,
+    val `backendRevalidated`: Boolean,
+    val `suspendAware`: Boolean
+)
+@Serializable data class NativeTorrentContext(
+    val `origin`: String,
+    val `scope`: String,
+    val `generation`: Long,
+    val `qualified`: Boolean,
+    val `negotiated`: Boolean,
+    val `vod`: Boolean,
+    val `request`: PlaybackV2Request
+)
+@Serializable data class NativeTorrentNegotiationFacts(
+    val `platform`: PlaybackPlatform,
+    val `qualified`: Boolean,
+    val `scopeMatches`: Boolean,
+    val `status`: Int? = null,
+    val `authorizationRefused`: Boolean,
+    val `body`: String
+) { override fun toString(): String = "NativeTorrentNegotiationFacts(<redacted>)" }
+@Serializable data class NativeTorrentObservation(
+    val `scope`: String,
+    val `generation`: Long,
+    val `sequence`: Long,
+    val `operation`: NativeTorrentControlOperation,
+    val `receivedAtMillis`: Long,
+    val `roundTripMillis`: Long,
+    val `uncertaintyMillis`: Long? = null,
+    val `maxUncertaintyMillis`: Long,
+    val `trustedWallUpperUnixMillis`: Long? = null,
+    val `suspendAware`: Boolean
+)
+@Serializable data class NativeTorrentRecoveryFacts(
+    val `admitted`: Boolean,
+    val `authorityRetired`: Boolean,
+    val `authorizationRefused`: Boolean,
+    val `selectionRefused`: Boolean,
+    val `action`: NativeTorrentRecoveryAction
+)
+@Serializable data class NativeTorrentState(
+    val `status`: String,
+    val `deadlineMillis`: Long? = null,
+    val `expiresAtUnixMillis`: Long? = null,
+    val `position`: Double? = null,
+    val `audioLanguage`: String? = null,
+    val `subtitleLanguage`: String? = null,
+    val `subtitlesEnabled`: Boolean? = null,
+    val `error`: String? = null
+)
 @Serializable data class PhonePresentation(
     val `shelfHeading`: String,
     val `cardContext`: String,
@@ -267,7 +329,8 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `maxWidth`: Long,
     val `maxHeight`: Long,
     val `videoCodecs`: List<String> = emptyList(),
-    val `audioCodecs`: List<String> = emptyList()
+    val `audioCodecs`: List<String> = emptyList(),
+    val `nativeTorrent`: NativeTorrentCapability? = null
 )
 @Serializable data class PlaybackDeliveryFacts(
     val `directDelivery`: Boolean,
