@@ -369,9 +369,11 @@ qualification or activation from adopting these interfaces.
 Final source batch passed: 116 workspace tests with all features, strict
 workspace/all-target/all-feature Clippy, formatting, type generation, native
 UniFFI/Kotlin generation, release WASM generation and the full actual-WASM
-suite. Its 410 native torrent vectors match the native Rust runner exactly,
+suite. Its 414 native torrent vectors match the native Rust runner exactly,
 alongside 90 protocol vectors, 37 shared-policy vectors and existing startup,
-normalization and presentation regressions. Generation used wasm-bindgen CLI
+normalization and presentation regressions. Raw dispatch regressions also reject
+duplicate operations and nested playback fields, including capability-free v2
+requests, before JSON projection. Generation used wasm-bindgen CLI
 0.2.92 and checks used Node 24; Cargo ran one job. Build scripts honor the
 configured Cargo target directory so generation consumes the freshly compiled
 artifact. Logs are local at `target/native-torrent-05/`.

@@ -7794,6 +7794,70 @@
           "error": "Invalid server response or input"
         }
       ]
+    },
+    {
+      "name": "native extension cannot use legacy operation",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "request",
+          "input": "{\"operation\":\"playback\",\"playback\":{\"requestId\":\"request_fixture\",\"streamId\":\"opaque-source\",\"client\":{\"platform\":\"android_tv\",\"canPlayDirect\":false,\"maxWidth\":3840,\"maxHeight\":2160,\"videoCodecs\":[\"h264\"],\"audioCodecs\":[\"aac\"],\"nativeTorrent\":{\"version\":1,\"networkPolicy\":\"public_dht_tcp_v1\"}},\"position\":120}}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "duplicate operation cannot hide native operation",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "request",
+          "input": "{\"operation\":\"playbackV2\",\"operation\":\"playback\",\"playback\":{\"requestId\":\"request_fixture\",\"streamId\":\"opaque-source\",\"client\":{\"platform\":\"android_tv\",\"canPlayDirect\":false,\"maxWidth\":3840,\"maxHeight\":2160,\"videoCodecs\":[\"h264\"],\"audioCodecs\":[\"aac\"],\"nativeTorrent\":{\"version\":1,\"networkPolicy\":\"public_dht_tcp_v1\"}},\"position\":120}}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "duplicate playback cannot hide native capability",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "request",
+          "input": "{\"operation\":\"playbackV2\",\"playback\":{\"requestId\":\"request_fixture\",\"streamId\":\"opaque-source\",\"client\":{\"platform\":\"android_tv\",\"canPlayDirect\":false,\"maxWidth\":3840,\"maxHeight\":2160,\"videoCodecs\":[\"h264\"],\"audioCodecs\":[\"aac\"],\"nativeTorrent\":{\"version\":1,\"networkPolicy\":\"public_dht_tcp_v1\"}},\"position\":120},\"playback\":{\"requestId\":\"request_fixture\",\"streamId\":\"opaque-source\",\"client\":{\"platform\":\"android_tv\",\"canPlayDirect\":false,\"maxWidth\":3840,\"maxHeight\":2160,\"videoCodecs\":[\"h264\"],\"audioCodecs\":[\"aac\"]},\"position\":120}}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "closed legacy v2 request duplicates rejected",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "request",
+          "input": "{\"operation\":\"playbackV2\",\"playback\":{\"requestId\":\"request_fixture\",\"requestId\":\"request_fixture\",\"streamId\":\"opaque-source\",\"client\":{\"platform\":\"android_tv\",\"canPlayDirect\":false,\"maxWidth\":3840,\"maxHeight\":2160,\"videoCodecs\":[\"h264\"],\"audioCodecs\":[\"aac\"]},\"position\":120}}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
     }
   ]
 }

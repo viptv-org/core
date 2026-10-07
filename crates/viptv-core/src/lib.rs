@@ -77,6 +77,18 @@ pub fn normalize(kind: String, input: String, origin: String) -> Result<String, 
     if kind == "nativeTorrent" {
         return native_torrent::negotiation(&input);
     }
+    if kind == "request" {
+        // Dispatch must not erase a repeated operation before closed validation.
+        #[derive(serde::Deserialize)]
+        struct Operation {
+            operation: String,
+        }
+        let operation: Operation =
+            serde_json::from_str(&input).map_err(|_| CoreError::InvalidInput)?;
+        if operation.operation.is_empty() {
+            return Err(CoreError::InvalidInput);
+        }
+    }
     let value: serde_json::Value =
         serde_json::from_str(&input).map_err(|_| CoreError::InvalidInput)?;
     if kind != "request" && native_torrent::contains_private_transport(&value) {
@@ -97,8 +109,8 @@ pub fn normalize(kind: String, input: String, origin: String) -> Result<String, 
         domain::playback_protocol::validate_request(&input)?;
     }
     if kind == "request"
-        && value["operation"] == "playbackV2"
-        && value["playback"]["client"].get("nativeTorrent").is_some()
+        && (value["operation"] == "playbackV2"
+            || value["playback"]["client"].get("nativeTorrent").is_some())
     {
         native_torrent::validate_start(&input)?;
     }

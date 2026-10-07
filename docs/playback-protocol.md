@@ -29,7 +29,9 @@ adapter supplies authentication. No token/header is serialized in `ApiRequest`.
 Cancellation identifiers are 1..128 ASCII letters/digits/`-`/`_`; percent-encoded
 aliases, path/query/fragment separators, whitespace and Unicode are rejected.
 The added request bridge inputs are closed and reject duplicates, unknown fields
-and wrong types without changing legacy request-input compatibility.
+and wrong types. Playback v2 inputs use closed raw validation even when the
+native extension is absent; repeated operations cannot bypass dispatch. Valid
+legacy request serialization remains unchanged.
 
 The response boundary checks UTF-8 byte length before JSON parsing: maximum
 4096 bytes including whitespace. The original text is mandatory. Do not decode
