@@ -1645,11 +1645,11 @@
       ]
     },
     {
-      "name": "bad delivery.grant.expected_file_size 2147483649",
+      "name": "bad delivery.grant.expected_file_size above exact JSON integer",
       "steps": [
         {
           "action": "accept",
-          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":2147483649}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":9007199254740992}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
         }
       ],
       "expected": [
@@ -8777,6 +8777,514 @@
             "code": "native_session_timeout",
             "message": "The device timed out creating its torrent network session. Check network access and retry playback.\n\nDiagnostic: native_session_timeout"
           }
+        }
+      ]
+    },
+    {
+      "name": "rolling file 2147483649 metadata expected=False",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 2147483649,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 2147483649 metadata expected=True",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":2147483649}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 2147483649,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 107374182400 metadata expected=False",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 107374182400,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 107374182400 metadata expected=True",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":107374182400}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 107374182400,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 9007199254740991 metadata expected=False",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 9007199254740991,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 9007199254740991 metadata expected=True",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":9007199254740991}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 9007199254740991,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling invalid size 0 metadata",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 0,
+            "validatedV1Metadata": true
+          }
+        },
+        {
+          "action": "authorize"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": false
+        },
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "rolling invalid size 9007199254740992 metadata",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadata",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 9007199254740992,
+            "validatedV1Metadata": true
+          }
+        },
+        {
+          "action": "authorize"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": false
+        },
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "rolling file 2147483649 metadataTyped expected=False",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 2147483649,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 2147483649 metadataTyped expected=True",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":2147483649}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 2147483649,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 107374182400 metadataTyped expected=False",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 107374182400,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 107374182400 metadataTyped expected=True",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":107374182400}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 107374182400,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 9007199254740991 metadataTyped expected=False",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 9007199254740991,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling file 9007199254740991 metadataTyped expected=True",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":9007199254740991}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 9007199254740991,
+            "validatedV1Metadata": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "rolling invalid size 0 metadataTyped",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 0,
+            "validatedV1Metadata": true
+          }
+        },
+        {
+          "action": "authorize"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": false
+        },
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "rolling invalid size 9007199254740992 metadataTyped",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        },
+        {
+          "action": "metadataTyped",
+          "facts": {
+            "infoHash": "0000000000000000000000000000000000000000",
+            "fileIndex": 3,
+            "fileCount": 4,
+            "selectedFileSize": 9007199254740992,
+            "validatedV1Metadata": true
+          }
+        },
+        {
+          "action": "authorize"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": false
+        },
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
         }
       ]
     }

@@ -558,7 +558,7 @@ pub fn validate_native_grant(g: &NativeTorrentGrant, envelope_expires_at: u64) -
         || !crate::native_torrent_policy::canonical_v1_hash(&g.info_hash)
         || g.file_index > 65535
         || g.expected_file_size
-            .is_some_and(|n| !(1..=2_147_483_648).contains(&n))
+            .is_some_and(|n| !(1..=MAX_SAFE).contains(&n))
     {
         return Err(invalid());
     }
@@ -1453,7 +1453,8 @@ pub fn native_metadata_matches(g: &NativeTorrentGrant, facts: &NativeTorrentMeta
         && facts.file_index == g.file_index
         && (1..=4096).contains(&facts.file_count)
         && facts.file_index < facts.file_count
-        && (1..=2_147_483_648).contains(&facts.selected_file_size)
+        // File length is metadata, not a reservation for the rolling piece cache.
+        && (1..=MAX_SAFE).contains(&facts.selected_file_size)
         && g.expected_file_size
             .is_none_or(|size| size == facts.selected_file_size)
 }

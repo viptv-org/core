@@ -50,6 +50,54 @@ fn raw_native_lease_transition_clock_and_privacy_corpus() {
 }
 
 #[test]
+fn rolling_cache_accepts_large_exact_metadata_without_reserving_the_file_size() {
+    use viptv_core::NativeTorrentBridge;
+    let root = vectors::corpus();
+    for expected in [None, Some(100 * 1024 * 1024 * 1024_u64)] {
+        let bridge = NativeTorrentBridge::new(root["context"].to_string()).unwrap();
+        let mut body: Value =
+            serde_json::from_str(root["cases"][0]["steps"][0]["body"].as_str().unwrap()).unwrap();
+        let grant = body["delivery"]["grant"].as_object_mut().unwrap();
+        grant.remove("expected_file_size");
+        if let Some(size) = expected {
+            grant.insert("expected_file_size".into(), json!(size));
+        }
+        bridge
+            .accept(200, body.to_string(), root["observation"].to_string())
+            .unwrap();
+        assert!(
+            bridge
+                .metadata_matches_native(
+                    root["infoHash"].as_str().unwrap().into(),
+                    3,
+                    4,
+                    100 * 1024 * 1024 * 1024,
+                    true,
+                    root["clock"].to_string()
+                )
+                .unwrap()
+        );
+        assert!(
+            !bridge
+                .metadata_matches_native(
+                    root["infoHash"].as_str().unwrap().into(),
+                    2,
+                    4,
+                    100 * 1024 * 1024 * 1024,
+                    true,
+                    root["clock"].to_string()
+                )
+                .unwrap()
+        );
+        assert!(
+            bridge
+                .private_input_value(root["clock"].to_string())
+                .is_err()
+        );
+    }
+}
+
+#[test]
 fn measured_receipt_clock_is_derived_after_strict_raw_validation() {
     use viptv_core::NativeTorrentBridge;
     let root = vectors::corpus();

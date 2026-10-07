@@ -430,3 +430,15 @@ The first protocol parity invocation exceeded its child-process timeout while
 waiting for the shared Cargo lock; the complete suite passes using the existing
 project-local target after prebuilding the examples. This is error projection and
 native/WASM evidence, not public-swarm or Android player qualification.
+# Large native files with rolling storage — 2026-10-07
+
+Grant and exact-file metadata validation accept positive file lengths through
+the largest exact JSON integer. File length is independent of the platform's
+rolling-cache reservation. Hash, index, metadata validity and expected-size
+equality remain mandatory; a refusal still invalidates authority.
+
+The actual bridge rejected a 100 GiB selected file before this fix. Its regression
+passes, with 121 locked workspace tests and strict all-target Clippy. Native
+Kotlin/type regeneration is unchanged; WASM is rebuilt. All 473 native-torrent
+vectors match native Rust and actual WASM, including large files with/without
+expected size and zero/unsafe-integer refusals. The full WASM suite passes.
