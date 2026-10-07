@@ -13,7 +13,7 @@ pub(crate) fn native_failure_message(code: &str) -> Option<&'static str> {
             "Torrent file information did not arrive in time. Try another source or retry playback."
         }
         "native_payload_limit" => {
-            "This torrent does not fit the device's 2 GiB playback cache budget, including its other files. Choose another source or retry playback."
+            "The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback."
         }
         "native_storage_unavailable" => {
             "This device could not reserve storage for playback. Free some space, choose another source or retry playback."

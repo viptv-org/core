@@ -8155,7 +8155,7 @@
           "ok": true,
           "value": {
             "code": "native_payload_limit",
-            "message": "This torrent does not fit the device's 2 GiB playback cache budget, including its other files. Choose another source or retry playback."
+            "message": "The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback."
           }
         }
       ]

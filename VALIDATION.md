@@ -1,3 +1,17 @@
+# Native rolling-cache capacity explanation — 2026-10-07
+
+The canonical `native_payload_limit` message describes observed cache admission
+capacity rather than the torrent's full size or unselected files. The closed code,
+recovery decisions and transport DTOs remain unchanged. Design is pinned to
+`2cf33c35e916bcf1ea99d90ce6d2d872697a6c62`.
+
+120 locked workspace tests, formatting and strict all-target Clippy pass. Typegen
+and native Kotlin regeneration are byte-identical; the actual WASM binary is
+regenerated with matching wasm-bindgen CLI 0.2.92. The full actual-WASM suite
+passes, including 37 canonical playback errors, 445 native torrent vectors,
+90 protocol vectors and 37 shared-policy vectors compared against native Rust.
+This qualifies presentation and parity, not native storage or device decode.
+
 # Observed native playback failure projection — 2026-10-07
 
 The closed `nativeTorrent` failure operation maps eleven observed adapter facts

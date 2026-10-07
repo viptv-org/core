@@ -28,7 +28,7 @@
   {"code":"native_playback_failed","status":422,"message":"The selected source could not start on this device. Try another source or retry playback."},
   {"code":"native_acquisition_timeout","status":422,"message":"This device took too long to prepare the selected source. Try another source or retry playback."},
   {"code":"native_metadata_timeout","status":422,"message":"Torrent file information did not arrive in time. Try another source or retry playback."},
-  {"code":"native_payload_limit","status":422,"message":"This torrent does not fit the device's 2 GiB playback cache budget, including its other files. Choose another source or retry playback."},
+  {"code":"native_payload_limit","status":422,"message":"The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback."},
   {"code":"native_storage_unavailable","status":422,"message":"This device could not reserve storage for playback. Free some space, choose another source or retry playback."},
   {"code":"native_cache_unavailable","status":422,"message":"The device's playback cache is unavailable. Choose another source or retry playback."},
   {"code":"native_metadata_invalid","status":422,"message":"This source has invalid or unsupported torrent file information. Choose another source."},
