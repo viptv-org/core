@@ -5,7 +5,7 @@ build workflows remain, triggered by main pushes and manual dispatch. No PR
 gates, automatic releases, image publishing or deployment. Retain local checks.
 This supersedes older automation/release-gate instructions below.
 
-Read DESIGN_REF and design/SHARED_CORE.md before behavior changes. The design repository owns UI/UX; core owns shared application state, data normalization and decisions. Keep transport/storage/player work in platform adapters and business rules in Rust. Generate Kotlin/TypeScript interfaces from Rust; never hand-edit generated bindings.
+Read DESIGN_REF and design/docs/architecture/SHARED_CORE.md before behavior changes. The design repository owns UI/UX; core owns shared application state, data normalization and decisions. Keep transport/storage/player work in platform adapters and business rules in Rust. Generate Kotlin/TypeScript interfaces from Rust; never hand-edit generated bindings.
 
 Shared decision APIs consume platform observations and return typed decisions or
 presentation facts; they do not execute platform timers, network, storage, focus
