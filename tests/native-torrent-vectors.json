@@ -8083,6 +8083,474 @@
           "ok": false
         }
       ]
+    },
+    {
+      "name": "closed observed failure native_playback_failed",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_playback_failed\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_playback_failed",
+            "message": "The selected source could not start on this device. Try another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_acquisition_timeout",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_acquisition_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_acquisition_timeout",
+            "message": "This device took too long to prepare the selected source. Try another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_metadata_timeout",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_metadata_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_metadata_timeout",
+            "message": "Torrent file information did not arrive in time. Try another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_payload_limit",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_payload_limit\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_payload_limit",
+            "message": "This torrent does not fit the device's 2 GiB playback cache budget, including its other files. Choose another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_storage_unavailable",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_storage_unavailable\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_storage_unavailable",
+            "message": "This device could not reserve storage for playback. Free some space, choose another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_cache_unavailable",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_cache_unavailable\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_cache_unavailable",
+            "message": "The device's playback cache is unavailable. Choose another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_metadata_invalid",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_metadata_invalid\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_metadata_invalid",
+            "message": "This source has invalid or unsupported torrent file information. Choose another source."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_file_unavailable",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_file_unavailable\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_file_unavailable",
+            "message": "The exact file selected by this source is missing or does not match its file information. Refresh the sources or choose another source."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_authorization_expired",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_authorization_expired\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_authorization_expired",
+            "message": "This playback session has expired. Start playback again to reconnect."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_network_unavailable",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_network_unavailable\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_network_unavailable",
+            "message": "This device could not connect to the selected source. Check your connection, choose another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_codec_unsupported",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_codec_unsupported\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_codec_unsupported",
+            "message": "This device cannot decode the selected source's audio or video format. Choose another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "failure input at 512 UTF-8 bytes",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_acquisition_timeout\"}                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_acquisition_timeout",
+            "message": "This device took too long to prepare the selected source. Try another source or retry playback."
+          }
+        }
+      ]
+    },
+    {
+      "name": "failure input over 512 UTF-8 bytes",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_acquisition_timeout\"}                                                                                                                                                                                                                                                                                                                                                                                                                                                                 "
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects unknown",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\":\"failure\",\"reason\":\"native_future_failure\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects missing reason",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\":\"failure\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects null reason",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\":\"failure\",\"reason\":null}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects non-string",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\":\"failure\",\"reason\":42}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects duplicate reason",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\":\"failure\",\"reason\":\"native_payload_limit\",\"reason\":\"native_acquisition_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects duplicate operation",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\":\"failure\",\"operation\":\"failure\",\"reason\":\"native_payload_limit\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects secret reason 437",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"https://private.invalid/private_value\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects diagnostic field 438",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_payload_limit\", \"error\": \"https://private.invalid/private_value\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects secret reason 439",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects diagnostic field 440",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_payload_limit\", \"error\": \"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects secret reason 441",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"/private_value/cache\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects diagnostic field 442",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_payload_limit\", \"error\": \"/private_value/cache\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects secret reason 443",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"Authorization: Bearer private_value\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "failure rejects diagnostic field 444",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_payload_limit\", \"error\": \"Authorization: Bearer private_value\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false,
+          "error": "Invalid server response or input"
+        }
+      ]
     }
   ]
 }

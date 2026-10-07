@@ -237,6 +237,24 @@ pub(crate) fn negotiation(input: &str) -> Result<String> {
         operation: String,
     }
     let operation: Operation = parse(input)?;
+    if operation.operation == "failure" {
+        #[derive(Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct Failure {
+            operation: String,
+            reason: String,
+        }
+        if input.len() > 512 {
+            return Err(invalid());
+        }
+        let value: Failure = parse(input)?;
+        let message = crate::domain::native_failure_message(&value.reason).ok_or_else(invalid)?;
+        if value.operation != "failure" {
+            return Err(invalid());
+        }
+        return serde_json::to_string(&json!({"code": value.reason, "message": message}))
+            .map_err(|_| invalid());
+    }
     if operation.operation == "authorizationScope" {
         return authorization_scope(input);
     }

@@ -24,5 +24,16 @@
   {"code":"invalid_playback_request","status":400,"message":"Check the source, playback position and device capabilities."},
   {"code":"playback_conflict","status":409,"message":"This playback request ID was already used for a different request. Start a new request."},
   {"code":"playback_expired","status":410,"message":"This playback session has expired. Start playback again to reconnect."},
-  {"code":"authorization_expired","status":410,"message":"This playback session has expired. Start playback again to reconnect."}
+  {"code":"authorization_expired","status":410,"message":"This playback session has expired. Start playback again to reconnect."},
+  {"code":"native_playback_failed","status":422,"message":"The selected source could not start on this device. Try another source or retry playback."},
+  {"code":"native_acquisition_timeout","status":422,"message":"This device took too long to prepare the selected source. Try another source or retry playback."},
+  {"code":"native_metadata_timeout","status":422,"message":"Torrent file information did not arrive in time. Try another source or retry playback."},
+  {"code":"native_payload_limit","status":422,"message":"This torrent does not fit the device's 2 GiB playback cache budget, including its other files. Choose another source or retry playback."},
+  {"code":"native_storage_unavailable","status":422,"message":"This device could not reserve storage for playback. Free some space, choose another source or retry playback."},
+  {"code":"native_cache_unavailable","status":422,"message":"The device's playback cache is unavailable. Choose another source or retry playback."},
+  {"code":"native_metadata_invalid","status":422,"message":"This source has invalid or unsupported torrent file information. Choose another source."},
+  {"code":"native_file_unavailable","status":422,"message":"The exact file selected by this source is missing or does not match its file information. Refresh the sources or choose another source."},
+  {"code":"native_authorization_expired","status":422,"message":"This playback session has expired. Start playback again to reconnect."},
+  {"code":"native_network_unavailable","status":422,"message":"This device could not connect to the selected source. Check your connection, choose another source or retry playback."},
+  {"code":"native_codec_unsupported","status":422,"message":"This device cannot decode the selected source's audio or video format. Choose another source or retry playback."}
 ]

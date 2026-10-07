@@ -31,6 +31,17 @@ These messages do not select another source or prescribe automatic retry. Native
 player/decoder facts still belong to platform adapters; core does not infer their
 cause from backend status codes.
 
+Native adapters can report only a closed observed fact through
+`normalize("nativeTorrent", {"operation":"failure","reason":"native_payload_limit"})`.
+The result uses the same canonical `code`/`message` shape as `apiError`; shared
+Rust owns exact copy for deadlines, aggregate cache budget, storage/cache,
+metadata/file mismatch, grant expiry, connectivity and codec support. Unknown
+exceptions map to the explicit `native_playback_failed` fact in the adapter.
+Unknown reason codes, duplicate/extra fields, diagnostics and inputs over 512
+UTF-8 bytes are rejected. No raw exception, URL, hash or path is accepted.
+Metadata timeout requires that engine observation; total acquisition timeout
+does not assert absent peers. Existing recovery decisions remain separate.
+
 `tests/playback-error-vectors.json` supplies the canonical cases to the native
 `playback_errors` integration tests and the actual WASM suite. Consumer adoption
 requires the same immutable core revision and rebuilt native/WASM artifacts.

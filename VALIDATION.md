@@ -1,3 +1,21 @@
+# Observed native playback failure projection — 2026-10-07
+
+The closed `nativeTorrent` failure operation maps eleven observed adapter facts
+to canonical user-safe code/message pairs. API errors and terminal playback
+leases share those exact messages. Unknown reasons, duplicate/extra fields,
+private diagnostics and inputs over 512 UTF-8 bytes are rejected; neither
+metadata nor acquisition timeout copy asserts absent peers. Recovery decisions
+and exported DTO/function signatures remain unchanged.
+
+Formatting, `cargo test --workspace --locked` (120 tests), strict workspace
+all-target Clippy, regenerated Kotlin/TypeScript and native bindings, and the
+actual WASM suite pass. The suite compares 445 native torrent vectors (27 new
+failure/privacy/boundary cases), 90 protocol vectors and 37 shared-policy
+vectors between native Rust and actual WASM, and verifies 37 canonical playback
+error cases across API and terminal leases. wasm-bindgen CLI 0.2.92 matches the
+locked Rust dependency; Node 24 runs the scripts. This qualifies the shared
+projection, not engine failure attribution or device playback.
+
 # Tagged watched completion and active rewatch projections — 2026-10-04
 
 The `media` DTO now projects the backend's optional `resume_active`,

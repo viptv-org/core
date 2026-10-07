@@ -1,7 +1,7 @@
 # Playback protocol foundation
 
-Normative contract: design `83d338b6ffc1fc5e7f14ad4059f6159b8ee84509`,
-[SRC-TORRENT-NATIVE-001](https://github.com/viptv-org/design/blob/83d338b6ffc1fc5e7f14ad4059f6159b8ee84509/specs/behavior/torrent-native-android.md).
+Normative contract: design `5b68802c6f5ea91dc248defb047439f3ea96cce5`,
+[SRC-TORRENT-NATIVE-001](https://github.com/viptv-org/design/blob/5b68802c6f5ea91dc248defb047439f3ea96cce5/specs/behavior/torrent-native-android.md).
 
 Core validates native transport and returns decisions; platform adapters and the
 backend still supply effects, qualification and authorization. This API does not
@@ -21,6 +21,7 @@ Use the existing native UniFFI / browser WASM `normalize(kind, input, origin)`.
 | `request` / `{"operation":"playbackV2CancelRequest","requestId":"request_example"}` | `ApiRequest`: DELETE `/api/v2/playback-requests/request_example`, `body: null` |
 | `nativeTorrent` / `{"operation":"negotiation", ...NativeTorrentNegotiationFacts}` | `rejectStale`, `authRecovery`, `legacy` or `advertise` |
 | `nativeTorrent` / `{"operation":"recovery","facts": NativeTorrentRecoveryFacts}` | typed explicit recovery decision |
+| `nativeTorrent` / `{"operation":"failure","reason":"native_payload_limit"}` | canonical user-safe `{code, message}` for a closed observed failure fact |
 | `nativeTorrent` / `{"operation":"releaseResponse","body":"{\"ok\":true}"}` | true; malformed, duplicate or extra fields fail |
 
 `body: null` means no HTTP body, not the four JSON bytes `null`. These are
@@ -104,6 +105,16 @@ Private typed grants have no Serialize/Facet implementation; the dedicated
 Retirement must finish before a native retry; only a non-authorization/non-selection
 retry of retired native authority returns `forceGatewayRetry`. No automatic
 recovery starts gateway delivery.
+
+The failure projection accepts at most 512 UTF-8 bytes of original JSON, with
+only `operation` and a known `reason`; duplicate, extra and wrong-type fields
+fail with the same static input error. It accepts no exception text, URL, hash
+or path. Native failure codes also use the same canonical copy through
+`apiError` and failed `playbackV2` leases. The adapter reports the observed cause:
+metadata timeout and total acquisition timeout remain distinct, and neither
+asserts that peers are absent. Storage/cache and aggregate 2 GiB payload refusal
+require their corresponding observations. Unknown exceptions become the closed
+`native_playback_failed` reason. Presentation does not change recovery decisions.
 
 Regenerate at the canonical source with `cargo run --locked -p viptv-typegen`,
 `bash scripts/build-native-bindings.sh` and `bash scripts/build-wasm.sh` using
