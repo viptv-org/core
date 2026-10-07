@@ -109,6 +109,17 @@ export class NativeTorrentBridge {
 */
   metadataMatches(facts: string, clock: string): boolean;
 /**
+* @returns {bigint | undefined}
+*/
+  trustedWallUpperUnixMillis(): bigint | undefined;
+/**
+* @param {number} status
+* @param {Uint8Array} body
+* @param {string} observation
+* @returns {string}
+*/
+  acceptMeasuredBytes(status: number, body: Uint8Array, observation: string): string;
+/**
 * @param {string} info_hash
 * @param {number} file_index
 * @param {number} file_count
@@ -138,6 +149,7 @@ export interface InitOutput {
   readonly __wbg_nativetorrentbridge_free: (a: number) => void;
   readonly nativetorrentbridge_accept: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly nativetorrentbridge_acceptBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly nativetorrentbridge_acceptMeasuredBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly nativetorrentbridge_authorize: (a: number, b: number, c: number, d: number) => void;
   readonly nativetorrentbridge_invalidate: (a: number, b: number) => void;
   readonly nativetorrentbridge_metadataMatches: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
@@ -150,6 +162,7 @@ export interface InitOutput {
   readonly nativetorrentbridge_privateInputValue: (a: number, b: number, c: number, d: number) => void;
   readonly nativetorrentbridge_state: (a: number, b: number) => void;
   readonly nativetorrentbridge_toString: (a: number, b: number) => void;
+  readonly nativetorrentbridge_trustedWallUpperUnixMillis: (a: number, b: number) => void;
   readonly nativetorrentbridge_wasm_new: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;

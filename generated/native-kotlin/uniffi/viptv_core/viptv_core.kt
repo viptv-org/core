@@ -782,6 +782,10 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
 
 
 
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -819,6 +823,8 @@ fun uniffi_viptv_core_checksum_method_nativetorrentbridge_accept(
 ): Short
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_accept_bytes(
 ): Short
+fun uniffi_viptv_core_checksum_method_nativetorrentbridge_accept_measured_bytes(
+): Short
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_authorize(
 ): Short
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_invalidate(
@@ -840,6 +846,8 @@ fun uniffi_viptv_core_checksum_method_nativetorrentbridge_private_input_kind(
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_private_input_value(
 ): Short
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_state(
+): Short
+fun uniffi_viptv_core_checksum_method_nativetorrentbridge_trusted_wall_upper_unix_millis(
 ): Short
 fun uniffi_viptv_core_checksum_method_smartcastbridge_cancel(
 ): Short
@@ -930,6 +938,8 @@ fun uniffi_viptv_core_fn_method_nativetorrentbridge_accept(`ptr`: Pointer,`statu
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_nativetorrentbridge_accept_bytes(`ptr`: Pointer,`status`: Short,`body`: RustBuffer.ByValue,`observation`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_nativetorrentbridge_accept_measured_bytes(`ptr`: Pointer,`status`: Short,`body`: RustBuffer.ByValue,`observation`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_nativetorrentbridge_authorize(`ptr`: Pointer,`clock`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_nativetorrentbridge_invalidate(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
@@ -951,6 +961,8 @@ fun uniffi_viptv_core_fn_method_nativetorrentbridge_private_input_kind(`ptr`: Po
 fun uniffi_viptv_core_fn_method_nativetorrentbridge_private_input_value(`ptr`: Pointer,`clock`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_nativetorrentbridge_state(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_nativetorrentbridge_trusted_wall_upper_unix_millis(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_nativetorrentbridge_uniffi_trait_debug(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
@@ -1145,6 +1157,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_accept_bytes() != 50474.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_accept_measured_bytes() != 19851.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_authorize() != 63961.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1176,6 +1191,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_state() != 5481.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_trusted_wall_upper_unix_millis() != 25858.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_cancel() != 30724.toShort()) {
@@ -1901,6 +1919,11 @@ public interface NativeTorrentBridgeInterface {
      */
     fun `acceptBytes`(`status`: kotlin.UShort, `body`: kotlin.ByteArray, `observation`: kotlin.String): kotlin.String
 
+    /**
+     * Derive the trusted receipt clock only after strict authenticated grant decoding.
+     */
+    fun `acceptMeasuredBytes`(`status`: kotlin.UShort, `body`: kotlin.ByteArray, `observation`: kotlin.String): kotlin.String
+
     fun `authorize`(`clock`: kotlin.String): kotlin.String
 
     fun `invalidate`()
@@ -1928,6 +1951,11 @@ public interface NativeTorrentBridgeInterface {
     fun `privateInputValue`(`clock`: kotlin.String): kotlin.String
 
     fun `state`(): kotlin.String
+
+    /**
+     * Safe clock fact; neither grant identity nor private source input is exposed.
+     */
+    fun `trustedWallUpperUnixMillis`(): kotlin.ULong?
 
     companion object
 }
@@ -2046,6 +2074,22 @@ open class NativeTorrentBridge: Disposable, AutoCloseable, NativeTorrentBridgeIn
     callWithPointer {
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_nativetorrentbridge_accept_bytes(
+        it, FfiConverterUShort.lower(`status`),FfiConverterByteArray.lower(`body`),FfiConverterString.lower(`observation`),_status)
+}
+    }
+    )
+    }
+
+
+
+    /**
+     * Derive the trusted receipt clock only after strict authenticated grant decoding.
+     */
+    @Throws(CoreException::class)override fun `acceptMeasuredBytes`(`status`: kotlin.UShort, `body`: kotlin.ByteArray, `observation`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_nativetorrentbridge_accept_measured_bytes(
         it, FfiConverterUShort.lower(`status`),FfiConverterByteArray.lower(`body`),FfiConverterString.lower(`observation`),_status)
 }
     }
@@ -2194,6 +2238,22 @@ open class NativeTorrentBridge: Disposable, AutoCloseable, NativeTorrentBridgeIn
     callWithPointer {
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_nativetorrentbridge_state(
+        it, _status)
+}
+    }
+    )
+    }
+
+
+
+    /**
+     * Safe clock fact; neither grant identity nor private source input is exposed.
+     */
+    @Throws(CoreException::class)override fun `trustedWallUpperUnixMillis`(): kotlin.ULong? {
+            return FfiConverterOptionalULong.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_nativetorrentbridge_trusted_wall_upper_unix_millis(
         it, _status)
 }
     }

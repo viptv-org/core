@@ -669,11 +669,13 @@ struct Controller {
     playback_id: Option<String>,
     sequence: Option<u64>,
     last_observed_millis: Option<u64>,
+    trusted_wall_upper: Option<u64>,
     closed: bool,
 }
 impl Controller {
     fn invalidate(&mut self, status: &str) {
         self.grant = None;
+        self.trusted_wall_upper = None;
         self.state = NativeTorrentState::empty(status);
         self.closed = true;
     }
@@ -685,6 +687,7 @@ impl Controller {
         status: u16,
         body: &str,
         o: &NativeTorrentObservation,
+        measured: bool,
     ) -> Result<NativeTorrentState> {
         // Replaced/older callbacks cannot revoke or replace current accepted authority.
         if !self.scope(&o.scope, o.generation)
@@ -697,7 +700,7 @@ impl Controller {
             return Err(invalid());
         }
         self.sequence = Some(o.sequence);
-        let result = self.adopt(status, body, o);
+        let result = self.adopt(status, body, o, measured);
         if result.is_err() {
             self.invalidate("invalidated");
         }
@@ -708,6 +711,7 @@ impl Controller {
         status: u16,
         body: &str,
         o: &NativeTorrentObservation,
+        measured: bool,
     ) -> Result<NativeTorrentState> {
         if !matches!(status, 200 | 202)
             || (status == 202 && o.operation != NativeTorrentControlOperation::Start)
@@ -732,6 +736,18 @@ impl Controller {
                 return Err(invalid());
             }
             let grant = lease.grant.ok_or_else(invalid)?;
+            let mut measured_observation = o.clone();
+            if measured {
+                // Authenticated integer server time denotes the start of its second.
+                // The full control RTT and precision bound conservatively cover receipt.
+                measured_observation.trusted_wall_upper_unix_millis = grant
+                    .server_time
+                    .checked_mul(1000)
+                    .and_then(|v| v.checked_add(o.round_trip_millis))
+                    .and_then(|v| v.checked_add(o.uncertainty_millis?))
+                    .and_then(|v| v.checked_add(1000));
+            }
+            let o = &measured_observation;
             let mut deadline = native_deadline(&grant, o)?;
             if let Some(previous) = &self.grant {
                 crate::native_torrent_policy::validate_grant_transition(
@@ -762,11 +778,13 @@ impl Controller {
                 error: None,
             };
             self.grant = Some(grant);
+            self.trusted_wall_upper = o.trusted_wall_upper_unix_millis;
         } else {
             if self.grant.is_some() && matches!(lease.status.as_str(), "starting" | "legacy") {
                 return Err(invalid());
             }
             self.grant = None;
+            self.trusted_wall_upper = None;
             self.state = NativeTorrentState::empty(&lease.status);
             self.state.error = lease.error;
             self.closed = matches!(
@@ -862,6 +880,7 @@ impl NativeTorrentBridge {
                 playback_id: None,
                 sequence: None,
                 last_observed_millis: None,
+                trusted_wall_upper: None,
                 closed: false,
             }),
         })
@@ -883,7 +902,7 @@ impl NativeTorrentBridge {
             .inner
             .lock()
             .map_err(|_| CoreError::Bridge)?
-            .accept(status, &body, &obs)?;
+            .accept(status, &body, &obs, false)?;
         serde_json::to_string(&state).map_err(|_| invalid())
     }
     /// HTTP adapters pass bounded identity-encoded bytes without lossy UTF-8 decoding.
@@ -900,6 +919,46 @@ impl NativeTorrentBridge {
             }
         };
         self.accept(status, body, observation)
+    }
+    /// Derive the trusted receipt clock only after strict authenticated grant decoding.
+    pub fn accept_measured_bytes(
+        &self,
+        status: u16,
+        body: Vec<u8>,
+        observation: String,
+    ) -> Result<String> {
+        let decoded = (|| {
+            if body.len() > MAX_BODY || observation.len() > 4096 {
+                return Err(invalid());
+            }
+            let body = String::from_utf8(body).map_err(|_| invalid())?;
+            let obs: NativeTorrentObservation = parse(&observation)?;
+            if obs.trusted_wall_upper_unix_millis.is_some() {
+                return Err(invalid());
+            }
+            Ok((body, obs))
+        })();
+        let (body, obs) = match decoded {
+            Ok(value) => value,
+            Err(error) => {
+                self.invalidate()?;
+                return Err(error);
+            }
+        };
+        let state = self
+            .inner
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .accept(status, &body, &obs, true)?;
+        serde_json::to_string(&state).map_err(|_| invalid())
+    }
+    /// Safe clock fact; neither grant identity nor private source input is exposed.
+    pub fn trusted_wall_upper_unix_millis(&self) -> Result<Option<u64>> {
+        Ok(self
+            .inner
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .trusted_wall_upper)
     }
     pub fn state(&self) -> Result<String> {
         serde_json::to_string(&self.inner.lock().map_err(|_| CoreError::Bridge)?.state)
@@ -1030,6 +1089,23 @@ impl NativeTorrentBridge {
         observation: String,
     ) -> std::result::Result<String, wasm_bindgen::JsValue> {
         self.accept_bytes(status, body, observation)
+            .map_err(|e| e.to_string().into())
+    }
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=acceptMeasuredBytes)]
+    pub fn wasm_accept_measured_bytes(
+        &self,
+        status: u16,
+        body: Vec<u8>,
+        observation: String,
+    ) -> std::result::Result<String, wasm_bindgen::JsValue> {
+        self.accept_measured_bytes(status, body, observation)
+            .map_err(|e| e.to_string().into())
+    }
+    #[wasm_bindgen::prelude::wasm_bindgen(js_name=trustedWallUpperUnixMillis)]
+    pub fn wasm_trusted_wall_upper(
+        &self,
+    ) -> std::result::Result<Option<u64>, wasm_bindgen::JsValue> {
+        self.trusted_wall_upper_unix_millis()
             .map_err(|e| e.to_string().into())
     }
     #[wasm_bindgen::prelude::wasm_bindgen(js_name=state)]

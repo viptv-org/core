@@ -11,6 +11,7 @@ export function vizio_deviceinfo_name(a: number, b: number, c: number): void;
 export function __wbg_nativetorrentbridge_free(a: number): void;
 export function nativetorrentbridge_accept(a: number, b: number, c: number, d: number, e: number, f: number, g: number): void;
 export function nativetorrentbridge_acceptBytes(a: number, b: number, c: number, d: number, e: number, f: number, g: number): void;
+export function nativetorrentbridge_acceptMeasuredBytes(a: number, b: number, c: number, d: number, e: number, f: number, g: number): void;
 export function nativetorrentbridge_authorize(a: number, b: number, c: number, d: number): void;
 export function nativetorrentbridge_invalidate(a: number, b: number): void;
 export function nativetorrentbridge_metadataMatches(a: number, b: number, c: number, d: number, e: number, f: number): void;
@@ -23,6 +24,7 @@ export function nativetorrentbridge_privateInputKind(a: number, b: number, c: nu
 export function nativetorrentbridge_privateInputValue(a: number, b: number, c: number, d: number): void;
 export function nativetorrentbridge_state(a: number, b: number): void;
 export function nativetorrentbridge_toString(a: number, b: number): void;
+export function nativetorrentbridge_trustedWallUpperUnixMillis(a: number, b: number): void;
 export function nativetorrentbridge_wasm_new(a: number, b: number, c: number): void;
 export function __wbindgen_add_to_stack_pointer(a: number): number;
 export function __wbindgen_malloc(a: number, b: number): number;

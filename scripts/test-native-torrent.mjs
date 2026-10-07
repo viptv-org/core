@@ -14,6 +14,8 @@ const outcome=fn=>{try{return {ok:true,result:fn()};}catch(error){return {ok:fal
 function step(bridge,v){
   const clock=JSON.stringify(v.clock??corpus.clock);
   switch(v.action){
+    case 'acceptMeasuredBytes':return JSON.parse(bridge.acceptMeasuredBytes(v.status??200,new TextEncoder().encode(v.body),JSON.stringify(v.observation??corpus.observation)));
+    case 'trustedWallUpper':{const value=bridge.trustedWallUpperUnixMillis();return value===undefined?null:Number(value);}
     case 'acceptBytes':return JSON.parse(bridge.acceptBytes(200,new Uint8Array(v.bytes),JSON.stringify(corpus.observation)));
     case 'accept':{
       let body=v.body;

@@ -50,6 +50,53 @@ fn raw_native_lease_transition_clock_and_privacy_corpus() {
 }
 
 #[test]
+fn measured_receipt_clock_is_derived_after_strict_raw_validation() {
+    use viptv_core::NativeTorrentBridge;
+    let root = vectors::corpus();
+    let ready = root["cases"][0]["steps"][0]["body"].as_str().unwrap();
+    let mut observation = root["observation"].clone();
+    observation["trustedWallUpperUnixMillis"] = Value::Null;
+    let bridge = NativeTorrentBridge::new(root["context"].to_string()).unwrap();
+    let state: Value = serde_json::from_str(
+        &bridge
+            .accept_measured_bytes(200, ready.as_bytes().to_vec(), observation.to_string())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        bridge.trusted_wall_upper_unix_millis().unwrap(),
+        Some(1_700_000_001_500)
+    );
+    assert_eq!(state["deadlineMillis"], 158_500);
+    bridge.invalidate().unwrap();
+    assert_eq!(bridge.trusted_wall_upper_unix_millis().unwrap(), None);
+    assert!(
+        bridge
+            .accept_measured_bytes(200, ready.as_bytes().to_vec(), observation.to_string())
+            .is_err()
+    );
+    for bytes in [
+        ready.replace("1700000000", "1700000000.0").into_bytes(),
+        vec![0xff],
+    ] {
+        let bridge = NativeTorrentBridge::new(root["context"].to_string()).unwrap();
+        assert!(
+            bridge
+                .accept_measured_bytes(200, bytes, observation.to_string())
+                .is_err()
+        );
+        assert_eq!(bridge.trusted_wall_upper_unix_millis().unwrap(), None);
+    }
+    observation["roundTripMillis"] = json!(59_000);
+    let bridge = NativeTorrentBridge::new(root["context"].to_string()).unwrap();
+    assert!(
+        bridge
+            .accept_measured_bytes(200, ready.as_bytes().to_vec(), observation.to_string())
+            .is_err()
+    );
+}
+
+#[test]
 fn backend_admission_compares_caller_source_and_request_resource_sessions() {
     use viptv_core::native_torrent_policy::*;
     let request: viptv_core::dto::PlaybackV2Request =

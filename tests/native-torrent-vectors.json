@@ -7858,6 +7858,95 @@
           "error": "Invalid server response or input"
         }
       ]
+    },
+    {
+      "name": "measured_authenticated_receipt_anchor",
+      "steps": [
+        {
+          "action": "acceptMeasuredBytes",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":4096}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}",
+          "observation": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "sequence": 1,
+            "operation": "start",
+            "receivedAtMillis": 100000,
+            "roundTripMillis": 200,
+            "uncertaintyMillis": 300,
+            "maxUncertaintyMillis": 500,
+            "trustedWallUpperUnixMillis": null,
+            "suspendAware": true
+          }
+        },
+        {
+          "action": "trustedWallUpper"
+        },
+        {
+          "action": "authorize",
+          "clock": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "nowMillis": 160001,
+            "trustedWallUpperUnixMillis": 1700000061501,
+            "backendRevalidated": true,
+            "suspendAware": true
+          }
+        },
+        {
+          "action": "trustedWallUpper"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "value": 1700000001500
+        },
+        {
+          "ok": false
+        },
+        {
+          "ok": true,
+          "value": null
+        }
+      ]
+    },
+    {
+      "name": "measured_precision_lifetime_exhausted",
+      "steps": [
+        {
+          "action": "acceptMeasuredBytes",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_dht_tcp_v1\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"expected_file_size\":4096}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}",
+          "observation": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "sequence": 1,
+            "operation": "start",
+            "receivedAtMillis": 100000,
+            "roundTripMillis": 59000,
+            "uncertaintyMillis": 300,
+            "maxUncertaintyMillis": 500,
+            "trustedWallUpperUnixMillis": null,
+            "suspendAware": true
+          }
+        },
+        {
+          "action": "trustedWallUpper"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        },
+        {
+          "ok": true,
+          "value": null
+        }
+      ]
     }
   ]
 }

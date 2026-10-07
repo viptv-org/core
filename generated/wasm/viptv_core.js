@@ -664,6 +664,59 @@ export class NativeTorrentBridge {
         }
     }
     /**
+    * @returns {bigint | undefined}
+    */
+    trustedWallUpperUnixMillis() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-32);
+            wasm.nativetorrentbridge_trustedWallUpperUnixMillis(retptr, this.__wbg_ptr);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r2 = getBigInt64Memory0()[retptr / 8 + 1];
+            var r4 = getInt32Memory0()[retptr / 4 + 4];
+            var r5 = getInt32Memory0()[retptr / 4 + 5];
+            if (r5) {
+                throw takeObject(r4);
+            }
+            return r0 === 0 ? undefined : BigInt.asUintN(64, r2);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(32);
+        }
+    }
+    /**
+    * @param {number} status
+    * @param {Uint8Array} body
+    * @param {string} observation
+    * @returns {string}
+    */
+    acceptMeasuredBytes(status, body, observation) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            const ptr0 = passArray8ToWasm0(body, wasm.__wbindgen_malloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(observation, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            wasm.nativetorrentbridge_acceptMeasuredBytes(retptr, this.__wbg_ptr, status, ptr0, len0, ptr1, len1);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            var r2 = getInt32Memory0()[retptr / 4 + 2];
+            var r3 = getInt32Memory0()[retptr / 4 + 3];
+            var ptr3 = r0;
+            var len3 = r1;
+            if (r3) {
+                ptr3 = 0; len3 = 0;
+                throw takeObject(r2);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
     * @param {string} info_hash
     * @param {number} file_index
     * @param {number} file_count
