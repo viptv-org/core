@@ -10,7 +10,43 @@ pub(crate) fn native_failure_message(code: &str) -> Option<&'static str> {
             "This device took too long to prepare the selected source. Try another source or retry playback."
         }
         "native_metadata_timeout" => {
-            "Torrent file information did not arrive in time. Try another source or retry playback."
+            "No torrent metadata arrived from peers before the startup deadline. Check DHT/network access or choose another source."
+        }
+        "native_cache_preparation_timeout" => {
+            "The device timed out preparing local torrent storage. Check free space and retry after the previous stream has stopped."
+        }
+        "native_session_timeout" => {
+            "The device timed out creating its torrent network session. Check network access and retry playback."
+        }
+        "native_initialization_timeout" => {
+            "Torrent metadata arrived, but the local torrent engine did not initialize in time. Retry playback or check device storage."
+        }
+        "native_loopback_timeout" => {
+            "The torrent initialized, but the local playback endpoint did not open in time. Retry playback."
+        }
+        "native_session_unavailable" => {
+            "The device could not create its torrent network session. Check network access and retry playback."
+        }
+        "native_initialization_failed" => {
+            "Torrent metadata arrived, but initializing its local storage or torrent engine failed. Check device storage or choose another source."
+        }
+        "native_loopback_unavailable" => {
+            "The torrent initialized, but its local playback endpoint could not be opened. Retry playback."
+        }
+        "native_retirement_pending" => {
+            "The previous torrent is still closing. Wait a moment and retry playback."
+        }
+        "native_dns_unavailable" => {
+            "The device could not resolve the playback server address. Check DNS or your network connection."
+        }
+        "native_tls_failed" => {
+            "The secure connection to the playback server failed. Check the device clock and server certificate."
+        }
+        "native_connection_failed" => {
+            "The device could not establish a network connection to the playback server. Check that the server is running and reachable."
+        }
+        "native_control_timeout" => {
+            "The playback server did not respond before the request deadline. Check server health and your connection."
         }
         "native_payload_limit" => {
             "The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback."
@@ -38,6 +74,10 @@ pub(crate) fn native_failure_message(code: &str) -> Option<&'static str> {
         }
         _ => return None,
     })
+}
+
+pub(crate) fn native_failure_display(code: &str) -> Option<String> {
+    native_failure_message(code).map(|message| format!("{message}\n\nDiagnostic: {code}"))
 }
 
 /// Display facts only. Never promote arbitrary response content into UI diagnostics.
@@ -239,7 +279,12 @@ pub fn api_error(v: &Value) -> Value {
         }
         _ => "VIPTV could not complete this request. Try again.",
     };
-    json!({"message": known.unwrap_or(if safe {raw} else {fallback}), "code": code})
+    let message = native_failure_display(code).unwrap_or_else(|| {
+        known
+            .unwrap_or(if safe { raw } else { fallback })
+            .to_owned()
+    });
+    json!({"message": message, "code": code})
 }
 
 #[cfg(test)]

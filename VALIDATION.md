@@ -414,3 +414,19 @@ Android and TV-web adoption/checks are recorded in their repositories. These
 core checks execute no peer transport, network effects, Android device playback
 or production deployment. JNI/artifact, complete backend integration and
 physical/public-peer qualification remain separate tickets.
+# Source startup diagnostic projection — 2026-10-07
+
+The closed native failure projection distinguishes measured cache/session,
+metadata, initialization, local endpoint, retiring work and typed control-network
+failures. Canonical native copy includes its validated diagnostic code. Arbitrary
+dependency exception text and private source fields remain rejected. Shared
+recovery decisions and public bridge DTO/function signatures are unchanged.
+
+120 locked workspace tests, strict all-target Clippy and regeneration pass.
+Native bindings/types remain byte-identical. Actual WASM passes all checks,
+including 49 canonical API/lease error cases, 457 native torrent vectors,
+90 raw-text protocol vectors and 37 shared-policy vectors against native Rust.
+The first protocol parity invocation exceeded its child-process timeout while
+waiting for the shared Cargo lock; the complete suite passes using the existing
+project-local target after prebuilding the examples. This is error projection and
+native/WASM evidence, not public-swarm or Android player qualification.

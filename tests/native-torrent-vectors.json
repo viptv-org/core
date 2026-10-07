@@ -8098,7 +8098,7 @@
           "ok": true,
           "value": {
             "code": "native_playback_failed",
-            "message": "The selected source could not start on this device. Try another source or retry playback."
+            "message": "The selected source could not start on this device. Try another source or retry playback.\n\nDiagnostic: native_playback_failed"
           }
         }
       ]
@@ -8117,7 +8117,7 @@
           "ok": true,
           "value": {
             "code": "native_acquisition_timeout",
-            "message": "This device took too long to prepare the selected source. Try another source or retry playback."
+            "message": "This device took too long to prepare the selected source. Try another source or retry playback.\n\nDiagnostic: native_acquisition_timeout"
           }
         }
       ]
@@ -8136,7 +8136,7 @@
           "ok": true,
           "value": {
             "code": "native_metadata_timeout",
-            "message": "Torrent file information did not arrive in time. Try another source or retry playback."
+            "message": "No torrent metadata arrived from peers before the startup deadline. Check DHT/network access or choose another source.\n\nDiagnostic: native_metadata_timeout"
           }
         }
       ]
@@ -8155,7 +8155,7 @@
           "ok": true,
           "value": {
             "code": "native_payload_limit",
-            "message": "The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback."
+            "message": "The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback.\n\nDiagnostic: native_payload_limit"
           }
         }
       ]
@@ -8174,7 +8174,7 @@
           "ok": true,
           "value": {
             "code": "native_storage_unavailable",
-            "message": "This device could not reserve storage for playback. Free some space, choose another source or retry playback."
+            "message": "This device could not reserve storage for playback. Free some space, choose another source or retry playback.\n\nDiagnostic: native_storage_unavailable"
           }
         }
       ]
@@ -8193,7 +8193,7 @@
           "ok": true,
           "value": {
             "code": "native_cache_unavailable",
-            "message": "The device's playback cache is unavailable. Choose another source or retry playback."
+            "message": "The device's playback cache is unavailable. Choose another source or retry playback.\n\nDiagnostic: native_cache_unavailable"
           }
         }
       ]
@@ -8212,7 +8212,7 @@
           "ok": true,
           "value": {
             "code": "native_metadata_invalid",
-            "message": "This source has invalid or unsupported torrent file information. Choose another source."
+            "message": "This source has invalid or unsupported torrent file information. Choose another source.\n\nDiagnostic: native_metadata_invalid"
           }
         }
       ]
@@ -8231,7 +8231,7 @@
           "ok": true,
           "value": {
             "code": "native_file_unavailable",
-            "message": "The exact file selected by this source is missing or does not match its file information. Refresh the sources or choose another source."
+            "message": "The exact file selected by this source is missing or does not match its file information. Refresh the sources or choose another source.\n\nDiagnostic: native_file_unavailable"
           }
         }
       ]
@@ -8250,7 +8250,7 @@
           "ok": true,
           "value": {
             "code": "native_authorization_expired",
-            "message": "This playback session has expired. Start playback again to reconnect."
+            "message": "This playback session has expired. Start playback again to reconnect.\n\nDiagnostic: native_authorization_expired"
           }
         }
       ]
@@ -8269,7 +8269,7 @@
           "ok": true,
           "value": {
             "code": "native_network_unavailable",
-            "message": "This device could not connect to the selected source. Check your connection, choose another source or retry playback."
+            "message": "This device could not connect to the selected source. Check your connection, choose another source or retry playback.\n\nDiagnostic: native_network_unavailable"
           }
         }
       ]
@@ -8288,7 +8288,7 @@
           "ok": true,
           "value": {
             "code": "native_codec_unsupported",
-            "message": "This device cannot decode the selected source's audio or video format. Choose another source or retry playback."
+            "message": "This device cannot decode the selected source's audio or video format. Choose another source or retry playback.\n\nDiagnostic: native_codec_unsupported"
           }
         }
       ]
@@ -8307,7 +8307,7 @@
           "ok": true,
           "value": {
             "code": "native_acquisition_timeout",
-            "message": "This device took too long to prepare the selected source. Try another source or retry playback."
+            "message": "This device took too long to prepare the selected source. Try another source or retry playback.\n\nDiagnostic: native_acquisition_timeout"
           }
         }
       ]
@@ -8549,6 +8549,234 @@
         {
           "ok": false,
           "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_cache_preparation_timeout",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_cache_preparation_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_cache_preparation_timeout",
+            "message": "The device timed out preparing local torrent storage. Check free space and retry after the previous stream has stopped.\n\nDiagnostic: native_cache_preparation_timeout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_initialization_timeout",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_initialization_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_initialization_timeout",
+            "message": "Torrent metadata arrived, but the local torrent engine did not initialize in time. Retry playback or check device storage.\n\nDiagnostic: native_initialization_timeout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_loopback_timeout",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_loopback_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_loopback_timeout",
+            "message": "The torrent initialized, but the local playback endpoint did not open in time. Retry playback.\n\nDiagnostic: native_loopback_timeout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_session_unavailable",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_session_unavailable\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_session_unavailable",
+            "message": "The device could not create its torrent network session. Check network access and retry playback.\n\nDiagnostic: native_session_unavailable"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_initialization_failed",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_initialization_failed\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_initialization_failed",
+            "message": "Torrent metadata arrived, but initializing its local storage or torrent engine failed. Check device storage or choose another source.\n\nDiagnostic: native_initialization_failed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_loopback_unavailable",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_loopback_unavailable\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_loopback_unavailable",
+            "message": "The torrent initialized, but its local playback endpoint could not be opened. Retry playback.\n\nDiagnostic: native_loopback_unavailable"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_retirement_pending",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_retirement_pending\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_retirement_pending",
+            "message": "The previous torrent is still closing. Wait a moment and retry playback.\n\nDiagnostic: native_retirement_pending"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_dns_unavailable",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_dns_unavailable\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_dns_unavailable",
+            "message": "The device could not resolve the playback server address. Check DNS or your network connection.\n\nDiagnostic: native_dns_unavailable"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_tls_failed",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_tls_failed\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_tls_failed",
+            "message": "The secure connection to the playback server failed. Check the device clock and server certificate.\n\nDiagnostic: native_tls_failed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_connection_failed",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_connection_failed\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_connection_failed",
+            "message": "The device could not establish a network connection to the playback server. Check that the server is running and reachable.\n\nDiagnostic: native_connection_failed"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_control_timeout",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_control_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_control_timeout",
+            "message": "The playback server did not respond before the request deadline. Check server health and your connection.\n\nDiagnostic: native_control_timeout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "closed observed failure native_session_timeout",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "nativeTorrent",
+          "input": "{\"operation\": \"failure\", \"reason\": \"native_session_timeout\"}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "code": "native_session_timeout",
+            "message": "The device timed out creating its torrent network session. Check network access and retry playback.\n\nDiagnostic: native_session_timeout"
+          }
         }
       ]
     }

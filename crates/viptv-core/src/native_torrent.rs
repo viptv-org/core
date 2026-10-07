@@ -248,7 +248,7 @@ pub(crate) fn negotiation(input: &str) -> Result<String> {
             return Err(invalid());
         }
         let value: Failure = parse(input)?;
-        let message = crate::domain::native_failure_message(&value.reason).ok_or_else(invalid)?;
+        let message = crate::domain::native_failure_display(&value.reason).ok_or_else(invalid)?;
         if value.operation != "failure" {
             return Err(invalid());
         }

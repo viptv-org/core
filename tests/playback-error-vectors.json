@@ -1,39 +1,247 @@
 [
-  {"code":"gateway_required","status":409,"message":"This device or source requires a playback gateway. Configure one in account settings or ask the server operator."},
-  {"code":"gateway_capacity","status":503,"message":"Playback capacity is currently full. Stop another stream or try again shortly."},
-  {"code":"gateway_cleanup_pending","status":409,"message":"The previous stream is still being closed. Try again shortly."},
-  {"code":"gateway_startup_timeout","status":504,"message":"The gateway took too long to prepare this source. Try again or choose another source."},
-  {"code":"gateway_processing_failed","status":502,"message":"The gateway could not prepare this stream. Choose another source or check the gateway."},
-  {"code":"gateway_key_rejected","status":422,"message":"The gateway rejected this integration key. Check that it is active."},
-  {"code":"gateway_scope_missing","status":422,"message":"The gateway key must allow this namespace and all required playback operations."},
-  {"code":"gateway_protocol_invalid","status":422,"message":"The gateway returned an incompatible response. Check its service version."},
-  {"code":"gateway_redirect_rejected","status":422,"message":"Use the gateway's final HTTPS endpoint; control requests cannot follow redirects."},
-  {"code":"gateway_not_ready","status":502,"message":"The gateway is not ready or could not be reached securely. Try again or check its address."},
-  {"code":"gateway_dns_unavailable","status":502,"message":"The gateway is not ready or could not be reached securely. Try again or check its address."},
-  {"code":"gateway_unavailable","status":502,"message":"The gateway is not ready or could not be reached securely. Try again or check its address."},
-  {"code":"gateway_storage_unavailable","status":503,"message":"Gateway settings are temporarily unavailable. Try again."},
-  {"code":"provider_connection_limit","status":429,"message":"This IPTV provider has reached its connection limit. Stop another stream or choose another provider."},
-  {"code":"provider_rate_limited","status":429,"message":"The IPTV provider is limiting API requests. Wait before trying again."},
-  {"code":"provider_credentials_rejected","status":422,"message":"The IPTV provider rejected access. Check your credentials, subscription status or provider access restrictions."},
-  {"code":"source_unavailable","status":502,"message":"The source could not be reached or inspected. Try again or choose another source."},
-  {"code":"source_headers_unsupported","status":406,"message":"This source requires unsupported or invalid request headers. Choose another source."},
-  {"code":"source_credentials_migration_required","status":409,"message":"This source needs an ownership and encryption migration before it can be used. Ask the server operator to migrate it and configure the encryption keyring."},
-  {"code":"source_configuration_changed","status":409,"message":"The source configuration changed. Refresh the sources and try again."},
-  {"code":"source_not_found","status":404,"message":"This source or playback session is unavailable in your account. Refresh the sources."},
-  {"code":"delivery_unsupported","status":406,"message":"This source cannot be played with the current playback configuration. Choose another source."},
-  {"code":"invalid_playback_request","status":400,"message":"Check the source, playback position and device capabilities."},
-  {"code":"playback_conflict","status":409,"message":"This playback request ID was already used for a different request. Start a new request."},
-  {"code":"playback_expired","status":410,"message":"This playback session has expired. Start playback again to reconnect."},
-  {"code":"authorization_expired","status":410,"message":"This playback session has expired. Start playback again to reconnect."},
-  {"code":"native_playback_failed","status":422,"message":"The selected source could not start on this device. Try another source or retry playback."},
-  {"code":"native_acquisition_timeout","status":422,"message":"This device took too long to prepare the selected source. Try another source or retry playback."},
-  {"code":"native_metadata_timeout","status":422,"message":"Torrent file information did not arrive in time. Try another source or retry playback."},
-  {"code":"native_payload_limit","status":422,"message":"The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback."},
-  {"code":"native_storage_unavailable","status":422,"message":"This device could not reserve storage for playback. Free some space, choose another source or retry playback."},
-  {"code":"native_cache_unavailable","status":422,"message":"The device's playback cache is unavailable. Choose another source or retry playback."},
-  {"code":"native_metadata_invalid","status":422,"message":"This source has invalid or unsupported torrent file information. Choose another source."},
-  {"code":"native_file_unavailable","status":422,"message":"The exact file selected by this source is missing or does not match its file information. Refresh the sources or choose another source."},
-  {"code":"native_authorization_expired","status":422,"message":"This playback session has expired. Start playback again to reconnect."},
-  {"code":"native_network_unavailable","status":422,"message":"This device could not connect to the selected source. Check your connection, choose another source or retry playback."},
-  {"code":"native_codec_unsupported","status":422,"message":"This device cannot decode the selected source's audio or video format. Choose another source or retry playback."}
+  {
+    "code": "gateway_required",
+    "status": 409,
+    "message": "This device or source requires a playback gateway. Configure one in account settings or ask the server operator."
+  },
+  {
+    "code": "gateway_capacity",
+    "status": 503,
+    "message": "Playback capacity is currently full. Stop another stream or try again shortly."
+  },
+  {
+    "code": "gateway_cleanup_pending",
+    "status": 409,
+    "message": "The previous stream is still being closed. Try again shortly."
+  },
+  {
+    "code": "gateway_startup_timeout",
+    "status": 504,
+    "message": "The gateway took too long to prepare this source. Try again or choose another source."
+  },
+  {
+    "code": "gateway_processing_failed",
+    "status": 502,
+    "message": "The gateway could not prepare this stream. Choose another source or check the gateway."
+  },
+  {
+    "code": "gateway_key_rejected",
+    "status": 422,
+    "message": "The gateway rejected this integration key. Check that it is active."
+  },
+  {
+    "code": "gateway_scope_missing",
+    "status": 422,
+    "message": "The gateway key must allow this namespace and all required playback operations."
+  },
+  {
+    "code": "gateway_protocol_invalid",
+    "status": 422,
+    "message": "The gateway returned an incompatible response. Check its service version."
+  },
+  {
+    "code": "gateway_redirect_rejected",
+    "status": 422,
+    "message": "Use the gateway's final HTTPS endpoint; control requests cannot follow redirects."
+  },
+  {
+    "code": "gateway_not_ready",
+    "status": 502,
+    "message": "The gateway is not ready or could not be reached securely. Try again or check its address."
+  },
+  {
+    "code": "gateway_dns_unavailable",
+    "status": 502,
+    "message": "The gateway is not ready or could not be reached securely. Try again or check its address."
+  },
+  {
+    "code": "gateway_unavailable",
+    "status": 502,
+    "message": "The gateway is not ready or could not be reached securely. Try again or check its address."
+  },
+  {
+    "code": "gateway_storage_unavailable",
+    "status": 503,
+    "message": "Gateway settings are temporarily unavailable. Try again."
+  },
+  {
+    "code": "provider_connection_limit",
+    "status": 429,
+    "message": "This IPTV provider has reached its connection limit. Stop another stream or choose another provider."
+  },
+  {
+    "code": "provider_rate_limited",
+    "status": 429,
+    "message": "The IPTV provider is limiting API requests. Wait before trying again."
+  },
+  {
+    "code": "provider_credentials_rejected",
+    "status": 422,
+    "message": "The IPTV provider rejected access. Check your credentials, subscription status or provider access restrictions."
+  },
+  {
+    "code": "source_unavailable",
+    "status": 502,
+    "message": "The source could not be reached or inspected. Try again or choose another source."
+  },
+  {
+    "code": "source_headers_unsupported",
+    "status": 406,
+    "message": "This source requires unsupported or invalid request headers. Choose another source."
+  },
+  {
+    "code": "source_credentials_migration_required",
+    "status": 409,
+    "message": "This source needs an ownership and encryption migration before it can be used. Ask the server operator to migrate it and configure the encryption keyring."
+  },
+  {
+    "code": "source_configuration_changed",
+    "status": 409,
+    "message": "The source configuration changed. Refresh the sources and try again."
+  },
+  {
+    "code": "source_not_found",
+    "status": 404,
+    "message": "This source or playback session is unavailable in your account. Refresh the sources."
+  },
+  {
+    "code": "delivery_unsupported",
+    "status": 406,
+    "message": "This source cannot be played with the current playback configuration. Choose another source."
+  },
+  {
+    "code": "invalid_playback_request",
+    "status": 400,
+    "message": "Check the source, playback position and device capabilities."
+  },
+  {
+    "code": "playback_conflict",
+    "status": 409,
+    "message": "This playback request ID was already used for a different request. Start a new request."
+  },
+  {
+    "code": "playback_expired",
+    "status": 410,
+    "message": "This playback session has expired. Start playback again to reconnect."
+  },
+  {
+    "code": "authorization_expired",
+    "status": 410,
+    "message": "This playback session has expired. Start playback again to reconnect."
+  },
+  {
+    "code": "native_playback_failed",
+    "status": 422,
+    "message": "The selected source could not start on this device. Try another source or retry playback.\n\nDiagnostic: native_playback_failed"
+  },
+  {
+    "code": "native_acquisition_timeout",
+    "status": 422,
+    "message": "This device took too long to prepare the selected source. Try another source or retry playback.\n\nDiagnostic: native_acquisition_timeout"
+  },
+  {
+    "code": "native_metadata_timeout",
+    "status": 422,
+    "message": "No torrent metadata arrived from peers before the startup deadline. Check DHT/network access or choose another source.\n\nDiagnostic: native_metadata_timeout"
+  },
+  {
+    "code": "native_payload_limit",
+    "status": 422,
+    "message": "The device's playback cache has no room for this stream. Stop another stream, choose another source or retry playback.\n\nDiagnostic: native_payload_limit"
+  },
+  {
+    "code": "native_storage_unavailable",
+    "status": 422,
+    "message": "This device could not reserve storage for playback. Free some space, choose another source or retry playback.\n\nDiagnostic: native_storage_unavailable"
+  },
+  {
+    "code": "native_cache_unavailable",
+    "status": 422,
+    "message": "The device's playback cache is unavailable. Choose another source or retry playback.\n\nDiagnostic: native_cache_unavailable"
+  },
+  {
+    "code": "native_metadata_invalid",
+    "status": 422,
+    "message": "This source has invalid or unsupported torrent file information. Choose another source.\n\nDiagnostic: native_metadata_invalid"
+  },
+  {
+    "code": "native_file_unavailable",
+    "status": 422,
+    "message": "The exact file selected by this source is missing or does not match its file information. Refresh the sources or choose another source.\n\nDiagnostic: native_file_unavailable"
+  },
+  {
+    "code": "native_authorization_expired",
+    "status": 422,
+    "message": "This playback session has expired. Start playback again to reconnect.\n\nDiagnostic: native_authorization_expired"
+  },
+  {
+    "code": "native_network_unavailable",
+    "status": 422,
+    "message": "This device could not connect to the selected source. Check your connection, choose another source or retry playback.\n\nDiagnostic: native_network_unavailable"
+  },
+  {
+    "code": "native_codec_unsupported",
+    "status": 422,
+    "message": "This device cannot decode the selected source's audio or video format. Choose another source or retry playback.\n\nDiagnostic: native_codec_unsupported"
+  },
+  {
+    "code": "native_cache_preparation_timeout",
+    "status": 422,
+    "message": "The device timed out preparing local torrent storage. Check free space and retry after the previous stream has stopped.\n\nDiagnostic: native_cache_preparation_timeout"
+  },
+  {
+    "code": "native_initialization_timeout",
+    "status": 422,
+    "message": "Torrent metadata arrived, but the local torrent engine did not initialize in time. Retry playback or check device storage.\n\nDiagnostic: native_initialization_timeout"
+  },
+  {
+    "code": "native_loopback_timeout",
+    "status": 422,
+    "message": "The torrent initialized, but the local playback endpoint did not open in time. Retry playback.\n\nDiagnostic: native_loopback_timeout"
+  },
+  {
+    "code": "native_session_unavailable",
+    "status": 422,
+    "message": "The device could not create its torrent network session. Check network access and retry playback.\n\nDiagnostic: native_session_unavailable"
+  },
+  {
+    "code": "native_initialization_failed",
+    "status": 422,
+    "message": "Torrent metadata arrived, but initializing its local storage or torrent engine failed. Check device storage or choose another source.\n\nDiagnostic: native_initialization_failed"
+  },
+  {
+    "code": "native_loopback_unavailable",
+    "status": 422,
+    "message": "The torrent initialized, but its local playback endpoint could not be opened. Retry playback.\n\nDiagnostic: native_loopback_unavailable"
+  },
+  {
+    "code": "native_retirement_pending",
+    "status": 422,
+    "message": "The previous torrent is still closing. Wait a moment and retry playback.\n\nDiagnostic: native_retirement_pending"
+  },
+  {
+    "code": "native_dns_unavailable",
+    "status": 422,
+    "message": "The device could not resolve the playback server address. Check DNS or your network connection.\n\nDiagnostic: native_dns_unavailable"
+  },
+  {
+    "code": "native_tls_failed",
+    "status": 422,
+    "message": "The secure connection to the playback server failed. Check the device clock and server certificate.\n\nDiagnostic: native_tls_failed"
+  },
+  {
+    "code": "native_connection_failed",
+    "status": 422,
+    "message": "The device could not establish a network connection to the playback server. Check that the server is running and reachable.\n\nDiagnostic: native_connection_failed"
+  },
+  {
+    "code": "native_control_timeout",
+    "status": 422,
+    "message": "The playback server did not respond before the request deadline. Check server health and your connection.\n\nDiagnostic: native_control_timeout"
+  },
+  {
+    "code": "native_session_timeout",
+    "status": 422,
+    "message": "The device timed out creating its torrent network session. Check network access and retry playback.\n\nDiagnostic: native_session_timeout"
+  }
 ]
