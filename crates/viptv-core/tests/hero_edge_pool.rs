@@ -29,12 +29,12 @@ fn shared_hero_edge_vectors_match_the_json_bridge_and_typed_api() {
 }
 
 #[test]
-fn hero_edge_bridge_rejects_incomplete_or_mistyped_facts() {
+fn hero_edge_bridge_requires_media_type_and_rejects_mistyped_facts() {
     for input in [
         json!({"genres": [], "availableEdges": []}),
-        json!({"mediaType": "movie", "availableEdges": []}),
-        json!({"mediaType": "movie", "genres": []}),
+        json!({"mediaType": null, "genres": [], "availableEdges": []}),
         json!({"mediaType": "movie", "genres": "Horror", "availableEdges": []}),
+        json!({"mediaType": "movie", "genres": null, "availableEdges": []}),
         json!({"mediaType": "movie", "genres": [null], "availableEdges": []}),
     ] {
         assert!(

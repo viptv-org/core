@@ -145,6 +145,7 @@ data class HeroEdgePool(
 
 /// Facts for one hero title: its normalized media type, provider genres in
 /// their original order, and the edge styles this renderer actually ships.
+/// Generated codecs omit empty lists, so absent lists read as empty.
 data class HeroEdgePoolInput(
     val mediaType: String,
     val genres: List<String>,

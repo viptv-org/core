@@ -113,12 +113,15 @@ pub const HERO_GENRE_EDGES: &[(&str, &[&str])] = &[
 
 /// Facts for one hero title: its normalized media type, provider genres in
 /// their original order, and the edge styles this renderer actually ships.
+/// Generated codecs omit empty lists, so absent lists read as empty.
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 #[serde(rename_all = "camelCase")]
 #[facet(rename_all = "camelCase")]
 pub struct HeroEdgePoolInput {
     pub media_type: String,
+    #[serde(default)]
     pub genres: Vec<String>,
+    #[serde(default)]
     pub available_edges: Vec<String>,
 }
 
@@ -304,8 +307,12 @@ mod tests {
     }
 
     #[test]
-    fn bridge_requires_every_fact() {
-        assert!(normalize(&serde_json::json!({"mediaType":"movie","genres":[]})).is_err());
+    fn bridge_requires_media_type_and_defaults_absent_lists() {
+        assert!(normalize(&serde_json::json!({"genres":[],"availableEdges":[]})).is_err());
+        assert_eq!(
+            normalize(&serde_json::json!({"mediaType":"movie"})).unwrap(),
+            serde_json::json!({"category":null,"edges":[]})
+        );
         assert_eq!(
             normalize(&serde_json::json!({"mediaType":"movie","genres":["Crime"],"availableEdges":["scan","noir"]})).unwrap(),
             serde_json::json!({"category":"Crime","edges":["noir","scan"]})

@@ -117,6 +117,8 @@ Runtime tests use injected fetch/native command ports. Native Rust and WASM beha
 
 `normalize("heroEdgePool", { mediaType, genres, availableEdges })` returns
 generated `HeroEdgePool { category, edges }` for the TV hero backdrop edge fade.
+`mediaType` is required; absent `genres`/`availableEdges` read as empty because
+generated Kotlin codecs omit default-valued lists.
 Any `Animation`/`Anime` genre selects `Anime` for `series` and `Animation`
 otherwise. Else the first genre, in input order, whose pool has an available edge
 supplies the category. Genre keys match ASCII case-insensitively because core

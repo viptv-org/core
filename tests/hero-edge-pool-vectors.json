@@ -1999,5 +1999,143 @@
         "stained"
       ]
     }
+  },
+  {
+    "name": "absent genres read as no genres",
+    "input": {
+      "mediaType": "movie",
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": null,
+      "edges": [
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    }
+  },
+  {
+    "name": "absent availableEdges reads as nothing available",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Horror"
+      ]
+    },
+    "expected": {
+      "category": null,
+      "edges": []
+    }
+  },
+  {
+    "name": "absent availableEdges keeps the animation category",
+    "input": {
+      "mediaType": "series",
+      "genres": [
+        "Anime"
+      ]
+    },
+    "expected": {
+      "category": "Anime",
+      "edges": []
+    }
+  },
+  {
+    "name": "absent genres and availableEdges keep the baseline",
+    "input": {
+      "mediaType": "series"
+    },
+    "expected": {
+      "category": null,
+      "edges": []
+    }
   }
 ]

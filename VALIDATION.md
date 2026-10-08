@@ -6,13 +6,15 @@ shader index `genreEdges`. One deliberate change: genre keys match ASCII
 case-insensitively (the animation rule already did), and the category names the
 canonical key; exactly cased genres behave as before. Generated
 `HeroEdgePoolInput`/`HeroEdgePool` Kotlin wire and TypeScript types accompany
-the change; the native UniFFI surface is unchanged (`normalize`).
+the change; the native UniFFI surface is unchanged (`normalize`). `mediaType`
+is required; absent `genres`/`availableEdges` read as empty because the
+generated Kotlin codec omits default-valued lists when encoding.
 
 `cargo fmt --check`, strict workspace all-target Clippy and `cargo test --locked
 --workspace` (128 tests, including 5 unit and 2 integration hero tests) pass.
 Typegen and native Kotlin regeneration were run; the actual WASM binary is
 rebuilt with wasm-bindgen CLI 0.2.92. The actual-WASM suite passes and compares
-72 shared-policy vectors (35 new hero edge vectors) against native Rust, plus 90
+76 shared-policy vectors (39 new hero edge vectors, including absent lists) against native Rust, plus 90
 protocol and 473 native torrent vectors. Runtime package tests (9) and typecheck
 pass. This qualifies the shared decision, not consumer adoption or shader output.
 
