@@ -276,6 +276,7 @@ fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreErro
         "homeActions" => check::<dto::HomeActions>(v),
         "episodeWatching" => check::<dto::EpisodeWatching>(v),
         "phonePresentation" => check::<dto::PhonePresentation>(v),
+        "heroEdgePool" => check::<policy::hero::HeroEdgePool>(v),
         "sourceRanks" => check::<dto::SourceRanks>(v),
         "sourceProducerLabels" => check::<Vec<dto::SourceProducerOutcome>>(v),
         "sourcesPollStep" => check::<dto::SourcesPollStep>(v),

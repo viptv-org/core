@@ -13,6 +13,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::HomeActions>()?
         .register_type::<viptv_core::dto::EpisodeWatching>()?
         .register_type::<viptv_core::dto::PhonePresentation>()?
+        .register_type::<viptv_core::policy::hero::HeroEdgePoolInput>()?
+        .register_type::<viptv_core::policy::hero::HeroEdgePool>()?
         .register_type::<viptv_core::dto::SourceRanks>()?
         .register_type::<viptv_core::dto::SourceProducerOutcome>()?
         .register_type::<viptv_core::dto::DiscoverPolicyProjection>()?

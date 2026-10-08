@@ -1,0 +1,2003 @@
+[
+  {
+    "name": "animated series reads as anime",
+    "input": {
+      "mediaType": "series",
+      "genres": [
+        "Drama",
+        "Animation"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Anime",
+      "edges": [
+        "cel",
+        "speedlines",
+        "petals",
+        "halftone",
+        "sparkle",
+        "watercolor"
+      ]
+    }
+  },
+  {
+    "name": "animated movie reads as animation",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Family",
+        "Animation"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Animation",
+      "edges": [
+        "watercolor",
+        "confetti",
+        "halftone",
+        "cel",
+        "sparkle",
+        "hex"
+      ]
+    }
+  },
+  {
+    "name": "anime genre on a movie reads as animation",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Anime"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Animation",
+      "edges": [
+        "watercolor",
+        "confetti",
+        "halftone",
+        "cel",
+        "sparkle",
+        "hex"
+      ]
+    }
+  },
+  {
+    "name": "animation match ignores ASCII case",
+    "input": {
+      "mediaType": "series",
+      "genres": [
+        "aNiMaTiOn"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Anime",
+      "edges": [
+        "cel",
+        "speedlines",
+        "petals",
+        "halftone",
+        "sparkle",
+        "watercolor"
+      ]
+    }
+  },
+  {
+    "name": "episode type is not series",
+    "input": {
+      "mediaType": "episode",
+      "genres": [
+        "Animation"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Animation",
+      "edges": [
+        "watercolor",
+        "confetti",
+        "halftone",
+        "cel",
+        "sparkle",
+        "hex"
+      ]
+    }
+  },
+  {
+    "name": "first genre with a pool wins",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Horror",
+        "Sci-Fi"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Horror",
+      "edges": [
+        "burn",
+        "blood",
+        "static",
+        "fog",
+        "shatter",
+        "oldfilm"
+      ]
+    }
+  },
+  {
+    "name": "unknown genres are skipped in input order",
+    "input": {
+      "mediaType": "series",
+      "genres": [
+        "Reality",
+        "Talk",
+        "Sci-Fi",
+        "Horror"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Sci-Fi",
+      "edges": [
+        "hologram",
+        "circuit",
+        "rain",
+        "phosphor",
+        "prism",
+        "thermal",
+        "blueprint",
+        "pixel"
+      ]
+    }
+  },
+  {
+    "name": "genre keys match ASCII case-insensitively and return the canonical key",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "sci-fi",
+        "horror"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Sci-Fi",
+      "edges": [
+        "hologram",
+        "circuit",
+        "rain",
+        "phosphor",
+        "prism",
+        "thermal",
+        "blueprint",
+        "pixel"
+      ]
+    }
+  },
+  {
+    "name": "pool keeps table order filtered to available edges",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Crime"
+      ],
+      "availableEdges": [
+        "thermal",
+        "linear",
+        "static",
+        "noir"
+      ]
+    },
+    "expected": {
+      "category": "Crime",
+      "edges": [
+        "noir",
+        "static",
+        "thermal"
+      ]
+    }
+  },
+  {
+    "name": "genre whose pool is unavailable falls through to the next genre",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Horror",
+        "Romance"
+      ],
+      "availableEdges": [
+        "linear",
+        "bokeh",
+        "petals"
+      ]
+    },
+    "expected": {
+      "category": "Romance",
+      "edges": [
+        "petals",
+        "bokeh"
+      ]
+    }
+  },
+  {
+    "name": "no matching genre rotates every available edge except linear",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Reality"
+      ],
+      "availableEdges": [
+        "smoke",
+        "linear",
+        "cel",
+        "fog"
+      ]
+    },
+    "expected": {
+      "category": null,
+      "edges": [
+        "smoke",
+        "cel",
+        "fog"
+      ]
+    }
+  },
+  {
+    "name": "no genres rotates the whole non-baseline index",
+    "input": {
+      "mediaType": "movie",
+      "genres": [],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": null,
+      "edges": [
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    }
+  },
+  {
+    "name": "unavailable pools leave no category",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Western",
+        "War"
+      ],
+      "availableEdges": [
+        "linear",
+        "hologram"
+      ]
+    },
+    "expected": {
+      "category": null,
+      "edges": [
+        "hologram"
+      ]
+    }
+  },
+  {
+    "name": "animated category survives an unavailable pool",
+    "input": {
+      "mediaType": "series",
+      "genres": [
+        "Anime"
+      ],
+      "availableEdges": [
+        "linear",
+        "fog",
+        "noir"
+      ]
+    },
+    "expected": {
+      "category": "Anime",
+      "edges": [
+        "fog",
+        "noir"
+      ]
+    }
+  },
+  {
+    "name": "only the baseline available yields no rotating edge",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Drama"
+      ],
+      "availableEdges": [
+        "linear"
+      ]
+    },
+    "expected": {
+      "category": null,
+      "edges": []
+    }
+  },
+  {
+    "name": "nothing available yields no rotating edge",
+    "input": {
+      "mediaType": "series",
+      "genres": [
+        "Animation"
+      ],
+      "availableEdges": []
+    },
+    "expected": {
+      "category": "Anime",
+      "edges": []
+    }
+  },
+  {
+    "name": "unknown edges pass through only in the fallback",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "availableEdges": [
+        "future-edge",
+        "linear"
+      ]
+    },
+    "expected": {
+      "category": null,
+      "edges": [
+        "future-edge"
+      ]
+    }
+  },
+  {
+    "name": "Horror uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Horror"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Horror",
+      "edges": [
+        "burn",
+        "blood",
+        "static",
+        "fog",
+        "shatter",
+        "oldfilm"
+      ]
+    }
+  },
+  {
+    "name": "Sci-Fi uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Sci-Fi"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Sci-Fi",
+      "edges": [
+        "hologram",
+        "circuit",
+        "rain",
+        "phosphor",
+        "prism",
+        "thermal",
+        "blueprint",
+        "pixel"
+      ]
+    }
+  },
+  {
+    "name": "Action uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Action"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Action",
+      "edges": [
+        "shatter",
+        "streak",
+        "embers",
+        "speedlines",
+        "heat",
+        "pixel"
+      ]
+    }
+  },
+  {
+    "name": "Crime uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Crime"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Crime",
+      "edges": [
+        "noir",
+        "redacted",
+        "scan",
+        "static",
+        "thermal"
+      ]
+    }
+  },
+  {
+    "name": "Thriller uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Thriller"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Thriller",
+      "edges": [
+        "noir",
+        "redacted",
+        "thermal",
+        "fog",
+        "scan",
+        "ripple"
+      ]
+    }
+  },
+  {
+    "name": "Romance uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Romance"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Romance",
+      "edges": [
+        "petals",
+        "bokeh",
+        "cinematic",
+        "watercolor",
+        "sparkle"
+      ]
+    }
+  },
+  {
+    "name": "Comedy uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Comedy"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Comedy",
+      "edges": [
+        "confetti",
+        "halftone",
+        "speedlines",
+        "hex",
+        "stipple"
+      ]
+    }
+  },
+  {
+    "name": "Fantasy uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Fantasy"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Fantasy",
+      "edges": [
+        "sparkle",
+        "aurora",
+        "stained",
+        "smoke",
+        "frost",
+        "prism"
+      ]
+    }
+  },
+  {
+    "name": "Western uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Western"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Western",
+      "edges": [
+        "dust",
+        "heat",
+        "oldfilm",
+        "burn",
+        "brush"
+      ]
+    }
+  },
+  {
+    "name": "Documentary uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Documentary"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Documentary",
+      "edges": [
+        "newsprint",
+        "oldfilm",
+        "crosshatch",
+        "contour",
+        "dither"
+      ]
+    }
+  },
+  {
+    "name": "War uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "War"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "War",
+      "edges": [
+        "embers",
+        "smoke",
+        "dust",
+        "oldfilm",
+        "burn"
+      ]
+    }
+  },
+  {
+    "name": "Music uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Music"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Music",
+      "edges": [
+        "equalizer",
+        "prism",
+        "bokeh",
+        "phosphor",
+        "scan"
+      ]
+    }
+  },
+  {
+    "name": "Mystery uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Mystery"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Mystery",
+      "edges": [
+        "fog",
+        "noir",
+        "smoke",
+        "contour",
+        "crosshatch"
+      ]
+    }
+  },
+  {
+    "name": "Drama uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Drama"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Drama",
+      "edges": [
+        "cinematic",
+        "bokeh",
+        "brush",
+        "oldfilm",
+        "watercolor",
+        "stipple"
+      ]
+    }
+  },
+  {
+    "name": "Adventure uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Adventure"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Adventure",
+      "edges": [
+        "contour",
+        "aurora",
+        "dust",
+        "brush",
+        "ripple"
+      ]
+    }
+  },
+  {
+    "name": "Family uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Family"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Family",
+      "edges": [
+        "confetti",
+        "sparkle",
+        "watercolor",
+        "hex"
+      ]
+    }
+  },
+  {
+    "name": "Biography uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "Biography"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "Biography",
+      "edges": [
+        "oldfilm",
+        "newsprint",
+        "crosshatch",
+        "stained"
+      ]
+    }
+  },
+  {
+    "name": "History uses its full pool",
+    "input": {
+      "mediaType": "movie",
+      "genres": [
+        "History"
+      ],
+      "availableEdges": [
+        "linear",
+        "cinematic",
+        "smoke",
+        "dither",
+        "ascii",
+        "halftone",
+        "scan",
+        "pixel",
+        "burn",
+        "shatter",
+        "rain",
+        "prism",
+        "brush",
+        "contour",
+        "hex",
+        "ripple",
+        "streak",
+        "stipple",
+        "phosphor",
+        "blueprint",
+        "noir",
+        "oldfilm",
+        "blood",
+        "static",
+        "hologram",
+        "circuit",
+        "speedlines",
+        "cel",
+        "watercolor",
+        "bokeh",
+        "confetti",
+        "sparkle",
+        "aurora",
+        "fog",
+        "dust",
+        "newsprint",
+        "equalizer",
+        "embers",
+        "redacted",
+        "petals",
+        "frost",
+        "heat",
+        "thermal",
+        "stained",
+        "crosshatch"
+      ]
+    },
+    "expected": {
+      "category": "History",
+      "edges": [
+        "oldfilm",
+        "newsprint",
+        "crosshatch",
+        "stained"
+      ]
+    }
+  }
+]

@@ -134,6 +134,23 @@ data class ForegroundAuthorityInput(
     val profileId: String? = null,
 )
 
+/// The title's canonical category (a key of the shared genre edge table) and
+/// the edge styles it may rotate through. `category` is absent when no genre
+/// matched an available pool; `edges` is then every available edge except the
+/// baseline. Empty `edges` means the renderer keeps its baseline scrim.
+data class HeroEdgePool(
+    val category: String? = null,
+    val edges: List<String>,
+)
+
+/// Facts for one hero title: its normalized media type, provider genres in
+/// their original order, and the edge styles this renderer actually ships.
+data class HeroEdgePoolInput(
+    val mediaType: String,
+    val genres: List<String>,
+    val availableEdges: List<String>,
+)
+
 /// Home actions are semantic intents; shells execute navigation and player effects.
 data class HomeActions(
     val canManage: Boolean,

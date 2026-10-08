@@ -113,6 +113,22 @@ Runtime tests use injected fetch/native command ports. Native Rust and WASM beha
 
 `normalize("cardPresentation", { item, context: "queue" | "catalog" })` accepts optional `failedImages: string[]` transport observations and returns generated `CardPresentation`: image and its role, title, subtitle, optional normalized progress, and activation intent/label. After a final image fetch/decode failure, renderers report the original selected URL in `failedImages` and request this projection again; Rust skips that candidate while preserving the existing role order and all actions/progress. Failure observations are local to the current card, not persisted provider metadata. Renderers must not choose alternate image fields or reconstruct these labels. Queue metadata is enriched through `enrichHome`, which matches the exact episode before adopting its still/title and preserves source, progress and previous-episode identity. Missing episode artwork can use a known landscape or an explicit empty state; a series portrait is never relabeled as an episode still. Platform adapters execute bounded metadata requests; Rust owns their merge.
 
+## Hero edge pool
+
+`normalize("heroEdgePool", { mediaType, genres, availableEdges })` returns
+generated `HeroEdgePool { category, edges }` for the TV hero backdrop edge fade.
+Any `Animation`/`Anime` genre selects `Anime` for `series` and `Animation`
+otherwise. Else the first genre, in input order, whose pool has an available edge
+supplies the category. Genre keys match ASCII case-insensitively because core
+keeps provider genre text verbatim; the result names the canonical table key.
+`edges` is that pool in table order, filtered to the renderer's shipped edges.
+Without a usable pool it is every available edge except the baseline `linear`
+scrim, and `category` is null unless the animation rule chose it. An empty list
+means keep the baseline. The genre table mirrors the hero shader index
+`genreEdges`; renderers keep shaders, timing and shuffle bags, keyed by category.
+`tests/hero-edge-pool-vectors.json` drives the native tests and the actual-WASM
+parity suite.
+
 ## License
 
 Copyright (C) 2026 viptv contributors.

@@ -1,3 +1,21 @@
+# Shared hero edge pool — 2026-10-07
+
+`heroEdgePool` moves the TV hero backdrop genre→category→edge-pool rule from the
+Android branch into Rust. The 20-category table is copied verbatim from the hero
+shader index `genreEdges`. One deliberate change: genre keys match ASCII
+case-insensitively (the animation rule already did), and the category names the
+canonical key; exactly cased genres behave as before. Generated
+`HeroEdgePoolInput`/`HeroEdgePool` Kotlin wire and TypeScript types accompany
+the change; the native UniFFI surface is unchanged (`normalize`).
+
+`cargo fmt --check`, strict workspace all-target Clippy and `cargo test --locked
+--workspace` (128 tests, including 5 unit and 2 integration hero tests) pass.
+Typegen and native Kotlin regeneration were run; the actual WASM binary is
+rebuilt with wasm-bindgen CLI 0.2.92. The actual-WASM suite passes and compares
+72 shared-policy vectors (35 new hero edge vectors) against native Rust, plus 90
+protocol and 473 native torrent vectors. Runtime package tests (9) and typecheck
+pass. This qualifies the shared decision, not consumer adoption or shader output.
+
 # Native rolling-cache capacity explanation — 2026-10-07
 
 The canonical `native_payload_limit` message describes observed cache admission

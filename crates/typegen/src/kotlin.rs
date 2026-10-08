@@ -50,6 +50,8 @@ pub fn generate(registry: &Registry) -> String {
                     | "HomeActions"
                     | "EpisodeWatching"
                     | "PhonePresentation"
+                    | "HeroEdgePoolInput"
+                    | "HeroEdgePool"
                     | "SourceRank"
                     | "SourceRanks"
                     | "SourceProducerOutcome"

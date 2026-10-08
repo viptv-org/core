@@ -13,6 +13,7 @@ macro_rules! policy_regex {
 }
 
 mod catalog;
+pub mod hero;
 pub mod playback_control;
 mod presentation;
 mod progress;
@@ -91,6 +92,7 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
         "homeActions" => presentation::home_actions(v),
         "episodeWatching" => presentation::episode_watching(v),
         "phonePresentation" => presentation::phone_presentation(v),
+        "heroEdgePool" => hero::normalize(v)?,
         "shellLifecycle" => shell_lifecycle::shell_lifecycle(v)?,
         "playbackControl" => playback_control::normalize(v)?,
         "itemRequest" => item_request(v),

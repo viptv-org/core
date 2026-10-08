@@ -106,6 +106,15 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `current`: Identity,
     val `profileId`: String? = null
 )
+@Serializable data class HeroEdgePool(
+    val `category`: String? = null,
+    val `edges`: List<String> = emptyList()
+)
+@Serializable data class HeroEdgePoolInput(
+    val `mediaType`: String,
+    val `genres`: List<String> = emptyList(),
+    val `availableEdges`: List<String> = emptyList()
+)
 @Serializable data class HomeActions(
     val `canManage`: Boolean,
     val `managePrevious`: Boolean,

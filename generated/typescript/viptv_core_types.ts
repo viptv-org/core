@@ -151,6 +151,22 @@ export class ForegroundAuthorityInput {
     }
 }
 
+/// The title's canonical category (a key of the shared genre edge table) and
+/// the edge styles it may rotate through. `category` is absent when no genre
+/// matched an available pool; `edges` is then every available edge except the
+/// baseline. Empty `edges` means the renderer keeps its baseline scrim.
+export class HeroEdgePool {
+    constructor (public category: Optional<str>, public edges: Seq<str>) {
+    }
+}
+
+/// Facts for one hero title: its normalized media type, provider genres in
+/// their original order, and the edge styles this renderer actually ships.
+export class HeroEdgePoolInput {
+    constructor (public mediaType: str, public genres: Seq<str>, public availableEdges: Seq<str>) {
+    }
+}
+
 /// Home actions are semantic intents; shells execute navigation and player effects.
 export class HomeActions {
     constructor (public canManage: bool, public managePrevious: bool, public canResume: bool, public hasResolvedNext: bool, public opensQueueManage: bool, public opensSourcesFromHero: bool, public cardPrimaryAction: str, public heroPrimaryAction: str, public heroPrimaryActionLabel: str, public showHeroProgress: bool) {

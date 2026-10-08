@@ -67,6 +67,9 @@ const liveFacts={catalogId:'catalog',generation:'generation',ids:['channel'],nam
 playback('livePage',liveFacts,equal('valid'));
 playback('livePage',{...liveFacts,generation:'replacement'},equal('catalog_changed'));
 playback('livePage',{...liveFacts,knownIds:['channel']},equal('invalid'));
+const heroEdgeVectors=JSON.parse(readFileSync(resolve(root,'tests/hero-edge-pool-vectors.json'),'utf8'));
+for(const {name,input,expected:wanted} of heroEdgeVectors) check('heroEdgePool',input,value => assert.deepEqual(value,wanted,name));
+assert.throws(() => core.normalize('heroEdgePool',JSON.stringify({mediaType:'movie',genres:[]}),''));
 const native=spawnSync('cargo',['run','--offline','--locked','-p','viptv-core','--example','wasi'],{cwd:root,input:requests.map(value=>JSON.stringify(value)).join('\n')+'\n',encoding:'utf8',maxBuffer:32*1024*1024});
 assert.equal(native.status,0,native.stderr);
 assert.deepEqual(native.stdout.trim().split(/\r?\n/).map(line=>JSON.parse(line)),expected);
