@@ -7,6 +7,10 @@ const moduleSource = await readFile(new URL('generated/wasm/viptv_core.js', root
 const core = await import(`data:text/javascript;base64,${Buffer.from(moduleSource).toString('base64')}`);
 await core.default(await readFile(new URL('generated/wasm/viptv_core_bg.wasm', root)));
 const vectors = JSON.parse(await readFile(new URL('tests/bridge-vectors.json', root), 'utf8'));
+for (const vector of JSON.parse(await readFile(new URL('tests/source-discovery-vectors.json', root), 'utf8'))) {
+  const output = JSON.parse(core.normalize('sourcesPollStep', JSON.stringify(vector.input), ''));
+  assert.deepEqual(output.sources.map(source => source.id), vector.expectedIds);
+}
 for (const scenario of vectors) {
   const app = new core.CoreBridge();
   let requests = [];
