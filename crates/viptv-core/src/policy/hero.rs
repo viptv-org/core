@@ -11,104 +11,26 @@ pub const HERO_BASELINE_EDGE: &str = "linear";
 /// Category edge pools, copied in key and member order from the hero shader
 /// index (`genreEdges`). Members a renderer has not shipped are filtered out.
 pub const HERO_GENRE_EDGES: &[(&str, &[&str])] = &[
-    (
-        "Horror",
-        &["burn", "blood", "static", "fog", "shatter", "oldfilm"],
-    ),
-    (
-        "Sci-Fi",
-        &[
-            "hologram",
-            "circuit",
-            "rain",
-            "phosphor",
-            "prism",
-            "thermal",
-            "blueprint",
-            "pixel",
-        ],
-    ),
-    (
-        "Anime",
-        &[
-            "cel",
-            "speedlines",
-            "petals",
-            "halftone",
-            "sparkle",
-            "watercolor",
-        ],
-    ),
-    (
-        "Animation",
-        &[
-            "watercolor",
-            "confetti",
-            "halftone",
-            "cel",
-            "sparkle",
-            "hex",
-        ],
-    ),
-    (
-        "Action",
-        &["shatter", "streak", "embers", "speedlines", "heat", "pixel"],
-    ),
-    ("Crime", &["noir", "redacted", "scan", "static", "thermal"]),
-    (
-        "Thriller",
-        &["noir", "redacted", "thermal", "fog", "scan", "ripple"],
-    ),
-    (
-        "Romance",
-        &["petals", "bokeh", "cinematic", "watercolor", "sparkle"],
-    ),
-    (
-        "Comedy",
-        &["confetti", "halftone", "speedlines", "hex", "stipple"],
-    ),
-    (
-        "Fantasy",
-        &["sparkle", "aurora", "stained", "smoke", "frost", "prism"],
-    ),
-    ("Western", &["dust", "heat", "oldfilm", "burn", "brush"]),
-    (
-        "Documentary",
-        &["newsprint", "oldfilm", "crosshatch", "contour", "dither"],
-    ),
-    ("War", &["embers", "smoke", "dust", "oldfilm", "burn"]),
-    (
-        "Music",
-        &["equalizer", "prism", "bokeh", "phosphor", "scan"],
-    ),
-    (
-        "Mystery",
-        &["fog", "noir", "smoke", "contour", "crosshatch"],
-    ),
-    (
-        "Drama",
-        &[
-            "cinematic",
-            "bokeh",
-            "brush",
-            "oldfilm",
-            "watercolor",
-            "stipple",
-        ],
-    ),
-    (
-        "Adventure",
-        &["contour", "aurora", "dust", "brush", "ripple"],
-    ),
-    ("Family", &["confetti", "sparkle", "watercolor", "hex"]),
-    (
-        "Biography",
-        &["oldfilm", "newsprint", "crosshatch", "stained"],
-    ),
-    (
-        "History",
-        &["oldfilm", "newsprint", "crosshatch", "stained"],
-    ),
+    ("Horror", &["fog", "smoke", "stipple", "oldfilm"]),
+    ("Sci-Fi", &["streak", "heat", "fog", "cinematic"]),
+    ("Anime", &["brush", "watercolor", "streak"]),
+    ("Animation", &["watercolor", "brush", "cinematic"]),
+    ("Action", &["streak", "embers", "heat", "smoke"]),
+    ("Crime", &["smoke", "stipple", "cinematic"]),
+    ("Thriller", &["fog", "smoke", "stipple", "cinematic"]),
+    ("Romance", &["cinematic", "watercolor", "fog"]),
+    ("Comedy", &["brush", "watercolor", "cinematic"]),
+    ("Fantasy", &["embers", "fog", "smoke", "watercolor"]),
+    ("Western", &["heat", "oldfilm", "embers", "brush"]),
+    ("Documentary", &["cinematic", "oldfilm", "stipple"]),
+    ("War", &["embers", "smoke", "oldfilm", "stipple"]),
+    ("Music", &["streak", "cinematic", "embers"]),
+    ("Mystery", &["fog", "smoke", "stipple"]),
+    ("Drama", &["cinematic", "brush", "fog", "oldfilm"]),
+    ("Adventure", &["heat", "streak", "brush", "embers"]),
+    ("Family", &["watercolor", "brush", "cinematic"]),
+    ("Biography", &["oldfilm", "cinematic", "stipple"]),
+    ("History", &["oldfilm", "stipple", "smoke"]),
 ];
 
 /// Facts for one hero title: its normalized media type, provider genres in
@@ -247,17 +169,7 @@ mod tests {
         let all = all_edges();
         let series = decide("series", &["Drama", "animation"], &all);
         assert_eq!(series.category.as_deref(), Some("Anime"));
-        assert_eq!(
-            series.edges,
-            strings(&[
-                "cel",
-                "speedlines",
-                "petals",
-                "halftone",
-                "sparkle",
-                "watercolor"
-            ])
-        );
+        assert_eq!(series.edges, strings(&["brush", "watercolor", "streak"]));
         for kind in ["movie", "episode", "Series"] {
             assert_eq!(
                 decide(kind, &["ANIME"], &all).category.as_deref(),
@@ -268,28 +180,28 @@ mod tests {
 
     #[test]
     fn first_genre_with_an_available_pool_wins_in_table_order() {
-        let available = strings(&["linear", "noir", "fog", "smoke", "cinematic"]);
+        let available = strings(&["linear", "heat", "fog", "smoke", "cinematic"]);
         let out = decide("movie", &["Unknown", "Horror", "Mystery"], &available);
         assert_eq!(out.category.as_deref(), Some("Horror"));
-        assert_eq!(out.edges, strings(&["fog"]));
-        // Horror's pool is unavailable here, so Mystery is the first usable genre.
+        assert_eq!(out.edges, strings(&["fog", "smoke"]));
+        // Action's pool is unavailable here, so Mystery is the first usable genre.
         let out = decide(
             "movie",
-            &["Horror", "mystery"],
-            &strings(&["smoke", "noir"]),
+            &["Action", "mystery"],
+            &strings(&["fog", "cinematic"]),
         );
         assert_eq!(out.category.as_deref(), Some("Mystery"));
-        assert_eq!(out.edges, strings(&["noir", "smoke"]));
+        assert_eq!(out.edges, strings(&["fog"]));
     }
 
     #[test]
     fn unmatched_titles_rotate_every_available_edge_except_the_baseline() {
-        let available = strings(&["smoke", "linear", "cel"]);
+        let available = strings(&["brush", "linear", "unknown"]);
         assert_eq!(
             decide("movie", &["Reality", "Horror"], &available),
             HeroEdgePool {
                 category: None,
-                edges: strings(&["smoke", "cel"])
+                edges: strings(&["brush", "unknown"])
             }
         );
         assert_eq!(
@@ -314,8 +226,8 @@ mod tests {
             serde_json::json!({"category":null,"edges":[]})
         );
         assert_eq!(
-            normalize(&serde_json::json!({"mediaType":"movie","genres":["Crime"],"availableEdges":["scan","noir"]})).unwrap(),
-            serde_json::json!({"category":"Crime","edges":["noir","scan"]})
+            normalize(&serde_json::json!({"mediaType":"movie","genres":["Crime"],"availableEdges":["cinematic","smoke"]})).unwrap(),
+            serde_json::json!({"category":"Crime","edges":["smoke","cinematic"]})
         );
     }
 }
