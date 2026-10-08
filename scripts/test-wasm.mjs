@@ -33,6 +33,26 @@ assert.deepEqual(catalogs.map(catalog => catalog.type), ['movie', 'unsupported']
 assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: '/api/elsewhere'}), 'https://example.test'));
 assert.throws(() => core.normalize('playback', JSON.stringify({id: 's', url: 'https://user:pass@evil.test/media/s'}), 'https://example.test'));
 console.log(`WASM: ${vectors.length} shared native/WASM startup vectors and domain boundary checks passed`);
+for (const outcome of ['saved', 'failed', 'stale']) {
+  const app = new core.CoreBridge();
+  const update = event => JSON.parse(app.update(JSON.stringify(event)));
+  const resolve = (request, result) => JSON.parse(app.resolve(request.id, JSON.stringify(result)));
+  const find = (requests, kind) => requests.find(request => kind in request.effect);
+  const begin = () => update({Begin:{origin:'https://example.test',allowInsecurePreview:false}});
+  const session = {sessionId:'s',accountId:'a',profileId:null,accessToken:'fake',refreshToken:'fake',expiresIn:3600};
+  const identity = {account:{id:'a',username:'viewer',name:'Viewer',role:'member'},profiles:[{id:'p',name:'Main',setup_complete:true}],profile_id:'p',restricted:false,profile_setup_required:false};
+  const request = find(resolve(find(begin(),'Storage'),{Ok:JSON.stringify(session)}),'Http');
+  const save = find(resolve(request,{Ok:{status:200,headers:[],body:[...new TextEncoder().encode(JSON.stringify(identity))]}}),'Storage');
+  assert.equal(JSON.parse(save.effect.Storage.Save).profileId,'p');
+  if (outcome === 'stale') begin();
+  const effects = resolve(save, outcome === 'saved' ? {Ok:null} : {Err:'unavailable'});
+  assert.equal(effects.some(request => 'Http' in request.effect),false);
+  assert.equal(JSON.parse(app.view()).phase, outcome === 'saved' ? 'Ready' : outcome === 'failed' ? 'Error' : 'Restoring');
+  if (outcome === 'stale') assert.deepEqual(effects,[]);
+  else assert.ok(find(effects,'Render'));
+  app.free();
+}
+console.log('WASM: confirmed profiles persist without redundant identity requests; failures and stale saves remain fenced');
 const v2Request=JSON.parse(core.normalize('request',JSON.stringify({operation:'sourcesV2',item:{id:'tt1234567:1:2',type:'series',season:1,episode:2}}),''));
 assert.equal(v2Request.path,'/api/v2/streams');
 const v2Poll=JSON.parse(core.normalize('sourcesPollStep',JSON.stringify({poll:{done:true,events:[{seq:1,source:'iptv:1',streams:[],error_code:'provider_connection_limit',error:'https://provider.invalid/private-token'}]}}),''));

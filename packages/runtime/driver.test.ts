@@ -2,6 +2,49 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCoreDriver, tauriCorePort } from './src/driver.ts';
 
+test('HTTP batches start concurrently before a slow native view and render once', async () => {
+  let releaseView!: (value: string) => void;
+  const slowView = new Promise<string>(resolve => { releaseView = resolve; });
+  let viewCalls = 0;
+  let renders = 0;
+  const started: number[] = [];
+  const responses = new Map<number, (value: { Ok: { status: number; headers: []; body: [] } }) => void>();
+  const resolved: number[] = [];
+  const driver = createCoreDriver({
+    core: {
+      update: () => JSON.stringify([
+        { id: 1, effect: { Render: null } },
+        ...[2, 3].map(id => ({ id, effect: { Http: { method: 'GET', url: `https://backend.example/${id}`, headers: [], body: [] } } })),
+        { id: 4, effect: { Render: null } },
+      ]),
+      resolve: id => { resolved.push(id); return '[]'; },
+      view: () => { viewCalls++; return slowView; },
+    },
+    storage: { load: () => null, save: () => {}, clear: () => {} },
+    http: request => new Promise(resolve => {
+      const id = Number(new URL(request.url).pathname.slice(1));
+      started.push(id);
+      responses.set(id, resolve);
+    }),
+    render: () => { renders++; },
+    onError: message => assert.fail(message),
+  });
+  const dispatch = driver.dispatch('Retry');
+  await new Promise(resolve => setImmediate(resolve));
+  const beforeView = [...started];
+  releaseView(JSON.stringify({ phase: 'Profiles', identity: null, selectedProfileId: null, error: null }));
+  await dispatch;
+  responses.get(3)!({ Ok: { status: 200, headers: [], body: [] } });
+  await new Promise(resolve => setImmediate(resolve));
+  responses.get(2)!({ Ok: { status: 200, headers: [], body: [] } });
+  await driver.idle();
+  driver.dispose();
+  assert.deepEqual(beforeView, [2, 3]);
+  assert.equal(viewCalls, 1);
+  assert.equal(renders, 1);
+  assert.deepEqual(resolved, [3, 2]);
+});
+
 test('one dispatcher drains storage, HTTP and render through correlated native/WASM ports', async () => {
   const resolved: Array<[number, unknown]> = [];
   const views: unknown[] = [];
@@ -51,6 +94,28 @@ test('disposal cancels pending HTTP and suppresses core resolution/render', asyn
   await driver.idle();
   assert.equal(aborted, true);
   await assert.rejects(driver.dispatch('Retry'), /disposed/);
+});
+
+test('disposal during an asynchronous native view suppresses its render', async () => {
+  let finish!: (view: string) => void;
+  const view = new Promise<string>(resolve => { finish = resolve; });
+  const driver = createCoreDriver({
+    core: {
+      update: () => JSON.stringify([{ id: 1, effect: { Render: null } }]),
+      resolve: () => assert.fail('No response expected'),
+      view: () => view,
+    },
+    storage: { load: () => null, save: () => {}, clear: () => {} },
+    http: async () => assert.fail('No HTTP expected'),
+    render: () => assert.fail('Disposed view must not render'),
+    onError: message => assert.fail(message),
+  });
+  const dispatch = driver.dispatch('Retry');
+  await new Promise(resolve => setImmediate(resolve));
+  driver.dispose();
+  finish('{}');
+  await dispatch;
+  await driver.idle();
 });
 
 test('Tauri port maps the exact native command arguments', async () => {

@@ -1,3 +1,29 @@
+# Request scheduling and confirmed profile restoration — 2026-10-08
+
+The shared browser/Tauri dispatcher starts HTTP and storage effects before
+awaiting a native view read, and coalesces render effects in each batch into one
+view read/render. Core updates/resolutions remain serialized; HTTP completion
+order is independent, storage Save/Clear ordering and pending-effect bounds stay
+intact, and disposal during a view read suppresses rendering.
+
+An identity response that already confirms an authorized profile now persists
+the remembered profile without repeating `/api/auth/me`. Explicit profile
+selection still checks the server identity after acceptance. Credential
+persistence, refresh/revocation sequencing, retry and epoch fences remain intact.
+
+Both regressions failed before the fixes: no HTTP started while a native view
+was blocked, and a confirmed-profile save emitted another identity request.
+123 locked all-feature workspace tests, 11 runtime tests, strict TypeScript,
+formatting, strict all-target/all-feature Clippy and the full actual-WASM suite
+pass. Native and actual-WASM regressions cover confirmed persistence, storage
+failure and stale saves. Kotlin/TypeScript/native binding regeneration is
+byte-identical; the actual WASM binary is rebuilt with wasm-bindgen 0.2.92.
+
+This removes one network round trip on the affected restoration path and
+view-read barriers ahead of independent transport work. No live-network/device
+latency measurement or consumer adoption is claimed; apps must adopt this core
+revision and its runtime/WASM artifacts to receive the change.
+
 # Native rolling-cache capacity explanation — 2026-10-07
 
 The canonical `native_payload_limit` message describes observed cache admission

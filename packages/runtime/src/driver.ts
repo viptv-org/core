@@ -57,10 +57,13 @@ export function createCoreDriver(options: DriverOptions) {
   async function drain(serialized: string) {
     const requests = JSON.parse(serialized) as Request[];
     if (!Array.isArray(requests)) throw new Error('Invalid effect batch');
+    let needsRender = false;
     for (const { id, effect } of requests) {
       if (disposed) return;
       if ('Render' in effect) {
-        options.render(JSON.parse(await options.core.view()) as ViewModel);
+        // Render effects carry no snapshot: all of them read the same final
+        // model. Start transport work first, then cross the native bridge once.
+        needsRender = true;
       } else if (pending.size >= maxPending) {
         // A broken/hostile producer must not grow unbounded transport/storage queues.
         throw new Error('Too many pending effects');
@@ -79,6 +82,10 @@ export function createCoreDriver(options: DriverOptions) {
         storageQueue = output;
         track(id, output);
       } else throw new Error('Unknown core effect');
+    }
+    if (needsRender && !disposed) {
+      const view = await options.core.view();
+      if (!disposed) options.render(JSON.parse(view) as ViewModel);
     }
   }
 

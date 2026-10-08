@@ -70,6 +70,41 @@ fn identity_restores_authorized_profile_without_auth_flash() {
     assert!(!c.view().unwrap().contains("fake-access"));
 }
 #[test]
+fn confirmed_profile_save_does_not_repeat_identity_request() {
+    let core = CoreBridge::new();
+    let request = restored(&core, Value::Null);
+    let effects = http(&core, &request, 200, me(json!("profile-1")));
+    let save = effect(&effects, "Storage");
+    let effects = resolve(&core, &save, json!({"Ok":null}));
+    assert_eq!(view(&core)["phase"], "Ready");
+    assert_eq!(view(&core)["selectedProfileId"], "profile-1");
+    assert!(effects.iter().all(|r| r["effect"].get("Http").is_none()));
+    effect(&effects, "Render");
+}
+#[test]
+fn confirmed_profile_save_preserves_storage_failure_and_epoch_fences() {
+    for stale in [false, true] {
+        let core = CoreBridge::new();
+        let request = restored(&core, Value::Null);
+        let save = effect(
+            &http(&core, &request, 200, me(json!("profile-1"))),
+            "Storage",
+        );
+        if stale {
+            begin(&core);
+        }
+        let effects = resolve(&core, &save, json!({"Err":"unavailable"}));
+        if stale {
+            assert!(effects.is_empty());
+            assert_eq!(view(&core)["phase"], "Restoring");
+        } else {
+            assert_eq!(view(&core)["phase"], "Error");
+            effect(&effects, "Render");
+            effect(&event(&core, json!("Retry")), "Http");
+        }
+    }
+}
+#[test]
 fn identity_restores_profile_with_nullable_avatar_choice() {
     let core = CoreBridge::new();
     let request = restored(&core, json!("profile-1"));
