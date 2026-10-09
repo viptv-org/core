@@ -134,11 +134,126 @@ export class NativeTorrentBridge {
 */
   constructor(context: string);
 }
+/**
+*/
+export class TorrentRuntimeBridge {
+  free(): void;
+/**
+* @returns {string}
+*/
+  state(): string;
+/**
+* @returns {string}
+*/
+  toString(): string;
+/**
+* @param {string} clock
+* @returns {string}
+*/
+  authorize(clock: string): string;
+/**
+*/
+  invalidate(): void;
+/**
+* @returns {string | undefined}
+*/
+  playbackId(): string | undefined;
+/**
+* @param {number} status
+* @param {Uint8Array} body
+* @param {string} observation
+* @returns {string}
+*/
+  acceptBytes(status: number, body: Uint8Array, observation: string): string;
+/**
+* @param {number} file_index
+* @param {number | undefined} archive_index
+* @param {bigint} length
+* @param {string} clock
+* @returns {boolean}
+*/
+  bindResolution(file_index: number, archive_index: number | undefined, length: bigint, clock: string): boolean;
+/**
+* @param {string} clock
+* @returns {(string)[]}
+*/
+  privateTrackers(clock: string): (string)[];
+/**
+* @param {string} clock
+* @returns {string}
+*/
+  privateInfoHash(clock: string): string;
+/**
+* @param {string} clock
+* @returns {number | undefined}
+*/
+  privateFileIndex(clock: string): number | undefined;
+/**
+* @param {string} clock
+* @returns {string}
+*/
+  privateInputKind(clock: string): string;
+/**
+* @param {string} clock
+* @returns {string}
+*/
+  privateInputValue(clock: string): string;
+/**
+* @param {number} status
+* @param {Uint8Array} body
+* @param {string} observation
+* @returns {string}
+*/
+  acceptMeasuredBytes(status: number, body: Uint8Array, observation: string): string;
+/**
+* @param {string} clock
+* @returns {number | undefined}
+*/
+  privateArchiveIndex(clock: string): number | undefined;
+/**
+* @param {string} clock
+* @returns {bigint | undefined}
+*/
+  privateExpectedFileSize(clock: string): bigint | undefined;
+/**
+* @returns {bigint | undefined}
+*/
+  trustedWallUpperUnixMillis(): bigint | undefined;
+/**
+* @param {string} context
+*/
+  constructor(context: string);
+}
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_corebridge_free: (a: number) => void;
+  readonly __wbg_torrentruntimebridge_free: (a: number) => void;
+  readonly corebridge_resolve: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly corebridge_update: (a: number, b: number, c: number, d: number) => void;
+  readonly corebridge_view: (a: number, b: number) => void;
+  readonly corebridge_wasm_new: () => number;
+  readonly normalize: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly torrentruntimebridge_acceptBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly torrentruntimebridge_acceptMeasuredBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly torrentruntimebridge_authorize: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_bindResolution: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
+  readonly torrentruntimebridge_invalidate: (a: number, b: number) => void;
+  readonly torrentruntimebridge_playbackId: (a: number, b: number) => void;
+  readonly torrentruntimebridge_privateArchiveIndex: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_privateExpectedFileSize: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_privateFileIndex: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_privateInfoHash: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_privateInputKind: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_privateInputValue: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_privateTrackers: (a: number, b: number, c: number, d: number) => void;
+  readonly torrentruntimebridge_state: (a: number, b: number) => void;
+  readonly torrentruntimebridge_toString: (a: number, b: number) => void;
+  readonly torrentruntimebridge_trustedWallUpperUnixMillis: (a: number, b: number) => void;
+  readonly torrentruntimebridge_wasm_new: (a: number, b: number, c: number) => void;
+  readonly vizio_deviceinfo_name: (a: number, b: number, c: number) => void;
   readonly __wbg_nativetorrentbridge_free: (a: number) => void;
   readonly nativetorrentbridge_accept: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly nativetorrentbridge_acceptBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
@@ -157,17 +272,10 @@ export interface InitOutput {
   readonly nativetorrentbridge_toString: (a: number, b: number) => void;
   readonly nativetorrentbridge_trustedWallUpperUnixMillis: (a: number, b: number) => void;
   readonly nativetorrentbridge_wasm_new: (a: number, b: number, c: number) => void;
-  readonly __wbg_corebridge_free: (a: number) => void;
-  readonly corebridge_resolve: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly corebridge_update: (a: number, b: number, c: number, d: number) => void;
-  readonly corebridge_view: (a: number, b: number) => void;
-  readonly corebridge_wasm_new: () => number;
-  readonly normalize: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-  readonly vizio_deviceinfo_name: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

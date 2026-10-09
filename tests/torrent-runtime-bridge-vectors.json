@@ -1,0 +1,1268 @@
+{
+  "context": {
+    "scope": "scope_fixture",
+    "generation": 7,
+    "qualified": true,
+    "negotiated": true,
+    "vod": true,
+    "request": {
+      "requestId": "request_fixture",
+      "streamId": "opaque-source",
+      "client": {
+        "platform": "android_tv",
+        "canPlayDirect": false,
+        "maxWidth": 3840,
+        "maxHeight": 2160,
+        "videoCodecs": [
+          "h264"
+        ],
+        "audioCodecs": [
+          "aac"
+        ],
+        "nativeTorrent": {
+          "version": 2,
+          "networkPolicy": "public_discovery_verified_v2"
+        }
+      },
+      "position": 120
+    },
+    "origin": "https://fixture.invalid"
+  },
+  "observation": {
+    "scope": "scope_fixture",
+    "generation": 7,
+    "sequence": 1,
+    "operation": "start",
+    "receivedAtMillis": 100000,
+    "roundTripMillis": 200,
+    "uncertaintyMillis": 300,
+    "maxUncertaintyMillis": 500,
+    "trustedWallUpperUnixMillis": 1700000000500,
+    "suspendAware": true
+  },
+  "clock": {
+    "scope": "scope_fixture",
+    "generation": 7,
+    "nowMillis": 100001,
+    "trustedWallUpperUnixMillis": 1700000000501,
+    "backendRevalidated": true,
+    "suspendAware": true
+  },
+  "body": {
+    "id": "playback_fixture",
+    "status": "ready",
+    "delivery": {
+      "kind": "native_torrent",
+      "position": 120,
+      "live": false,
+      "format": "original",
+      "preferences": {
+        "audio_language": null,
+        "subtitle_language": null,
+        "subtitles_enabled": false
+      },
+      "grant": {
+        "version": 2,
+        "id": "grant_fixture",
+        "server_time": 1700000000,
+        "expires_at": 1700000060,
+        "info_hash": "0000000000000000000000000000000000000000",
+        "file_index": null,
+        "network_policy": "public_discovery_verified_v2",
+        "input": {
+          "kind": "magnet",
+          "uri": "magnet:?xt=urn:btih:0000000000000000000000000000000000000000"
+        },
+        "archive_index": null,
+        "trackers": [
+          "udp://tracker.example:1337/announce"
+        ]
+      }
+    },
+    "error_code": null,
+    "error": null,
+    "expires_at": 1700000060,
+    "renew_after_seconds": 20
+  },
+  "cases": [
+    {
+      "name": "automatic selection retains private hints without projection",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "private"
+        },
+        {
+          "action": "debug"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "result": {
+            "fileIndex": null,
+            "archiveIndex": null,
+            "trackers": [
+              "udp://tracker.example:1337/announce"
+            ],
+            "kind": "magnet",
+            "value": "magnet:?xt=urn:btih:0000000000000000000000000000000000000000"
+          }
+        },
+        {
+          "ok": true,
+          "result": "TorrentRuntimeBridge(<redacted>)"
+        }
+      ]
+    },
+    {
+      "name": "required id",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required status",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required error_code",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required error",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required expires_at",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required renew_after_seconds",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.kind",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.position",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.live",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.format",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.preferences",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.preferences.audio_language",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.preferences.subtitle_language",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.preferences.subtitles_enabled",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.version",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.id",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.server_time",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.expires_at",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.info_hash",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.file_index",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.network_policy",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.input",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.archive_index",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "required delivery.grant.trackers",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant version 1",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":1,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant version 2.0",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2.0,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant file_index -1",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":-1,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant file_index 1.0",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":1.0,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant archive_index 65536",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":65536,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant expected_file_size None",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"],\"expected_file_size\":null}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant expected_file_size 0",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"],\"expected_file_size\":0}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant trackers ['https://user:pass@tracker.example/announce']",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"https://user:pass@tracker.example/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant expires_at 1700000061",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000061,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalid grant info_hash bad",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"bad\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "duplicate lexical grant",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "unknown grant field",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"extra\":true,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "large explicit selection",
+      "steps": [
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000000,\"expires_at\":1700000060,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":3,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"],\"expected_file_size\":107374182400}},\"error_code\":null,\"error\":null,\"expires_at\":1700000060,\"renew_after_seconds\":20}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        }
+      ]
+    },
+    {
+      "name": "poll cannot extend authority",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "accept",
+          "observation": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "sequence": 2,
+            "operation": "poll",
+            "receivedAtMillis": 101000,
+            "roundTripMillis": 200,
+            "uncertaintyMillis": 300,
+            "maxUncertaintyMillis": 500,
+            "trustedWallUpperUnixMillis": 1700000001500,
+            "suspendAware": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        }
+      ]
+    },
+    {
+      "name": "heartbeat renews stable identity",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000020,\"expires_at\":1700000080,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[\"udp://tracker.example:1337/announce\"]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000080,\"renew_after_seconds\":20}",
+          "observation": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "sequence": 2,
+            "operation": "heartbeat",
+            "receivedAtMillis": 120000,
+            "roundTripMillis": 200,
+            "uncertaintyMillis": 300,
+            "maxUncertaintyMillis": 500,
+            "trustedWallUpperUnixMillis": 1700000020500,
+            "suspendAware": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 178500
+        }
+      ]
+    },
+    {
+      "name": "heartbeat cannot substitute discovery",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "accept",
+          "body": "{\"id\":\"playback_fixture\",\"status\":\"ready\",\"delivery\":{\"kind\":\"native_torrent\",\"position\":120,\"live\":false,\"format\":\"original\",\"preferences\":{\"audio_language\":null,\"subtitle_language\":null,\"subtitles_enabled\":false},\"grant\":{\"version\":2,\"id\":\"grant_fixture\",\"server_time\":1700000020,\"expires_at\":1700000080,\"info_hash\":\"0000000000000000000000000000000000000000\",\"file_index\":null,\"network_policy\":\"public_discovery_verified_v2\",\"input\":{\"kind\":\"magnet\",\"uri\":\"magnet:?xt=urn:btih:0000000000000000000000000000000000000000\"},\"archive_index\":null,\"trackers\":[]}},\"error_code\":null,\"error\":null,\"expires_at\":1700000080,\"renew_after_seconds\":20}",
+          "observation": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "sequence": 2,
+            "operation": "heartbeat",
+            "receivedAtMillis": 120000,
+            "roundTripMillis": 200,
+            "uncertaintyMillis": 300,
+            "maxUncertaintyMillis": 500,
+            "trustedWallUpperUnixMillis": 1700000020500,
+            "suspendAware": true
+          }
+        },
+        {
+          "action": "private"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": false
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "stale callback preserves current authority",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "accept",
+          "observation": {
+            "scope": "scope_fixture",
+            "generation": 6,
+            "sequence": 2,
+            "operation": "poll",
+            "receivedAtMillis": 101000,
+            "roundTripMillis": 200,
+            "uncertaintyMillis": 300,
+            "maxUncertaintyMillis": 500,
+            "trustedWallUpperUnixMillis": 1700000001500,
+            "suspendAware": true
+          }
+        },
+        {
+          "action": "state"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": false
+        },
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        }
+      ]
+    },
+    {
+      "name": "clock refusal suspendAware",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "authorize",
+          "clock": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "nowMillis": 100001,
+            "trustedWallUpperUnixMillis": 1700000000501,
+            "backendRevalidated": true,
+            "suspendAware": false
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "clock refusal nowMillis",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "authorize",
+          "clock": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "nowMillis": 158500,
+            "trustedWallUpperUnixMillis": 1700000000501,
+            "backendRevalidated": true,
+            "suspendAware": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "clock refusal nowMillis",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "authorize",
+          "clock": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "nowMillis": 99999,
+            "trustedWallUpperUnixMillis": 1700000000501,
+            "backendRevalidated": true,
+            "suspendAware": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "clock refusal trustedWallUpperUnixMillis",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "authorize",
+          "clock": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "nowMillis": 100001,
+            "trustedWallUpperUnixMillis": 1700000060000,
+            "backendRevalidated": true,
+            "suspendAware": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "clock refusal backendRevalidated",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "authorize",
+          "clock": {
+            "scope": "scope_fixture",
+            "generation": 7,
+            "nowMillis": 100001,
+            "trustedWallUpperUnixMillis": 1700000000501,
+            "backendRevalidated": false,
+            "suspendAware": true
+          }
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "invalidation removes private access",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "invalidate"
+        },
+        {
+          "action": "private"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "result": null
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "measured authority uses conservative server bound",
+      "steps": [
+        {
+          "action": "measured"
+        },
+        {
+          "action": "wall"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "result": 1700000001500
+        }
+      ]
+    },
+    {
+      "name": "platform android",
+      "steps": [],
+      "expected": [],
+      "context": {
+        "scope": "scope_fixture",
+        "generation": 7,
+        "qualified": true,
+        "negotiated": true,
+        "vod": true,
+        "request": {
+          "requestId": "request_fixture",
+          "streamId": "opaque-source",
+          "client": {
+            "platform": "android",
+            "canPlayDirect": false,
+            "maxWidth": 3840,
+            "maxHeight": 2160,
+            "videoCodecs": [
+              "h264"
+            ],
+            "audioCodecs": [
+              "aac"
+            ],
+            "nativeTorrent": {
+              "version": 2,
+              "networkPolicy": "public_discovery_verified_v2"
+            }
+          },
+          "position": 120
+        },
+        "origin": "https://fixture.invalid"
+      },
+      "constructs": true
+    },
+    {
+      "name": "platform android_tv",
+      "steps": [],
+      "expected": [],
+      "context": {
+        "scope": "scope_fixture",
+        "generation": 7,
+        "qualified": true,
+        "negotiated": true,
+        "vod": true,
+        "request": {
+          "requestId": "request_fixture",
+          "streamId": "opaque-source",
+          "client": {
+            "platform": "android_tv",
+            "canPlayDirect": false,
+            "maxWidth": 3840,
+            "maxHeight": 2160,
+            "videoCodecs": [
+              "h264"
+            ],
+            "audioCodecs": [
+              "aac"
+            ],
+            "nativeTorrent": {
+              "version": 2,
+              "networkPolicy": "public_discovery_verified_v2"
+            }
+          },
+          "position": 120
+        },
+        "origin": "https://fixture.invalid"
+      },
+      "constructs": true
+    },
+    {
+      "name": "platform desktop",
+      "steps": [],
+      "expected": [],
+      "context": {
+        "scope": "scope_fixture",
+        "generation": 7,
+        "qualified": true,
+        "negotiated": true,
+        "vod": true,
+        "request": {
+          "requestId": "request_fixture",
+          "streamId": "opaque-source",
+          "client": {
+            "platform": "desktop",
+            "canPlayDirect": false,
+            "maxWidth": 3840,
+            "maxHeight": 2160,
+            "videoCodecs": [
+              "h264"
+            ],
+            "audioCodecs": [
+              "aac"
+            ],
+            "nativeTorrent": {
+              "version": 2,
+              "networkPolicy": "public_discovery_verified_v2"
+            }
+          },
+          "position": 120
+        },
+        "origin": "https://fixture.invalid"
+      },
+      "constructs": true
+    },
+    {
+      "name": "platform web",
+      "steps": [],
+      "expected": [],
+      "context": {
+        "scope": "scope_fixture",
+        "generation": 7,
+        "qualified": true,
+        "negotiated": true,
+        "vod": true,
+        "request": {
+          "requestId": "request_fixture",
+          "streamId": "opaque-source",
+          "client": {
+            "platform": "web",
+            "canPlayDirect": false,
+            "maxWidth": 3840,
+            "maxHeight": 2160,
+            "videoCodecs": [
+              "h264"
+            ],
+            "audioCodecs": [
+              "aac"
+            ],
+            "nativeTorrent": {
+              "version": 2,
+              "networkPolicy": "public_discovery_verified_v2"
+            }
+          },
+          "position": 120
+        },
+        "origin": "https://fixture.invalid"
+      },
+      "constructs": false
+    },
+    {
+      "name": "platform roku",
+      "steps": [],
+      "expected": [],
+      "context": {
+        "scope": "scope_fixture",
+        "generation": 7,
+        "qualified": true,
+        "negotiated": true,
+        "vod": true,
+        "request": {
+          "requestId": "request_fixture",
+          "streamId": "opaque-source",
+          "client": {
+            "platform": "roku",
+            "canPlayDirect": false,
+            "maxWidth": 3840,
+            "maxHeight": 2160,
+            "videoCodecs": [
+              "h264"
+            ],
+            "audioCodecs": [
+              "aac"
+            ],
+            "nativeTorrent": {
+              "version": 2,
+              "networkPolicy": "public_discovery_verified_v2"
+            }
+          },
+          "position": 120
+        },
+        "origin": "https://fixture.invalid"
+      },
+      "constructs": false
+    },
+    {
+      "name": "resolved automatic selection remains bound",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "resolve",
+          "fileIndex": 2,
+          "length": 1234
+        },
+        {
+          "action": "resolve",
+          "fileIndex": 3,
+          "length": 1234
+        },
+        {
+          "action": "private"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "result": true
+        },
+        {
+          "ok": false
+        },
+        {
+          "ok": false
+        }
+      ]
+    },
+    {
+      "name": "archive resolution binds inner entry",
+      "steps": [
+        {
+          "action": "accept"
+        },
+        {
+          "action": "resolve",
+          "fileIndex": 0,
+          "archiveIndex": 4,
+          "length": 1234
+        },
+        {
+          "action": "resolve",
+          "fileIndex": 0,
+          "archiveIndex": 5,
+          "length": 1234
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "status": "ready",
+          "deadline": 158500
+        },
+        {
+          "ok": true,
+          "result": true
+        },
+        {
+          "ok": false
+        }
+      ]
+    }
+  ]
+}

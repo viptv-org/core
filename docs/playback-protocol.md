@@ -152,3 +152,20 @@ Adopt one immutable committed core revision in Android and TV-web together using
 each consumer's `scripts/core-sync.mjs`; import generated Kotlin/native/WASM from
 that same source, check both pins/hashes and run each consumer's local checks.
 Do not edit vendored snapshots or activate native capability during adoption.
+
+
+## Shared streaming transport v2
+
+`TorrentRuntimeBridge` is the private v2 holder, negotiated separately at
+`/api/v2/torrent-runtime-protocol`. It preserves tracker hints, nullable file and
+archive indexes and the original source descriptor. V1 parsing and behavior are
+unchanged. Its byte-only adoption, clock checks, renewal and redacted state use
+native and actual-WASM bindings from one revision. `bindResolution` records the
+runtime's verified file/member and media length; explicit selections and repeated
+resolution must agree. Renewal cannot replace that identity.
+
+`normalize("torrentRuntime", ...)` supplies closed v2 negotiation, retirement-aware
+recovery, factual stage labels and stage-specific failures. Retired native retry
+returns `ordinaryRetry`, obtaining fresh native authority. It never requests a
+gateway fallback. Cached bytes remain independent of these transient grants.
+The Android and desktop adapters own worker IO, supervision and player effects.

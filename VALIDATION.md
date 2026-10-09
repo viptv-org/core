@@ -481,3 +481,17 @@ and formatting pass. Kotlin/TypeScript and native bindings regenerate without
 contract changes; the actual WASM binary/glue is rebuilt. Android and TV-web
 adoption are recorded in their owning branches. These checks establish shared
 deduplication, not network latency or device rendering performance.
+
+# Runtime v2 client authority — 2026-10-09
+
+The private `TorrentRuntimeBridge` supports Android/TV and desktop grants,
+nullable selection, discovery hints and fixed resolved file/archive identity.
+V2 negotiation/recovery is separate from v1; native retries obtain fresh native
+authority without a gateway fallback. Core supplies factual progress labels and
+closed stage-specific failure copy. Private bodies never enter ordinary state.
+
+133 locked all-feature workspace tests, strict all-target Clippy, formatting,
+type generation, regenerated UniFFI/Kotlin and release WASM pass. The full actual
+WASM suite passes, including 58 new runtime-authority cases compared with native
+Rust, 473 unchanged v1 vectors and 90 protocol vectors. Worker IO, Android Media3,
+desktop decoders and gateway integration remain consumer qualification work.

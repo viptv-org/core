@@ -91,6 +91,7 @@ console.log(`WASM: ${playbackErrors.length} canonical playback error vectors, HT
 await import('./test-policy-migration.mjs');
 await import('./test-playback-protocol.mjs');
 await import('./test-torrent-runtime-protocol.mjs');
+await import('./test-torrent-runtime-bridge.mjs');
 await import('./test-native-torrent.mjs');
 const rawLive = domain('liveCatalogV2', {catalog_id:2,generation:0,items:[{id:'iptv:2:7',name:'News',logo:'http://provider.example/news.png'}],next_cursor:'opaque_next',previous_cursor:null});
 assert.equal(rawLive.catalogId,'2');
