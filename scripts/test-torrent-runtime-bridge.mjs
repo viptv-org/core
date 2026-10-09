@@ -58,3 +58,5 @@ for(const [stage,code] of Object.entries({finding_peers:'native_no_peers',fetchi
   assert.equal(JSON.parse(core.normalize('torrentRuntime',JSON.stringify({operation:'failure',stage,reason:'startup_stalled'}),'' )).code,code);
 }
 assert.throws(()=>core.normalize('torrentRuntime','{"operation":"failure","stage":"buffering","reason":"https://private.invalid"}',''));
+
+assert.equal(JSON.parse(core.normalize('torrentRuntime',JSON.stringify({operation:'negotiation',platform:'android',qualified:true,scopeMatches:true,status:200,authorizationRefused:false,body:'{"version":2,"native_torrent_versions":[]}'}),'')),'legacy');

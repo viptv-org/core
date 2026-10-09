@@ -53,3 +53,12 @@ fn native_retry_renegotiates_without_gateway_fallback() {
         "\"ordinaryRetry\""
     );
 }
+
+#[test]
+fn runtime_negotiation_requires_advertised_v2_support() {
+    let facts = serde_json::json!({"operation":"negotiation","platform":"android","qualified":true,"scopeMatches":true,"status":200,"authorizationRefused":false,"body":"{\"version\":2,\"native_torrent_versions\":[]}"});
+    assert_eq!(
+        viptv_core::normalize("torrentRuntime".into(), facts.to_string(), String::new()).unwrap(),
+        "\"legacy\""
+    );
+}

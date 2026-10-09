@@ -273,7 +273,8 @@ pub(crate) fn decision(input: &str) -> Result<String, CoreError> {
             } else if f.qualified
                 && native_platform(&f.platform)
                 && f.status == Some(200)
-                && crate::domain::playback_protocol::parse_runtime(&f.body).is_ok()
+                && crate::domain::playback_protocol::parse_runtime(&f.body)
+                    .is_ok_and(|protocol| protocol.native_torrent_versions == [2])
             {
                 Advertise
             } else {
