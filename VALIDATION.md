@@ -468,3 +468,16 @@ passes, with 121 locked workspace tests and strict all-target Clippy. Native
 Kotlin/type regeneration is unchanged; WASM is rebuilt. All 473 native-torrent
 vectors match native Rust and actual WASM, including large files with/without
 expected size and zero/unsafe-integer refusals. The full WASM suite passes.
+# Exact source discovery identities — 2026-10-08
+
+Discovery deduplicates both opaque handles and a producer's exact nonempty
+addon/fingerprint identity with hash sets. The first handle and order remain
+stable across polls; different providers and missing fingerprints remain
+separate. This replaces the quadratic scan over accumulated handles.
+
+The native regression fails before the fix. Shared discovery vectors pass in
+native Rust and actual WASM; locked workspace tests, strict all-target Clippy
+and formatting pass. Kotlin/TypeScript and native bindings regenerate without
+contract changes; the actual WASM binary/glue is rebuilt. Android and TV-web
+adoption are recorded in their owning branches. These checks establish shared
+deduplication, not network latency or device rendering performance.

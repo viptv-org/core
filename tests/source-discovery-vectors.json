@@ -1,0 +1,21 @@
+[
+  {
+    "input": {"poll":{"done":true,"events":[{"seq":1,"source":"addon:1","streams":[
+      {"id":"first","source_addon_id":"addon:1","source_fingerprint":"same"},
+      {"id":"duplicate","source_addon_id":"addon:1","source_fingerprint":"same"},
+      {"id":"other-provider","source_addon_id":"addon:2","source_fingerprint":"same"},
+      {"id":"unknown-a","source_addon_id":"addon:1"},
+      {"id":"unknown-b","source_addon_id":"addon:1"}
+    ]}]}},
+    "expectedIds": ["first","other-provider","unknown-a","unknown-b"]
+  },
+  {
+    "input": {"state":{"after":1,"polls":1,"sources":[
+      {"id":"first","name":"First","raw":{},"sourceAddonId":"addon:1","sourceFingerprint":"same"}
+    ]},"poll":{"done":true,"events":[{"seq":2,"source":"addon:1","streams":[
+      {"id":"later","source_addon_id":"addon:1","source_fingerprint":"same"},
+      {"id":"new","source_addon_id":"addon:1","source_fingerprint":"different"}
+    ]}]}},
+    "expectedIds": ["first","new"]
+  }
+]
