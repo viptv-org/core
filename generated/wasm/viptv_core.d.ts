@@ -139,13 +139,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_corebridge_free: (a: number) => void;
-  readonly corebridge_resolve: (a: number, b: number, c: number, d: number, e: number) => void;
-  readonly corebridge_update: (a: number, b: number, c: number, d: number) => void;
-  readonly corebridge_view: (a: number, b: number) => void;
-  readonly corebridge_wasm_new: () => number;
-  readonly normalize: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-  readonly vizio_deviceinfo_name: (a: number, b: number, c: number) => void;
   readonly __wbg_nativetorrentbridge_free: (a: number) => void;
   readonly nativetorrentbridge_accept: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly nativetorrentbridge_acceptBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
@@ -164,10 +157,17 @@ export interface InitOutput {
   readonly nativetorrentbridge_toString: (a: number, b: number) => void;
   readonly nativetorrentbridge_trustedWallUpperUnixMillis: (a: number, b: number) => void;
   readonly nativetorrentbridge_wasm_new: (a: number, b: number, c: number) => void;
+  readonly __wbg_corebridge_free: (a: number) => void;
+  readonly corebridge_resolve: (a: number, b: number, c: number, d: number, e: number) => void;
+  readonly corebridge_update: (a: number, b: number, c: number, d: number) => void;
+  readonly corebridge_view: (a: number, b: number) => void;
+  readonly corebridge_wasm_new: () => number;
+  readonly normalize: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly vizio_deviceinfo_name: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

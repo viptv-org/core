@@ -1,5 +1,27 @@
 # Playback protocol foundation
 
+## Shared runtime v2 integration foundation
+
+Design `16277caf2c7bf16296e25da40f143666465f0d2b` authorizes client integration
+with measured performance work deferred. `torrentRuntimeProtocol` parses the
+separate closed version-2 response and requests GET
+`/api/v2/torrent-runtime-protocol` with no body. Native v1 parsing and its route
+remain strict and separate. Both native Rust and actual WASM reject mixed
+versions, duplicate fields and non-integer version tokens.
+
+`torrent_runtime::TorrentRuntimeGrant` is a private, redacted transport value
+with tracker hints and optional file/archive selection. Its dedicated response
+serializer and transition validator retain immutable identity and sixty-second
+authority. Runtime v2 request capability is allowed only for Android, Android TV
+and desktop. The native v1 authority object refuses that capability, preventing
+a v2 request from silently adopting v1 authority.
+
+This checkpoint supplies schema and negotiation foundations. The v2 private
+client authority object, backend admission/renewal adoption and platform
+effects are still integration work; it does not activate an installed client.
+
+## Native v1 contract
+
 Normative contract: design `5b68802c6f5ea91dc248defb047439f3ea96cce5`,
 [SRC-TORRENT-NATIVE-001](https://github.com/viptv-org/design/blob/5b68802c6f5ea91dc248defb047439f3ea96cce5/specs/behavior/torrent-native-android.md).
 
