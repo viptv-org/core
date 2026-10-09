@@ -107,10 +107,10 @@ pub fn validate_grant(grant: &TorrentRuntimeGrant, envelope_expiry: u64) -> Resu
             if bytes.len() > 4 * 1024 * 1024 || STANDARD.encode(&bytes) != grant.input.value {
                 return Err(CoreError::InvalidInput);
             }
-            crate::native_metainfo::validate(
+            crate::native_metainfo::validate_runtime(
                 &bytes,
                 &grant.info_hash,
-                grant.file_index.unwrap_or(0),
+                grant.file_index,
                 grant.expected_file_size,
             )
         }

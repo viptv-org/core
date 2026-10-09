@@ -75,3 +75,38 @@ fn runtime_capability_is_native_only_and_does_not_reuse_v1_authority() {
         "request":request["playback"]});
     assert!(viptv_core::NativeTorrentBridge::new(context.to_string()).is_err());
 }
+
+#[test]
+fn runtime_metainfo_can_exceed_cache_and_select_automatically() {
+    use base64::{Engine, engine::general_purpose::STANDARD};
+    use sha1::{Digest, Sha1};
+    // Original byte-only metainfo: a 4 GiB file with 16 MiB pieces. No payload
+    // allocation is needed to verify descriptor validation and legacy isolation.
+    let mut info =
+        b"d6:lengthi4294967296e4:name10:large.data12:piece lengthi16777216e6:pieces5120:".to_vec();
+    info.extend(vec![0u8; 5120]);
+    info.push(b'e');
+    let hash = format!("{:x}", Sha1::digest(&info));
+    let mut meta = b"d4:info".to_vec();
+    meta.extend(&info);
+    meta.push(b'e');
+    let mut runtime = grant();
+    runtime.info_hash = hash;
+    runtime.input = NativeTorrentInput {
+        kind: "metainfo".into(),
+        value: STANDARD.encode(meta),
+    };
+    assert!(validate_grant(&runtime, runtime.expires_at).is_ok());
+    let legacy = viptv_core::native_torrent::NativeTorrentGrant {
+        version: 1,
+        network_policy: "public_dht_tcp_v1".into(),
+        id: runtime.id,
+        server_time: runtime.server_time,
+        expires_at: runtime.expires_at,
+        info_hash: runtime.info_hash,
+        file_index: 0,
+        input: runtime.input,
+        expected_file_size: None,
+    };
+    assert!(viptv_core::native_torrent::validate_native_grant(&legacy, legacy.expires_at).is_err());
+}
