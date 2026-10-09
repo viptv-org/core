@@ -142,7 +142,7 @@
   {
     "code": "native_metadata_timeout",
     "status": 422,
-    "message": "No torrent metadata arrived from peers before the startup deadline. Check DHT/network access or choose another source.\n\nDiagnostic: native_metadata_timeout"
+    "message": "No torrent metadata arrived from reachable peers before the startup deadline. Retry starts one fresh attempt, or choose another source.\n\nDiagnostic: native_metadata_timeout"
   },
   {
     "code": "native_payload_limit",

@@ -6905,7 +6905,7 @@
       "expected": [
         {
           "ok": true,
-          "value": "forceGatewayRetry"
+          "value": "nativeRetry"
         }
       ]
     },
@@ -8136,7 +8136,7 @@
           "ok": true,
           "value": {
             "code": "native_metadata_timeout",
-            "message": "No torrent metadata arrived from peers before the startup deadline. Check DHT/network access or choose another source.\n\nDiagnostic: native_metadata_timeout"
+            "message": "No torrent metadata arrived from reachable peers before the startup deadline. Retry starts one fresh attempt, or choose another source.\n\nDiagnostic: native_metadata_timeout"
           }
         }
       ]
@@ -9285,6 +9285,87 @@
         {
           "ok": false,
           "error": "Invalid server response or input"
+        }
+      ]
+    },
+    {
+      "name": "preview freshness boundary 299999",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "shellLifecycle",
+          "input": "{\"operation\": \"preview\", \"action\": \"Adopt\", \"requestedKey\": \"p\", \"activeKey\": \"p\", \"running\": true, \"hasSources\": true, \"done\": false, \"failed\": false, \"ownerMatches\": true, \"elapsedMillis\": 299999, \"reuseBudgetMillis\": 300000}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": "Retain"
+        }
+      ]
+    },
+    {
+      "name": "preview freshness boundary 300000",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "shellLifecycle",
+          "input": "{\"operation\": \"preview\", \"action\": \"Adopt\", \"requestedKey\": \"p\", \"activeKey\": \"p\", \"running\": true, \"hasSources\": true, \"done\": false, \"failed\": false, \"ownerMatches\": true, \"elapsedMillis\": 300000, \"reuseBudgetMillis\": 300000}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": "BeginImmediate"
+        }
+      ]
+    },
+    {
+      "name": "preview freshness boundary -1",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "shellLifecycle",
+          "input": "{\"operation\": \"preview\", \"action\": \"Adopt\", \"requestedKey\": \"p\", \"activeKey\": \"p\", \"running\": true, \"hasSources\": true, \"done\": false, \"failed\": false, \"ownerMatches\": true, \"elapsedMillis\": -1, \"reuseBudgetMillis\": 300000}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": "BeginImmediate"
+        }
+      ]
+    },
+    {
+      "name": "playable source outranks stronger unsupported language label",
+      "steps": [
+        {
+          "action": "normalize",
+          "kind": "sourceRanks",
+          "input": "{\"sources\": [{\"name\": \"4k HEVC English audio dubbed\"}, {\"name\": \"1080p h264\"}], \"capabilities\": {\"maxHeight\": 1080, \"h264\": true, \"hevcSdr\": false}, \"preferences\": {\"audioLanguage\": \"en\"}}"
+        }
+      ],
+      "expected": [
+        {
+          "ok": true,
+          "value": {
+            "ranks": [
+              {
+                "rank": 115.0,
+                "likely": false,
+                "best": false
+              },
+              {
+                "rank": 90.0,
+                "likely": true,
+                "best": false
+              }
+            ],
+            "orderedIndices": [
+              1,
+              0
+            ]
+          }
         }
       ]
     }
