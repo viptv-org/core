@@ -340,3 +340,34 @@ fn source_groups_do_not_collapse_missing_provider_ids() {
     assert_eq!(addon["providerLabel"], "Torrent Addon");
     assert_eq!(other["providerLabel"], "IPTV Two");
 }
+
+const BEBOP_POSTER: &str = "https://images.metahub.space/poster/medium/tt0213338/img";
+
+#[test]
+fn imdb_titles_without_art_use_the_cinemeta_poster() {
+    // An imported My List entry stores no artwork.
+    let card = call("cardPresentation", json!({"item":{"id":"tt0213338","type":"series","name":"Cowboy Bebop"},"context":"catalog"}));
+    assert_eq!(card["image"], BEBOP_POSTER);
+    assert_eq!(card["imageRole"], "poster");
+    // History rows name the episode; the series id still identifies the title.
+    let card = call("cardPresentation", json!({"item":{"id":"tt0213338:1:5","seriesId":"tt0213338","type":"series","name":"Cowboy Bebop","season":1,"episode":5},"context":"catalog"}));
+    assert_eq!(card["image"], BEBOP_POSTER);
+    let detail = call("presentation", json!({"item":{"id":"tt0213338","type":"series","name":"Cowboy Bebop"}}));
+    assert_eq!(detail["posterImage"], BEBOP_POSTER);
+    assert!(detail["heroImage"].is_null(), "a hero never falls back to a portrait poster");
+}
+
+#[test]
+fn derived_poster_never_replaces_provider_art_or_breaks_role_rules() {
+    let provided = call("cardPresentation", json!({"item":{"id":"tt0213338","type":"series","name":"X","poster":"provider.jpg"},"context":"catalog"}));
+    assert_eq!(provided["image"], "provider.jpg");
+    let queue = call("cardPresentation", json!({"item":{"id":"tt0213338:1:5","type":"series","name":"X","season":1,"episode":5},"context":"queue"}));
+    assert!(queue["image"].is_null(), "a queue episode card never uses a series poster");
+    let live = call("cardPresentation", json!({"item":{"id":"tt0213338","type":"live","name":"X"},"context":"catalog"}));
+    assert!(live["image"].is_null());
+    let opaque = call("cardPresentation", json!({"item":{"id":"kitsu:1","type":"series","name":"X"},"context":"catalog"}));
+    assert!(opaque["image"].is_null(), "only validated IMDb ids derive a poster");
+    let failed = call("cardPresentation", json!({"item":{"id":"tt0213338","type":"series","name":"X"},"context":"catalog","failedImages":[BEBOP_POSTER]}));
+    assert!(failed["image"].is_null());
+    assert_eq!(failed["imageRole"], "none");
+}

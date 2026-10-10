@@ -210,6 +210,11 @@ assert.equal(failedStillCard.imageRole,'landscape');
 assert.equal(failedStillCard.progress,.42);
 assert.equal(failedStillCard.primaryAction,'resume');
 const failedLandscapeCard = domain('cardPresentation',{item:failedStillItem,context:'queue',failedImages:['missing.jpg','landscape.jpg']});
+// IMDb titles without art use Cinemeta's poster; queue episode cards never do.
+const bebopPoster = 'https://images.metahub.space/poster/medium/tt0213338/img';
+assert.equal(domain('cardPresentation',{item:{id:'tt0213338',type:'series',name:'Cowboy Bebop'},context:'catalog'}).image, bebopPoster);
+assert.equal(domain('cardPresentation',{item:{id:'tt0213338',type:'series',name:'X',poster:'provider.jpg'},context:'catalog'}).image, 'provider.jpg');
+assert.equal(domain('cardPresentation',{item:{id:'tt0213338:1:5',type:'series',name:'X',season:1,episode:5},context:'queue'}).image, null);
 assert.equal(failedLandscapeCard.image,null);
 assert.equal(failedLandscapeCard.imageRole,'none');
 console.log('WASM: failed episode artwork falls back through shared landscape policy');

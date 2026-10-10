@@ -33,6 +33,25 @@ pub(super) fn image(v: &Value, k: &str) -> Value {
         .filter(|s| !s.trim().is_empty())
         .map_or(Value::Null, |s| json!(s))
 }
+/// Candidate key for the derived Cinemeta poster.
+pub(super) const IMDB_POSTER: &str = "\0imdbPoster";
+/// The item's poster, or Cinemeta's poster for its IMDb title when it has
+/// none. Only a validated IMDb id (`tt` + 5-12 digits) derives a URL.
+pub(super) fn poster_image(v: &Value) -> Value {
+    let own = image(v, "poster");
+    if !own.is_null() {
+        return own;
+    }
+    ["imdbId", "seriesId", "id"]
+        .iter()
+        .filter_map(|k| v[*k].as_str())
+        .map(|id| id.split(':').next().unwrap_or(""))
+        .find(|id| {
+            id.strip_prefix("tt")
+                .is_some_and(|d| (5..=12).contains(&d.len()) && d.bytes().all(|b| b.is_ascii_digit()))
+        })
+        .map_or(Value::Null, |id| json!(format!("https://images.metahub.space/poster/medium/{id}/img")))
+}
 pub(super) fn watched(v: &Value) -> bool {
     v["watched"]
         .as_bool()
