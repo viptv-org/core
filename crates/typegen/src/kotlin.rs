@@ -54,6 +54,7 @@ pub fn generate(registry: &Registry) -> String {
                     | "SourceRanks"
                     | "SourceProducerOutcome"
                     | "DiscoverPolicyProjection"
+                    | "MetadataTarget"
                     | "ForegroundAuthorityInput"
                     | "HomeRevisionInput"
                     | "PreviewScopeInput"

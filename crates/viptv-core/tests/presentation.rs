@@ -56,6 +56,78 @@ fn episode_metadata_request_targets_its_parent_series() {
     assert_eq!(out["path"], "/api/meta/series/bleach");
 }
 #[test]
+fn metadata_targets_follow_one_rule_for_single_batch_and_cache_identity() {
+    let items = json!([
+        {"id":"bleach:1:3","type":"episode","seriesId":"bleach"},
+        {"id":"tt0213338:1:5","type":"episode"},
+        {"id":"tt0213338:1:5","type":"series","seriesId":"tt0213338","season":1,"episode":5},
+        {"id":"tt0111161","type":"movie"},
+        {"id":"chan","type":"live"},
+        {"id":"x","type":"anime"},
+        {"id":" ","type":"movie"}
+    ]);
+    let targets = call("metadataTargets", json!({"items":items}));
+    assert_eq!(
+        targets,
+        json!([
+            {"type":"series","id":"bleach"},
+            {"type":"series","id":"tt0213338:1:5"},
+            {"type":"series","id":"tt0213338"},
+            {"type":"movie","id":"tt0111161"},
+            null, null, null
+        ])
+    );
+    // An episode without a series id still asks for a served kind.
+    let single = call("request", json!({"operation":"metadata","item":items[1]}));
+    assert_eq!(single["path"], "/api/meta/series/tt0213338%3A1%3A5");
+    // Live keeps a path so callers branching on live afterwards do not fail.
+    let live = call("request", json!({"operation":"metadata","item":items[4]}));
+    assert_eq!(live["path"], "/api/meta/live/chan");
+
+    let batch = call(
+        "request",
+        json!({"operation":"metadataBatch","items":items}),
+    );
+    assert_eq!(batch["method"], "POST");
+    assert_eq!(batch["path"], "/api/meta/batch");
+    assert_eq!(
+        batch["body"]["items"],
+        json!([
+            {"type":"series","id":"bleach"},
+            {"type":"series","id":"tt0213338:1:5"},
+            {"type":"series","id":"tt0213338"},
+            {"type":"movie","id":"tt0111161"}
+        ])
+    );
+}
+#[test]
+fn metadata_batch_deduplicates_targets_and_respects_the_backend_limit() {
+    let duplicates = json!([
+        {"id":"s:1:1","type":"episode","seriesId":"s"},
+        {"id":"s:1:2","type":"episode","seriesId":"s"},
+        {"id":"s","type":"series"}
+    ]);
+    let batch = call(
+        "request",
+        json!({"operation":"metadataBatch","items":duplicates}),
+    );
+    assert_eq!(batch["body"]["items"], json!([{"type":"series","id":"s"}]));
+    let many: Vec<_> = (0..40)
+        .map(|n| json!({"id":format!("m{n}"),"type":"movie"}))
+        .collect();
+    let batch = call("request", json!({"operation":"metadataBatch","items":many}));
+    assert_eq!(batch["body"]["items"].as_array().unwrap().len(), 16);
+    let none = viptv_core::normalize(
+        "request".into(),
+        json!({"operation":"metadataBatch","items":[{"id":"c","type":"live"}]}).to_string(),
+        String::new(),
+    );
+    assert!(
+        none.is_err(),
+        "a batch with no served title is not a request"
+    );
+}
+#[test]
 fn exact_resume_does_not_cross_provider() {
     let sources = json!([{"id":"bad","sourceAddonId":"iptv:2","sourceFingerprint":"same"},{"id":"good","sourceAddonId":"iptv:1","sourceFingerprint":"same"}]);
     let out = call(

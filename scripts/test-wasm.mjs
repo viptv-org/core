@@ -219,6 +219,16 @@ assert.equal(failedLandscapeCard.image,null);
 assert.equal(failedLandscapeCard.imageRole,'none');
 console.log('WASM: failed episode artwork falls back through shared landscape policy');
 
+// Single lookups, batches and cache identity share one metadata target rule.
+const metadataItems = [{id:'b:1:3',type:'episode',seriesId:'b'},{id:'t:1:5',type:'episode'},{id:'m',type:'movie'},{id:'c',type:'live'},{id:'b',type:'series'}];
+assert.deepEqual(domain('metadataTargets',{items:metadataItems}), [{type:'series',id:'b'},{type:'series',id:'t:1:5'},{type:'movie',id:'m'},null,{type:'series',id:'b'}]);
+assert.equal(domain('request',{operation:'metadata',item:metadataItems[1]}).path, '/api/meta/series/t%3A1%3A5');
+const metadataBatch = domain('request',{operation:'metadataBatch',items:metadataItems});
+assert.deepEqual([metadataBatch.method, metadataBatch.path], ['POST','/api/meta/batch']);
+assert.deepEqual(metadataBatch.body.items, [{type:'series',id:'b'},{type:'series',id:'t:1:5'},{type:'movie',id:'m'}]);
+assert.throws(() => domain('request',{operation:'metadataBatch',items:[metadataItems[3]]}));
+console.log('WASM: metadata targets, single requests and batches share one rule');
+
 // BE-002 removes application-facing anonymous provider bridge exports.
 for (const name of ["addonEndpoint","addonCatalogExtras","addonSupports","discoverPlan","discoverAggregate","providerCandidate","providerSelectCandidates","providerMediaUrl"]) assert.equal(core[name], undefined, name);
 console.log("WASM: retired provider bridge exports absent");

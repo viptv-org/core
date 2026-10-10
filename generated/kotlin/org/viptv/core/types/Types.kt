@@ -468,6 +468,13 @@ data class MediaTrack(
     val selectable: Boolean,
 )
 
+/// The backend title whose metadata describes an item; identity for metadata
+/// lookups, caches and batch-row matching, never a playback target.
+data class MetadataTarget(
+    val type: String,
+    val id: String,
+)
+
 /// Support advertisement only; negotiation and qualification remain observed facts.
 data class NativeTorrentCapability(
     val version: UInt,

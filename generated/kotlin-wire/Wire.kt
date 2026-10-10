@@ -244,6 +244,10 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `supported`: Boolean,
     val `selectable`: Boolean
 )
+@Serializable data class MetadataTarget(
+    val `type`: String,
+    val `id`: String
+)
 @Serializable data class NativeTorrentCapability(
     val `version`: Long,
     val `networkPolicy`: String

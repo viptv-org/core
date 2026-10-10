@@ -229,6 +229,24 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_nativetorrentbridge_free: (a: number) => void;
+  readonly nativetorrentbridge_accept: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly nativetorrentbridge_acceptBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly nativetorrentbridge_acceptMeasuredBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly nativetorrentbridge_authorize: (a: number, b: number, c: number, d: number) => void;
+  readonly nativetorrentbridge_invalidate: (a: number, b: number) => void;
+  readonly nativetorrentbridge_metadataMatches: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly nativetorrentbridge_metadataMatchesNative: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => void;
+  readonly nativetorrentbridge_playbackId: (a: number, b: number) => void;
+  readonly nativetorrentbridge_privateExpectedFileSize: (a: number, b: number, c: number, d: number) => void;
+  readonly nativetorrentbridge_privateFileIndex: (a: number, b: number, c: number, d: number) => void;
+  readonly nativetorrentbridge_privateInfoHash: (a: number, b: number, c: number, d: number) => void;
+  readonly nativetorrentbridge_privateInputKind: (a: number, b: number, c: number, d: number) => void;
+  readonly nativetorrentbridge_privateInputValue: (a: number, b: number, c: number, d: number) => void;
+  readonly nativetorrentbridge_state: (a: number, b: number) => void;
+  readonly nativetorrentbridge_toString: (a: number, b: number) => void;
+  readonly nativetorrentbridge_trustedWallUpperUnixMillis: (a: number, b: number) => void;
+  readonly nativetorrentbridge_wasm_new: (a: number, b: number, c: number) => void;
   readonly __wbg_corebridge_free: (a: number) => void;
   readonly __wbg_torrentruntimebridge_free: (a: number) => void;
   readonly corebridge_resolve: (a: number, b: number, c: number, d: number, e: number) => void;
@@ -254,28 +272,10 @@ export interface InitOutput {
   readonly torrentruntimebridge_trustedWallUpperUnixMillis: (a: number, b: number) => void;
   readonly torrentruntimebridge_wasm_new: (a: number, b: number, c: number) => void;
   readonly vizio_deviceinfo_name: (a: number, b: number, c: number) => void;
-  readonly __wbg_nativetorrentbridge_free: (a: number) => void;
-  readonly nativetorrentbridge_accept: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-  readonly nativetorrentbridge_acceptBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-  readonly nativetorrentbridge_acceptMeasuredBytes: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
-  readonly nativetorrentbridge_authorize: (a: number, b: number, c: number, d: number) => void;
-  readonly nativetorrentbridge_invalidate: (a: number, b: number) => void;
-  readonly nativetorrentbridge_metadataMatches: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
-  readonly nativetorrentbridge_metadataMatchesNative: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => void;
-  readonly nativetorrentbridge_playbackId: (a: number, b: number) => void;
-  readonly nativetorrentbridge_privateExpectedFileSize: (a: number, b: number, c: number, d: number) => void;
-  readonly nativetorrentbridge_privateFileIndex: (a: number, b: number, c: number, d: number) => void;
-  readonly nativetorrentbridge_privateInfoHash: (a: number, b: number, c: number, d: number) => void;
-  readonly nativetorrentbridge_privateInputKind: (a: number, b: number, c: number, d: number) => void;
-  readonly nativetorrentbridge_privateInputValue: (a: number, b: number, c: number, d: number) => void;
-  readonly nativetorrentbridge_state: (a: number, b: number) => void;
-  readonly nativetorrentbridge_toString: (a: number, b: number) => void;
-  readonly nativetorrentbridge_trustedWallUpperUnixMillis: (a: number, b: number) => void;
-  readonly nativetorrentbridge_wasm_new: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;

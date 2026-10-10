@@ -294,6 +294,7 @@ fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreErro
         "sourceProducerLabels" => check::<Vec<dto::SourceProducerOutcome>>(v),
         "sourcesPollStep" => check::<dto::SourcesPollStep>(v),
         "discoverPolicy" => check::<dto::DiscoverPolicyProjection>(v),
+        "metadataTargets" => check::<Vec<Option<dto::MetadataTarget>>>(v),
         "catalog" => check::<dto::Catalog>(v),
         "catalogs" => check::<Vec<dto::Catalog>>(v),
         "media" => check::<dto::MediaItem>(v),

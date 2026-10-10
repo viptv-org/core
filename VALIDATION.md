@@ -1,3 +1,24 @@
+# Shared metadata targets, single and batch requests — 2026-10-10
+
+One rule decides which backend title describes an item: movies use their own
+id; series and episodes use the series (`seriesId`, else the item id); live
+channels and kinds the metadata route does not serve have no target. The
+`metadata` request uses it, so an episode without `seriesId` now asks for
+`/api/meta/series/…` instead of the unserved `episode` kind. Items without a
+target keep their previous raw path for callers that branch on live after
+building the request. The new `metadataBatch` request builds
+`POST /api/meta/batch` from distinct targets, capped at the backend's 16, and
+rejects a batch with no served title. `metadataTargets` returns one nullable
+`MetadataTarget` per input, in order, so shells key caches and match batch
+rows without repeating the rule.
+
+Formatting, strict all-target Clippy and 140 locked workspace tests pass,
+including native vectors for targets, deduplication, the limit and empty
+batches. Typegen, native Kotlin bindings and the actual WASM binary are
+regenerated with wasm-bindgen CLI 0.2.92; the full actual-WASM suite passes on
+Node 24 with matching vectors. The runtime package tests and typecheck pass.
+No app adopts this revision yet.
+
 # Request scheduling and confirmed profile restoration — 2026-10-08
 
 The shared browser/Tauri dispatcher starts HTTP and storage effects before

@@ -118,21 +118,79 @@ pub(super) fn request(v: &Value) -> Result {
             "metadata" => {
                 body = Value::Null;
                 let item = &v["item"];
-                let series_id = text(item, "seriesId");
-                let (media_type, media_id) = if series_id.is_empty() {
-                    (text(item, "type"), text(item, "id"))
-                } else {
-                    ("series", series_id)
+                // Items without a served target keep their raw coordinate so a
+                // caller that branches on live after building the request still
+                // receives a path; the backend declines it.
+                let (media_type, media_id) = match metadata_target(item) {
+                    Some(target) => target,
+                    None => match text(item, "seriesId") {
+                        "" => (text(item, "type"), text(item, "id")),
+                        series_id => ("series", series_id),
+                    },
                 };
                 (
                     "GET",
                     format!("/api/meta/{}/{}", enc(media_type), enc(media_id)),
                 )
             }
+            "metadataBatch" => {
+                let mut items: Vec<Value> = Vec::new();
+                for (kind, id) in v["items"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(metadata_target)
+                {
+                    let row = json!({"type": kind, "id": id});
+                    if !items.contains(&row) {
+                        items.push(row);
+                    }
+                    if items.len() == METADATA_BATCH_LIMIT {
+                        break;
+                    }
+                }
+                if items.is_empty() {
+                    return Err(CoreError::InvalidInput);
+                }
+                body = json!({ "items": items });
+                ("POST", "/api/meta/batch".into())
+            }
             _ => return Err(CoreError::InvalidInput),
         };
         json!({"method":method,"path":path,"body":body})
     })
+}
+
+/// The backend accepts at most this many distinct titles per metadata batch.
+const METADATA_BATCH_LIMIT: usize = 16;
+
+/// The backend title whose metadata describes `item`. Episodes, and series
+/// rows naming an episode, resolve to their series. Live channels and kinds
+/// the metadata route does not serve have no target.
+pub(super) fn metadata_target(item: &Value) -> Option<(&'static str, &str)> {
+    let id = text(item, "id");
+    let series_id = text(item, "seriesId");
+    let (kind, id) = match text(item, "type") {
+        "movie" => ("movie", id),
+        "series" | "episode" => ("series", if series_id.is_empty() { id } else { series_id }),
+        _ => return None,
+    };
+    (!id.trim().is_empty() && id.len() <= 512 && !id.chars().any(char::is_control))
+        .then_some((kind, id))
+}
+
+/// One nullable target per input item, in input order, for one batch call.
+pub(super) fn metadata_targets(v: &Value) -> Value {
+    let items = v["items"].as_array().map(Vec::as_slice).unwrap_or_default();
+    Value::Array(
+        items
+            .iter()
+            .map(|item| {
+                metadata_target(item)
+                    .map_or(Value::Null, |(kind, id)| json!({"type": kind, "id": id}))
+            })
+            .collect(),
+    )
 }
 
 pub(crate) fn valid_live_cursor(value: &str) -> bool {

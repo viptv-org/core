@@ -120,6 +120,7 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
         "itemRequest" => item_request(v),
         "playbackRequest" | "preferencesRequest" => snake(v),
         "request" => requests::request(v)?,
+        "metadataTargets" => requests::metadata_targets(v),
         "playbackV2Intent" => requests::playback_v2_intent(v)?,
         "enrichDetail" => progress::enrich_detail(v),
         "mergeEpisodeProgress" => progress::merge_episode_progress(v)?,

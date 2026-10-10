@@ -433,6 +433,15 @@ pub struct CardPresentation {
     pub primary_action: String,
     pub primary_action_label: String,
 }
+/// The backend title whose metadata describes an item; identity for metadata
+/// lookups, caches and batch-row matching, never a playback target.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct MetadataTarget {
+    pub r#type: String,
+    pub id: String,
+}
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 pub struct ApiRequest {
     pub method: String,

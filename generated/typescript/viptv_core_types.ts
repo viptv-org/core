@@ -449,6 +449,13 @@ export class MediaTrack {
     }
 }
 
+/// The backend title whose metadata describes an item; identity for metadata
+/// lookups, caches and batch-row matching, never a playback target.
+export class MetadataTarget {
+    constructor (public type: str, public id: str) {
+    }
+}
+
 /// Support advertisement only; negotiation and qualification remain observed facts.
 export class NativeTorrentCapability {
     constructor (public version: uint32, public networkPolicy: str) {
