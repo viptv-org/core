@@ -117,8 +117,10 @@ pub fn normalize(v: &Value, category: Category) -> Option<Value> {
     let name = if category == Category::Anime {
         ["en_title", "title_en", "title"].iter().filter_map(|key| v[*key].as_str()).find(|title| !title.trim().is_empty()).map(Value::from).unwrap_or(Value::Null)
     } else { v["title"].clone() };
+    let logo = ids.get("imdb").and_then(Value::as_str).filter(|id| id.starts_with("tt") && id[2..].chars().all(|ch| ch.is_ascii_digit()))
+        .map(|id| format!("https://images.metahub.space/logo/medium/{id}/img"));
     Some(
-        json!({"id":canonical,"type":category.kind(),"name":name,"original_title":v["title"],"year":year,
+        json!({"id":canonical,"type":category.kind(),"name":name,"title_logo":logo,"logo_source":"metahub.space","original_title":v["title"],"year":year,
         "poster":image(&v["poster"],"poster"),"background":image(&v["fanart"],"fanart"),
         "description":v.get("overview").unwrap_or(&Value::Null),"genres":v["genres"],
         "runtime":minutes,"duration":runtime,"imdbRating":v["ratings"]["imdb"]["rating"],
@@ -134,7 +136,7 @@ pub fn episode(parent: &Value, v: &Value) -> Option<Value> {
     // ratings, trailers, genres and related catalogs. Long-running anime must
     // fit through the bounded native bridge without thousands of duplicates.
     let mut out = json!({});
-    for key in ["type", "name", "simkl_category", "simkl_ids", "poster", "background", "duration", "runtime", "metadata_source", "contentRating", "year"] {
+    for key in ["type", "name", "simkl_category", "simkl_ids", "poster", "background", "duration", "runtime", "metadata_source", "contentRating", "year", "title_logo", "logo_source"] {
         if !parent[key].is_null() { out[key] = parent[key].clone(); }
     }
     let season = v["season"].as_u64().unwrap_or(1);
