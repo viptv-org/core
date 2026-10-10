@@ -114,8 +114,11 @@ pub fn normalize(v: &Value, category: Category) -> Option<Value> {
         id,
         v["ids"]["slug"].as_str().unwrap_or("")
     );
+    let name = if category == Category::Anime {
+        ["en_title", "title_en", "title"].iter().filter_map(|key| v[*key].as_str()).find(|title| !title.trim().is_empty()).map(Value::from).unwrap_or(Value::Null)
+    } else { v["title"].clone() };
     Some(
-        json!({"id":canonical,"type":category.kind(),"name":v["title"],"year":year,
+        json!({"id":canonical,"type":category.kind(),"name":name,"original_title":v["title"],"year":year,
         "poster":image(&v["poster"],"poster"),"background":image(&v["fanart"],"fanart"),
         "description":v.get("overview").unwrap_or(&Value::Null),"genres":v["genres"],
         "runtime":minutes,"duration":runtime,"imdbRating":v["ratings"]["imdb"]["rating"],
@@ -127,7 +130,13 @@ pub fn normalize(v: &Value, category: Category) -> Option<Value> {
     )
 }
 pub fn episode(parent: &Value, v: &Value) -> Option<Value> {
-    let mut out = parent.clone();
+    // Episodes retain identity/mapping and artwork, not a clone of the title's
+    // ratings, trailers, genres and related catalogs. Long-running anime must
+    // fit through the bounded native bridge without thousands of duplicates.
+    let mut out = json!({});
+    for key in ["type", "name", "simkl_category", "simkl_ids", "poster", "background", "duration", "runtime", "metadata_source", "contentRating", "year"] {
+        if !parent[key].is_null() { out[key] = parent[key].clone(); }
+    }
     let season = v["season"].as_u64().unwrap_or(1);
     let number = v["episode"].as_u64()?;
     out["series_id"] = parent["id"].clone();

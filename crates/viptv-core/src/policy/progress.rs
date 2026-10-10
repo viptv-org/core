@@ -232,7 +232,7 @@ pub(super) fn enrich_home(v: &Value) -> Value {
         if !image(m, "titleLogo").is_null() {
             out["titleLogo"] = m["titleLogo"].clone();
         }
-        if text(&out, "name").is_empty() {
+        if text(&out, "name").is_empty() || (m["raw"]["simkl_category"] == "anime" && !text(m, "name").is_empty()) {
             out["name"] = m["name"].clone();
         }
         // A shelf occurrence needs its matched still, not every episode.
