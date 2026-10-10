@@ -151,7 +151,7 @@
   {
     "name": "invalid token replacement character",
     "kind": "playbackProtocolV2",
-    "input": "�{\"version\":1,\"native_torrent_versions\":[1]}",
+    "input": "\ufffd{\"version\":1,\"native_torrent_versions\":[1]}",
     "error": "Invalid server response or input"
   },
   {
@@ -501,13 +501,13 @@
     "error": "Invalid server response or input"
   },
   {
-    "name": "invalid cancel id 'é'",
+    "name": "invalid cancel id '\u00e9'",
     "kind": "request",
     "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"\\u00e9\"}",
     "error": "Invalid server response or input"
   },
   {
-    "name": "invalid cancel id 'Ａ'",
+    "name": "invalid cancel id '\uff21'",
     "kind": "request",
     "input": "{\"operation\": \"playbackV2CancelRequest\", \"requestId\": \"\\uff21\"}",
     "error": "Invalid server response or input"
@@ -576,6 +576,74 @@
     "name": "protocol unexpected id",
     "kind": "request",
     "input": "{\"operation\":\"playbackProtocolV2\",\"requestId\":\"a\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "decoder-aware start preserves exact existing envelope",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2DecodedStart\",\"playback\":{\"requestId\":\"start_1\",\"streamId\":\"source_1\",\"client\":{\"platform\":\"web\",\"canPlayDirect\":true,\"maxWidth\":1920,\"maxHeight\":1080,\"videoCodecs\":[\"h264\"],\"audioCodecs\":[\"aac\"]}}}",
+    "output": {
+      "method": "POST",
+      "path": "/api/v2/playback-decoder-start",
+      "body": {
+        "request_id": "start_1",
+        "stream_id": "source_1",
+        "client": {
+          "platform": "web",
+          "can_play_direct": true,
+          "max_width": 1920,
+          "max_height": 1080,
+          "video_codecs": [
+            "h264"
+          ],
+          "audio_codecs": [
+            "aac"
+          ]
+        },
+        "conversion": "auto",
+        "position": 0.0,
+        "force_gateway": false,
+        "audio_track": null,
+        "subtitle_track": null,
+        "audio_language": null,
+        "preferred_audio_language": null,
+        "preferred_subtitle_language": null,
+        "subtitles_off": false
+      }
+    }
+  },
+  {
+    "name": "actual decoded frame acknowledgement is separate from renewal",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2FirstFrame\",\"id\":\"viewer_1\"}",
+    "output": {
+      "method": "POST",
+      "path": "/api/v2/playback/viewer_1/first-frame",
+      "body": {}
+    }
+  },
+  {
+    "name": "decoder start refuses extra field",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2FirstFrame\",\"id\":\"viewer_1\",\"source\":\"private\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "decoder start refuses invalid identity",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2FirstFrame\",\"id\":\"../escape\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "decoder start refuses duplicate identity",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2FirstFrame\",\"id\":\"viewer_1\",\"id\":\"viewer_2\"}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "decoder start refuses invalid start",
+    "kind": "request",
+    "input": "{\"operation\":\"playbackV2DecodedStart\",\"playback\":{}}",
     "error": "Invalid server response or input"
   }
 ]
