@@ -1,3 +1,14 @@
+# Parent PIN codes from message-only servers — 2026-10-10
+
+`apiError` maps the backend's exact "Parent PIN required" and "Incorrect
+parent PIN" messages to `parent_required` and `parent_pin_invalid` when a
+server omits `error_code`, matching the coded response. Shells decide whether
+to prompt for a PIN from the code, never from message text; other refusals
+that mention a PIN or a kids profile keep an empty code. Formatting, strict
+Clippy, 141 locked workspace tests and the full actual-WASM suite on Node 24
+pass with native and WASM vectors; the WASM binary is rebuilt with
+wasm-bindgen 0.2.92 and typegen/native bindings are unchanged.
+
 # Shared metadata targets, single and batch requests — 2026-10-10
 
 One rule decides which backend title describes an item: movies use their own

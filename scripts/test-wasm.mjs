@@ -87,6 +87,9 @@ for (const [code,expected] of [['future_gateway_failure','future_gateway_failure
   assert.ok(!JSON.stringify(failed).includes('private.invalid'));
 }
 assert.deepEqual(domain('apiError',{status:429}),{code:'',message:'Too many requests. Wait a moment and try again.'});
+// A parent PIN prompt keys off the code, including servers that send only the message.
+assert.equal(domain('apiError',{status:403,error:'Parent PIN required'}).code,'parent_required');
+assert.equal(domain('apiError',{status:403,error:'This title is unavailable in this kids profile'}).code,'');
 console.log(`WASM: ${playbackErrors.length} canonical playback error vectors, HTTP/lease consistency and diagnostic redaction passed`);
 await import('./test-policy-migration.mjs');
 await import('./test-playback-protocol.mjs');
