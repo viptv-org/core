@@ -59,7 +59,11 @@ pub(super) fn card_presentation(v: &Value) -> Result {
         let (art, role) = candidates
             .iter()
             .find_map(|(key, role)| {
-                let art = if *key == IMDB_POSTER { poster_image(m) } else { image(m, key) };
+                let art = if *key == IMDB_POSTER {
+                    poster_image(m)
+                } else {
+                    image(m, key)
+                };
                 let failed = v["failedImages"]
                     .as_array()
                     .is_some_and(|urls| urls.contains(&art));

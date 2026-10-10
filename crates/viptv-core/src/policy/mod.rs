@@ -47,10 +47,15 @@ pub(super) fn poster_image(v: &Value) -> Value {
         .filter_map(|k| v[*k].as_str())
         .map(|id| id.split(':').next().unwrap_or(""))
         .find(|id| {
-            id.strip_prefix("tt")
-                .is_some_and(|d| (5..=12).contains(&d.len()) && d.bytes().all(|b| b.is_ascii_digit()))
+            id.strip_prefix("tt").is_some_and(|d| {
+                (5..=12).contains(&d.len()) && d.bytes().all(|b| b.is_ascii_digit())
+            })
         })
-        .map_or(Value::Null, |id| json!(format!("https://images.metahub.space/poster/medium/{id}/img")))
+        .map_or(Value::Null, |id| {
+            json!(format!(
+                "https://images.metahub.space/poster/medium/{id}/img"
+            ))
+        })
 }
 pub(super) fn watched(v: &Value) -> bool {
     v["watched"]
