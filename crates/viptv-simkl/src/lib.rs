@@ -261,11 +261,26 @@ pub fn display_text(input: &str) -> String {
         }
         output.push_str(rest); output
     }
-    pass(&pass(input))
+    let decoded = pass(&pass(input));
+    let mut output = String::with_capacity(decoded.len());
+    let mut rest = decoded.as_str();
+    while let Some(start) = rest.find('<') {
+        output.push_str(&rest[..start]); rest = &rest[start..];
+        if let Some(end) = rest.find('>').filter(|end| *end < 160) {
+            let tag = rest[1..end].trim().to_ascii_lowercase();
+            let name = tag.split_ascii_whitespace().next().unwrap_or("").trim_end_matches('/');
+            if ["br", "p", "/p", "div", "/div"].contains(&name) { output.push('
+'); rest = &rest[end+1..]; continue; }
+            if ["b", "/b", "i", "/i", "strong", "/strong", "em", "/em", "span", "/span"].contains(&name) { rest = &rest[end+1..]; continue; }
+        }
+        output.push('<'); rest = &rest[1..];
+    }
+    output.push_str(rest); output
 }
 
 #[test]
 fn escaped_titles_are_plain_display_text() {
     assert_eq!(display_text("It&#039;s &amp; Friends &#x2014; &amp;#39;Hello&amp;#39;"), "It's & Friends — 'Hello'");
     assert_eq!(display_text("Unknown &stuff;"), "Unknown &stuff;");
+    assert_eq!(display_text("First<br><br>Second <b>part</b>"), "First\n\nSecond part");
 }
