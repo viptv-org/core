@@ -122,6 +122,7 @@ pub fn normalize(v: &Value, category: Category) -> Option<Value> {
         "simkl_category":category,"simkl_ids":ids,"simkl_url":link,
         "ratings":v["ratings"],"rank":v["rank"],"status":v["status"],
         "last_aired":v["last_aired"],"released":released,
+        "contentRating":v["certification"],"trailers":v["trailers"],"network":v["network"],
         "metadata_source":"simkl"}),
     )
 }
