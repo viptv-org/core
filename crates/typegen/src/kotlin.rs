@@ -46,7 +46,7 @@ pub fn generate(registry: &Registry) -> String {
         if let C::Struct(fields, _) = c
             && matches!(
                 name.name.as_str(),
-                "MediaItem"
+                "SimklFacts" | "SimklDiscoveryCapabilities" | "MediaItem"
                     | "HomeActions"
                     | "EpisodeWatching"
                     | "PhonePresentation"

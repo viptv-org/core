@@ -7,6 +7,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let generator = TypeRegistry::new()
         .register_app::<viptv_core::Viptv>()?
         .register_type::<viptv_core::Session>()?
+        .register_type::<viptv_core::dto::SimklFacts>()?
+        .register_type::<viptv_core::dto::SimklDiscoveryCapabilities>()?
         .register_type::<viptv_core::dto::MediaPresentation>()?
         .register_type::<viptv_core::dto::CardPresentation>()?
         .register_type::<viptv_core::dto::SourcePresentation>()?

@@ -493,6 +493,21 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `refreshToken`: String,
     val `expiresIn`: Double
 )
+@Serializable data class SimklDiscoveryCapabilities(
+    val `fullSearch`: Boolean,
+    val `coverage`: String
+)
+@Serializable data class SimklFacts(
+    val `simklId`: Long,
+    val `category`: String,
+    val `externalIds`: Map<String, JsonElement> = emptyMap(),
+    val `episodeCoordinates`: Map<String, JsonElement>? = null,
+    val `ratings`: Map<String, JsonElement> = emptyMap(),
+    val `rank`: Double? = null,
+    val `lastAired`: String? = null,
+    val `watchlistStatus`: String? = null,
+    val `url`: String? = null
+)
 @Serializable data class SourceFailure(
     val `source`: String,
     val `code`: String? = null,

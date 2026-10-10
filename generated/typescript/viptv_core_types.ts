@@ -991,6 +991,16 @@ export class Session {
     }
 }
 
+export class SimklDiscoveryCapabilities {
+    constructor (public fullSearch: bool, public coverage: str) {
+    }
+}
+
+export class SimklFacts {
+    constructor (public simklId: uint64, public category: str, public externalIds: Map<str,JsonValue>, public episodeCoordinates: Optional<Map<str,JsonValue>>, public ratings: Map<str,JsonValue>, public rank: Optional<float64>, public lastAired: Optional<str>, public watchlistStatus: Optional<str>, public url: Optional<str>) {
+    }
+}
+
 export class SourceFailure {
     constructor (public source: str, public code: Optional<str>, public message: str) {
     }

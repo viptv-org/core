@@ -893,6 +893,23 @@ data class Session(
     val expiresIn: Double,
 )
 
+data class SimklDiscoveryCapabilities(
+    val fullSearch: Boolean,
+    val coverage: String,
+)
+
+data class SimklFacts(
+    val simklId: ULong,
+    val category: String,
+    val externalIds: Map<String, org.viptv.core.types.JsonValue>,
+    val episodeCoordinates: Map<String, org.viptv.core.types.JsonValue>? = null,
+    val ratings: Map<String, org.viptv.core.types.JsonValue>,
+    val rank: Double? = null,
+    val lastAired: String? = null,
+    val watchlistStatus: String? = null,
+    val url: String? = null,
+)
+
 data class SourceFailure(
     val source: String,
     val code: String? = null,
