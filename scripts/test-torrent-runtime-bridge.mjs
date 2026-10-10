@@ -47,7 +47,7 @@ for(const platform of ['android','android_tv','desktop','web','roku']) {
   const response=JSON.parse(core.normalize('torrentRuntime',JSON.stringify({operation:'negotiation',platform,qualified:true,scopeMatches:true,status:200,authorizationRefused:false,body:protocol}),''));
   assert.equal(response,['android','android_tv','desktop'].includes(platform)?'advertise':'legacy');
 }
-assert.equal(JSON.parse(core.normalize('torrentRuntime',JSON.stringify({operation:'recovery',facts:{admitted:true,authorityRetired:true,authorizationRefused:false,selectionRefused:false,action:'retry'}}),'')),'ordinaryRetry');
+assert.equal(JSON.parse(core.normalize('torrentRuntime',JSON.stringify({operation:'recovery',facts:{admitted:true,authorityRetired:true,authorizationRefused:false,selectionRefused:false,action:'retry'}}),'')),'nativeRetry');
 assert.throws(()=>core.normalize('torrentRuntime','{"operation":"recovery","operation":"recovery","facts":{}}',''));
 console.log(`PASS: ${fixtures.cases.length} private runtime authority cases in native Rust and actual WASM; v2 retry stays on-device`);
 

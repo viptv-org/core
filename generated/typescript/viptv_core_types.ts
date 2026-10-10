@@ -542,7 +542,8 @@ export type NativeTorrentRecoveryDecision =
     | { kind: "chooseSource" }
     | { kind: "back" }
     | { kind: "ordinaryRetry" }
-    | { kind: "forceGatewayRetry" };
+    | { kind: "forceGatewayRetry" }
+    | { kind: "nativeRetry" };
 
 export const nativeTorrentRecoveryDecisionWaitForRetirement = (): NativeTorrentRecoveryDecision => ({ kind: "waitForRetirement" });
 
@@ -556,6 +557,8 @@ export const nativeTorrentRecoveryDecisionOrdinaryRetry = (): NativeTorrentRecov
 
 export const nativeTorrentRecoveryDecisionForceGatewayRetry = (): NativeTorrentRecoveryDecision => ({ kind: "forceGatewayRetry" });
 
+export const nativeTorrentRecoveryDecisionNativeRetry = (): NativeTorrentRecoveryDecision => ({ kind: "nativeRetry" });
+
 export function matchNativeTorrentRecoveryDecision<R>(value: NativeTorrentRecoveryDecision, cases: {
     waitForRetirement: (v: Extract<NativeTorrentRecoveryDecision, { kind: "waitForRetirement" }>) => R;
     authRecovery: (v: Extract<NativeTorrentRecoveryDecision, { kind: "authRecovery" }>) => R;
@@ -563,6 +566,7 @@ export function matchNativeTorrentRecoveryDecision<R>(value: NativeTorrentRecove
     back: (v: Extract<NativeTorrentRecoveryDecision, { kind: "back" }>) => R;
     ordinaryRetry: (v: Extract<NativeTorrentRecoveryDecision, { kind: "ordinaryRetry" }>) => R;
     forceGatewayRetry: (v: Extract<NativeTorrentRecoveryDecision, { kind: "forceGatewayRetry" }>) => R;
+    nativeRetry: (v: Extract<NativeTorrentRecoveryDecision, { kind: "nativeRetry" }>) => R;
 }): R {
     return cases[value.kind as NativeTorrentRecoveryDecision["kind"]](value as never);
 }
@@ -908,7 +912,7 @@ export function matchPreviewDecision<R>(value: PreviewDecision, cases: {
 }
 
 export class PreviewInput {
-    constructor (public action: PreviewAction, public requestedKey: str, public activeKey: Optional<str>, public running: bool, public hasSources: bool, public done: bool, public failed: bool, public ownerMatches: bool) {
+    constructor (public action: PreviewAction, public requestedKey: str, public activeKey: Optional<str>, public running: bool, public hasSources: bool, public done: bool, public failed: bool, public ownerMatches: bool, public elapsedMillis: Optional<int64>, public reuseBudgetMillis: Optional<int64>) {
     }
 }
 

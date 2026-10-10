@@ -540,7 +540,8 @@ enum class NativeTorrentRecoveryDecision {
     CHOOSESOURCE,
     BACK,
     ORDINARYRETRY,
-    FORCEGATEWAYRETRY;
+    FORCEGATEWAYRETRY,
+    NATIVERETRY;
 }
 
 data class NativeTorrentRecoveryFacts(
@@ -815,6 +816,9 @@ data class PreviewInput(
     val failed: Boolean,
     /// Entry identity is a native ownership fact, not merely equality of target keys.
     val ownerMatches: Boolean,
+    /// Monotonic age and reuse budget supplied by the shell. Omitted by legacy shells.
+    val elapsedMillis: Long? = null,
+    val reuseBudgetMillis: Long? = null,
 )
 
 enum class PreviewRoute {

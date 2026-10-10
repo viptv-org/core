@@ -495,3 +495,27 @@ type generation, regenerated UniFFI/Kotlin and release WASM pass. The full actua
 WASM suite passes, including 58 new runtime-authority cases compared with native
 Rust, 473 unchanged v1 vectors and 90 protocol vectors. Worker IO, Android Media3,
 desktop decoders and gateway integration remain consumer qualification work.
+# Shared source recovery and deduplication merge — 2026-10-09
+
+The merged core retains monotonic preview expiry, capability-aware source ranking
+and explicit native Retry alongside linear exact-source deduplication and bounded
+request/render scheduling. Kotlin/TypeScript interfaces, native bindings and WASM
+were regenerated from the combined source; WASM uses the pinned 0.2.92 CLI.
+
+Validation passed: 127 locked all-feature workspace tests, formatting, strict
+all-target/all-feature Clippy, runtime typecheck and 11 runtime tests. Actual WASM
+passes the full suite, including 37 shared-policy, 90 protocol and 477 native
+torrent vectors against native Rust, plus source-discovery vectors. Consumer
+adoption and app/device evidence are recorded in their owning repositories.
+
+# Main promotion integration — 2026-10-09
+
+The merged source preserves source-preview expiry, ranking and explicit native
+Retry together with the private runtime v2 and decoder-start operations. An
+admitted v2 retry now projects the shared `nativeRetry` decision, obtains new
+on-device authority and cannot fall back to a gateway. Android resets track
+choices for ordinary source changes and preserves native retry identity.
+Type generation, UniFFI, WASM, locked all-feature workspace tests, strict Clippy,
+formatting and native/actual-WASM protocol and authority vectors pass. Design
+records the owner's acceptance of current emulated/controlled tests for this
+unreleased main promotion; physical-device checks are not a gate for this phase.

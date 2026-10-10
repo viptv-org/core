@@ -15,7 +15,7 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
 @Serializable enum class NativeTorrentControlOperation { @SerialName("start") START, @SerialName("poll") POLL, @SerialName("heartbeat") HEARTBEAT }
 @Serializable enum class NativeTorrentNegotiationDecision { @SerialName("rejectStale") REJECTSTALE, @SerialName("authRecovery") AUTHRECOVERY, @SerialName("legacy") LEGACY, @SerialName("advertise") ADVERTISE }
 @Serializable enum class NativeTorrentRecoveryAction { @SerialName("retry") RETRY, @SerialName("chooseSource") CHOOSESOURCE, @SerialName("back") BACK }
-@Serializable enum class NativeTorrentRecoveryDecision { @SerialName("waitForRetirement") WAITFORRETIREMENT, @SerialName("authRecovery") AUTHRECOVERY, @SerialName("chooseSource") CHOOSESOURCE, @SerialName("back") BACK, @SerialName("ordinaryRetry") ORDINARYRETRY, @SerialName("forceGatewayRetry") FORCEGATEWAYRETRY }
+@Serializable enum class NativeTorrentRecoveryDecision { @SerialName("waitForRetirement") WAITFORRETIREMENT, @SerialName("authRecovery") AUTHRECOVERY, @SerialName("chooseSource") CHOOSESOURCE, @SerialName("back") BACK, @SerialName("ordinaryRetry") ORDINARYRETRY, @SerialName("forceGatewayRetry") FORCEGATEWAYRETRY, @SerialName("nativeRetry") NATIVERETRY }
 @Serializable enum class Phase { @SerialName("Starting") STARTING, @SerialName("Restoring") RESTORING, @SerialName("Checking") CHECKING, @SerialName("Selecting") SELECTING, @SerialName("Ready") READY, @SerialName("Profiles") PROFILES, @SerialName("Pairing") PAIRING, @SerialName("Error") ERROR }
 @Serializable enum class PlaybackConversion { @SerialName("auto") AUTO, @SerialName("audio") AUDIO, @SerialName("video") VIDEO, @SerialName("audio_video") AUDIO_VIDEO }
 @Serializable enum class PlaybackDeliveryKind { @SerialName("direct") DIRECT, @SerialName("gateway") GATEWAY }
@@ -457,7 +457,9 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `hasSources`: Boolean,
     val `done`: Boolean,
     val `failed`: Boolean,
-    val `ownerMatches`: Boolean
+    val `ownerMatches`: Boolean,
+    val `elapsedMillis`: Long? = null,
+    val `reuseBudgetMillis`: Long? = null
 )
 @Serializable data class PreviewScopeDecision(
     val `key`: String? = null,
