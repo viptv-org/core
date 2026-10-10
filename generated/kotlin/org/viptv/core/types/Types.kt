@@ -148,6 +148,11 @@ data class HomeActions(
     val showHeroProgress: Boolean,
 )
 
+/// Every Home shelf a profile can show, in order; empty shelves stay hidden.
+data class HomeLayout(
+    val shelves: List<org.viptv.core.types.HomeShelfPlan>,
+)
+
 enum class HomeRevisionDecision {
     UNCHANGED,
     REFRESH,
@@ -165,6 +170,23 @@ data class HomeRevisionInput(
     /// Absent before refresh, otherwise the refresh effect's success fact.
     val refreshSucceeded: Boolean? = null,
 )
+
+/// One Home shelf in display order. `catalogIndex` addresses the input catalogs.
+data class HomeShelfPlan(
+    val role: org.viptv.core.types.HomeShelfRole,
+    val title: String,
+    val limit: UInt? = null,
+    val catalogIndex: UInt? = null,
+)
+
+/// The kind of content a Home shelf holds; shells choose the fetch per role.
+enum class HomeShelfRole {
+    CONTINUEWATCHING,
+    RECENTLIVE,
+    CATALOG,
+    MYLIST,
+    LIVENOW;
+}
 
 /// An error produced when an HTTP request fails.
 /// 
@@ -889,6 +911,23 @@ data class Request(
 /// appended by `add_extensions()`.
 data class Requests(
     val value: List<org.viptv.core.types.Request>,
+)
+
+/// The catalogs and live search behind one query; the Live TV section follows
+/// the catalog sections. An empty query searches nothing.
+data class SearchPlan(
+    val query: String,
+    val sections: List<org.viptv.core.types.SearchSectionPlan>,
+    val sectionLimit: UInt,
+    val live: Boolean,
+    val liveRequestLimit: UInt,
+    val liveTitle: String,
+)
+
+/// One catalog searched for a query, in display order.
+data class SearchSectionPlan(
+    val catalogIndex: UInt,
+    val title: String,
 )
 
 data class Session(

@@ -10,6 +10,7 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
 @Serializable enum class CountdownAction { @SerialName("Begin") BEGIN, @SerialName("Advance") ADVANCE, @SerialName("Cancel") CANCEL }
 @Serializable enum class ForegroundAuthorityDecision { @SerialName("Valid") VALID, @SerialName("Revoked") REVOKED, @SerialName("ProfileUnavailable") PROFILEUNAVAILABLE }
 @Serializable enum class HomeRevisionDecision { @SerialName("Unchanged") UNCHANGED, @SerialName("Refresh") REFRESH, @SerialName("Refreshed") REFRESHED, @SerialName("RetryLater") RETRYLATER, @SerialName("Unsupported") UNSUPPORTED, @SerialName("ScopeLost") SCOPELOST }
+@Serializable enum class HomeShelfRole { @SerialName("continueWatching") CONTINUEWATCHING, @SerialName("recentLive") RECENTLIVE, @SerialName("catalog") CATALOG, @SerialName("myList") MYLIST, @SerialName("liveNow") LIVENOW }
 @Serializable enum class LivePageValidationDecision { @SerialName("valid") VALID, @SerialName("catalog_changed") CATALOG_CHANGED, @SerialName("invalid") INVALID }
 @Serializable enum class MediaKind { @SerialName("movie") MOVIE, @SerialName("series") SERIES, @SerialName("live") LIVE, @SerialName("episode") EPISODE }
 @Serializable enum class NativeTorrentControlOperation { @SerialName("start") START, @SerialName("poll") POLL, @SerialName("heartbeat") HEARTBEAT }
@@ -118,11 +119,20 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `heroPrimaryActionLabel`: String,
     val `showHeroProgress`: Boolean
 )
+@Serializable data class HomeLayout(
+    val `shelves`: List<HomeShelfPlan> = emptyList()
+)
 @Serializable data class HomeRevisionInput(
     val `scopeValid`: Boolean,
     val `observedRevision`: String? = null,
     val `renderedRevision`: String? = null,
     val `refreshSucceeded`: Boolean? = null
+)
+@Serializable data class HomeShelfPlan(
+    val `role`: HomeShelfRole,
+    val `title`: String,
+    val `limit`: Long? = null,
+    val `catalogIndex`: Long? = null
 )
 @Serializable data class Identity(
     val `account`: Account,
@@ -488,6 +498,18 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `avatarChoice`: Double? = null,
     val `kid`: Boolean? = null,
     val `setupComplete`: Boolean? = null
+)
+@Serializable data class SearchPlan(
+    val `query`: String,
+    val `sections`: List<SearchSectionPlan> = emptyList(),
+    val `sectionLimit`: Long,
+    val `live`: Boolean,
+    val `liveRequestLimit`: Long,
+    val `liveTitle`: String
+)
+@Serializable data class SearchSectionPlan(
+    val `catalogIndex`: Long,
+    val `title`: String
 )
 @Serializable data class Session(
     val `sessionId`: String,

@@ -17,6 +17,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_core::dto::SourceProducerOutcome>()?
         .register_type::<viptv_core::dto::DiscoverPolicyProjection>()?
         .register_type::<viptv_core::dto::MetadataTarget>()?
+        .register_type::<viptv_core::dto::HomeLayout>()?
+        .register_type::<viptv_core::dto::SearchPlan>()?
         .register_type::<viptv_core::policy::shell_lifecycle::ForegroundAuthorityInput>()?
         .register_type::<viptv_core::policy::shell_lifecycle::ForegroundAuthorityDecision>()?
         .register_type::<viptv_core::policy::shell_lifecycle::HomeRevisionInput>()?

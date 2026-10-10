@@ -1,3 +1,22 @@
+# Shared Home shelf layout and Search plan — 2026-10-10
+
+`homeLayout` returns every Home shelf in display order: Continue watching
+(40), Recently watched live TV (24), each loadable catalog as
+"Addon · Catalog", My List, then Live now. `liveShelves: false`, used by
+the Android TV Home trial (TV-044), omits both live shelves. A catalog is loadable when it is
+not a live namespace and each required filter has a declared default or
+option. `searchPlan` trims the query to the live search's 128 characters and
+selects up to 128 search-capable catalogs, live namespaces included, matching
+the scope (`all` or one catalog type) and titled "Addon · Catalog" like Home. Live channel
+search runs for `all` and `live`, requests 80 channels, and appears last as
+Live TV; every section shows at most 24 distinct titles. An empty query or one
+with control characters searches nothing.
+
+Formatting, strict Clippy, 144 locked workspace tests and the full
+actual-WASM suite on Node 24 pass with matching native and WASM vectors.
+Typegen, native Kotlin bindings and the WASM binary (wasm-bindgen 0.2.92) are
+regenerated; the runtime package tests pass.
+
 # Parent PIN codes from message-only servers — 2026-10-10
 
 `apiError` maps the backend's exact "Parent PIN required" and "Incorrect

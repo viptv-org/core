@@ -157,6 +157,12 @@ export class HomeActions {
     }
 }
 
+/// Every Home shelf a profile can show, in order; empty shelves stay hidden.
+export class HomeLayout {
+    constructor (public shelves: Seq<HomeShelfPlan>) {
+    }
+}
+
 export type HomeRevisionDecision =
     | { kind: "Unchanged" }
     | { kind: "Refresh" }
@@ -191,6 +197,40 @@ export function matchHomeRevisionDecision<R>(value: HomeRevisionDecision, cases:
 export class HomeRevisionInput {
     constructor (public scopeValid: bool, public observedRevision: Optional<str>, public renderedRevision: Optional<str>, public refreshSucceeded: Optional<bool>) {
     }
+}
+
+/// One Home shelf in display order. `catalogIndex` addresses the input catalogs.
+export class HomeShelfPlan {
+    constructor (public role: HomeShelfRole, public title: str, public limit: Optional<uint32>, public catalogIndex: Optional<uint32>) {
+    }
+}
+
+/// The kind of content a Home shelf holds; shells choose the fetch per role.
+export type HomeShelfRole =
+    | { kind: "continueWatching" }
+    | { kind: "recentLive" }
+    | { kind: "catalog" }
+    | { kind: "myList" }
+    | { kind: "liveNow" };
+
+export const homeShelfRoleContinueWatching = (): HomeShelfRole => ({ kind: "continueWatching" });
+
+export const homeShelfRoleRecentLive = (): HomeShelfRole => ({ kind: "recentLive" });
+
+export const homeShelfRoleCatalog = (): HomeShelfRole => ({ kind: "catalog" });
+
+export const homeShelfRoleMyList = (): HomeShelfRole => ({ kind: "myList" });
+
+export const homeShelfRoleLiveNow = (): HomeShelfRole => ({ kind: "liveNow" });
+
+export function matchHomeShelfRole<R>(value: HomeShelfRole, cases: {
+    continueWatching: (v: Extract<HomeShelfRole, { kind: "continueWatching" }>) => R;
+    recentLive: (v: Extract<HomeShelfRole, { kind: "recentLive" }>) => R;
+    catalog: (v: Extract<HomeShelfRole, { kind: "catalog" }>) => R;
+    myList: (v: Extract<HomeShelfRole, { kind: "myList" }>) => R;
+    liveNow: (v: Extract<HomeShelfRole, { kind: "liveNow" }>) => R;
+}): R {
+    return cases[value.kind as HomeShelfRole["kind"]](value as never);
 }
 
 /// An error produced when an HTTP request fails.
@@ -990,6 +1030,19 @@ export class Request {
 /// appended by `add_extensions()`.
 export class Requests {
     constructor (public value: Seq<Request>) {
+    }
+}
+
+/// The catalogs and live search behind one query; the Live TV section follows
+/// the catalog sections. An empty query searches nothing.
+export class SearchPlan {
+    constructor (public query: str, public sections: Seq<SearchSectionPlan>, public sectionLimit: uint32, public live: bool, public liveRequestLimit: uint32, public liveTitle: str) {
+    }
+}
+
+/// One catalog searched for a query, in display order.
+export class SearchSectionPlan {
+    constructor (public catalogIndex: uint32, public title: str) {
     }
 }
 

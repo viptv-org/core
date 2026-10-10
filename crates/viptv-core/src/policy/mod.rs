@@ -13,6 +13,7 @@ macro_rules! policy_regex {
 }
 
 mod catalog;
+mod layout;
 pub mod playback_control;
 mod presentation;
 mod progress;
@@ -121,6 +122,8 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
         "playbackRequest" | "preferencesRequest" => snake(v),
         "request" => requests::request(v)?,
         "metadataTargets" => requests::metadata_targets(v),
+        "homeLayout" => layout::home_layout(v)?,
+        "searchPlan" => layout::search_plan(v)?,
         "playbackV2Intent" => requests::playback_v2_intent(v)?,
         "enrichDetail" => progress::enrich_detail(v),
         "mergeEpisodeProgress" => progress::merge_episode_progress(v)?,

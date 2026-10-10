@@ -232,6 +232,19 @@ assert.deepEqual(metadataBatch.body.items, [{type:'series',id:'b'},{type:'series
 assert.throws(() => domain('request',{operation:'metadataBatch',items:[metadataItems[3]]}));
 console.log('WASM: metadata targets, single requests and batches share one rule');
 
+// Home shelf order and Search sections come from one shared plan.
+const planCatalogs = [{id:'top',type:'movie',name:'Popular',addonName:'Cinemeta',supportsSearch:true,extras:[]},{id:'chan',type:'live',name:'Channels',supportsSearch:true,extras:[]},{id:'pick',type:'series',name:'Pick',extras:[{name:'genre',required:true,options:[]}]}];
+const homeLayout = domain('homeLayout',{catalogs:planCatalogs});
+assert.deepEqual(homeLayout.shelves.map(shelf => shelf.role), ['continueWatching','recentLive','catalog','myList','liveNow']);
+assert.deepEqual(homeLayout.shelves.map(shelf => shelf.title), ['Continue watching','Recently watched live TV','Cinemeta · Popular','My List','Live now']);
+assert.deepEqual(domain('homeLayout',{catalogs:planCatalogs,liveShelves:false}).shelves.map(shelf => shelf.role), ['continueWatching','catalog','myList']);
+const searchPlan = domain('searchPlan',{query:' bebop ',catalogs:planCatalogs});
+assert.deepEqual(searchPlan.sections, [{catalogIndex:0,title:'Cinemeta · Popular'},{catalogIndex:1,title:'Channels'}]);
+assert.deepEqual([searchPlan.query,searchPlan.live,searchPlan.liveRequestLimit,searchPlan.sectionLimit,searchPlan.liveTitle], ['bebop',true,80,24,'Live TV']);
+assert.equal(domain('searchPlan',{query:'x',scope:'movie',catalogs:planCatalogs}).live, false);
+assert.deepEqual(domain('searchPlan',{query:'  ',catalogs:planCatalogs}).sections, []);
+console.log('WASM: Home shelf layout and Search plan match native Rust');
+
 // BE-002 removes application-facing anonymous provider bridge exports.
 for (const name of ["addonEndpoint","addonCatalogExtras","addonSupports","discoverPlan","discoverAggregate","providerCandidate","providerSelectCandidates","providerMediaUrl"]) assert.equal(core[name], undefined, name);
 console.log("WASM: retired provider bridge exports absent");

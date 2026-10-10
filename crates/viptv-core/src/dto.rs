@@ -433,6 +433,56 @@ pub struct CardPresentation {
     pub primary_action: String,
     pub primary_action_label: String,
 }
+/// The kind of content a Home shelf holds; shells choose the fetch per role.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+#[repr(C)]
+pub enum HomeShelfRole {
+    ContinueWatching,
+    RecentLive,
+    Catalog,
+    MyList,
+    LiveNow,
+}
+/// One Home shelf in display order. `catalogIndex` addresses the input catalogs.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct HomeShelfPlan {
+    pub role: HomeShelfRole,
+    pub title: String,
+    pub limit: Option<u32>,
+    pub catalog_index: Option<u32>,
+}
+/// Every Home shelf a profile can show, in order; empty shelves stay hidden.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct HomeLayout {
+    pub shelves: Vec<HomeShelfPlan>,
+}
+/// One catalog searched for a query, in display order.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SearchSectionPlan {
+    pub catalog_index: u32,
+    pub title: String,
+}
+/// The catalogs and live search behind one query; the Live TV section follows
+/// the catalog sections. An empty query searches nothing.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+#[serde(rename_all = "camelCase")]
+#[facet(rename_all = "camelCase")]
+pub struct SearchPlan {
+    pub query: String,
+    pub sections: Vec<SearchSectionPlan>,
+    pub section_limit: u32,
+    pub live: bool,
+    pub live_request_limit: u32,
+    pub live_title: String,
+}
 /// The backend title whose metadata describes an item; identity for metadata
 /// lookups, caches and batch-row matching, never a playback target.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Facet)]
