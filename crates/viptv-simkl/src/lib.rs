@@ -269,8 +269,7 @@ pub fn display_text(input: &str) -> String {
         if let Some(end) = rest.find('>').filter(|end| *end < 160) {
             let tag = rest[1..end].trim().to_ascii_lowercase();
             let name = tag.split_ascii_whitespace().next().unwrap_or("").trim_end_matches('/');
-            if ["br", "p", "/p", "div", "/div"].contains(&name) { output.push('
-'); rest = &rest[end+1..]; continue; }
+            if ["br", "p", "/p", "div", "/div"].contains(&name) { output.push('\n'); rest = &rest[end+1..]; continue; }
             if ["b", "/b", "i", "/i", "strong", "/strong", "em", "/em", "span", "/span"].contains(&name) { rest = &rest[end+1..]; continue; }
         }
         output.push('<'); rest = &rest[1..];
