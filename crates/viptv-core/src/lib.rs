@@ -301,7 +301,6 @@ fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreErro
         "catalogs" => check::<Vec<dto::Catalog>>(v),
         "media" => check::<dto::MediaItem>(v),
         "source" => check::<dto::MediaSource>(v),
-        "playback" => check::<dto::PlaybackSession>(v),
         "discover" => check::<dto::DiscoverPage>(v),
         _ => Ok(()),
     }

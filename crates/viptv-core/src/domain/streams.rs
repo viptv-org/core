@@ -257,42 +257,6 @@ pub(super) fn sources_poll_step(v: &Value) -> Result<Value> {
     Ok(out)
 }
 
-pub(super) fn live(v: &Value) -> Result<Value> {
-    let channels = v["channels"]
-        .as_array()
-        .or_else(|| v["items"].as_array())
-        .ok_or_else(invalid)?
-        .iter()
-        .filter_map(|m| {
-            let mut m = m.clone();
-            if m["type"].is_null() {
-                m["type"] = json!("live");
-            }
-            if m["poster"].is_null() {
-                m["poster"] = m["logo"].clone();
-            }
-            let category = m["section"]
-                .as_str()
-                .or_else(|| m["category"].as_str())
-                .map(str::to_owned);
-            let mut item = media(&m).ok()?;
-            if let Some(category) = category {
-                item["category"] = json!(category);
-            }
-            Some(item)
-        })
-        .collect::<Vec<_>>();
-    Ok(
-        json!({"total":v["total"].as_u64().unwrap_or(channels.len() as u64),"channels":channels,"searchScope":v["search_scope"]}),
-    )
-}
-
-pub(super) fn live_categories(v: &Value) -> Result<Value> {
-    Ok(
-        json!({"categories":array(v,"categories")?.iter().map(|c|Ok(json!({"id":id(c,"id")?,"name":string(c,"name")?,"count":number(c,"count")?,"raw":clean(c)}))).collect::<Result<Vec<_>>>()?,"total":v["total"].as_f64().unwrap_or(0.0)}),
-    )
-}
-
 pub(super) fn guide(v: &Value) -> Result<Value> {
     let programs = v["programs"]
         .as_array()

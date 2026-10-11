@@ -29,17 +29,6 @@ fn malformed_rows_do_not_blank_valid_items() {
     assert_eq!(out["items"].as_array().unwrap().len(), 1);
 }
 #[test]
-fn playback_request_never_introduces_profile_identity() {
-    let out = call(
-        "request",
-        json!({"operation":"playback","profileId":"private","playback":{"streamId":"opaque","capabilities":{"directPlay":true,"maxWidth":1920}}}),
-    );
-    assert_eq!(out["path"], "/api/playback");
-    assert!(out["body"].get("profile_id").is_none());
-    assert_eq!(out["body"]["capabilities"]["direct_play"], true);
-}
-
-#[test]
 fn episode_metadata_request_targets_its_parent_series() {
     let out = call(
         "request",

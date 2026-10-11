@@ -81,13 +81,6 @@ fn v2_discovery_requests_are_explicit_and_keep_episode_identity() {
         )["path"],
         "/api/v2/streams/job%2Fone?after=3"
     );
-    assert_eq!(
-        run(
-            "request",
-            json!({"operation":"sources","item":{"type":"movie","id":"tt1"}})
-        )["path"],
-        "/api/streams"
-    );
 }
 #[test]
 fn source_failures_survive_polling_without_losing_healthy_sources_or_secrets() {

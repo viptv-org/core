@@ -289,3 +289,41 @@ fn authorization(v: &Value) -> Option<Value> {
     }
     Some(Value::Object(out))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn session_urls_are_capability_paths_or_original_sources() {
+        // playbackV2 delivery reuses this: a root-relative URL must stay a
+        // same-origin /media/ capability, and no URL carries embedded credentials.
+        let origin = "https://example.test";
+        assert!(playback(&json!({"id":"s","url":"/api/private"}), origin).is_err());
+        assert!(
+            playback(
+                &json!({"id":"s","url":"https://user:pass@evil.test/media/x"}),
+                origin
+            )
+            .is_err()
+        );
+        let proxy = playback(&json!({"id":"s","url":"/media/s/cap/index.m3u8"}), origin).unwrap();
+        assert_eq!(proxy["url"], "https://example.test/media/s/cap/index.m3u8");
+        assert!(proxy.as_object().unwrap().get("authorization").is_none());
+        // A direct session hands the original absolute source URL to the client
+        // with its sanitized source authorization.
+        let direct = playback(
+            &json!({"id":"s","url":"https://provider.test/stream.mkv","authorization":{"cookie":"session=1","user_agent":"VIPTV Desktop","headers":{"Referer":"https://provider.test/watch","X-Stream":"opaque","Host":"wrong.test","Bad":"value\r\nInjected: yes"}}}),
+            origin,
+        )
+        .unwrap();
+        assert_eq!(direct["url"], "https://provider.test/stream.mkv");
+        assert_eq!(direct["authorization"]["cookie"], "session=1");
+        assert_eq!(direct["authorization"]["userAgent"], "VIPTV Desktop");
+        assert_eq!(
+            direct["authorization"]["headers"]["Referer"],
+            "https://provider.test/watch"
+        );
+        assert!(direct["authorization"]["headers"].get("Host").is_none());
+    }
+}

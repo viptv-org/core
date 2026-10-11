@@ -224,55 +224,7 @@ fn rejected_logout_retains_grant() {
     assert!(effects.iter().all(|r| r["effect"].get("Storage").is_none()));
 }
 #[test]
-fn playback_urls_are_capability_paths_or_original_sources() {
-    // A root-relative playback URL must stay a same-origin /media/ capability,
-    // and no playback URL ever carries embedded credentials.
-    assert!(
-        normalize(
-            "playback".into(),
-            json!({"id":"s","url":"/api/private"}).to_string(),
-            "https://example.test".into()
-        )
-        .is_err()
-    );
-    assert!(
-        normalize(
-            "playback".into(),
-            json!({"id":"s","url":"https://user:pass@evil.test/media/x"}).to_string(),
-            "https://example.test".into()
-        )
-        .is_err()
-    );
-    let proxy: Value = serde_json::from_str(
-        &normalize(
-            "playback".into(),
-            json!({"id":"s","url":"/media/s/cap/index.m3u8"}).to_string(),
-            "https://example.test".into(),
-        )
-        .unwrap(),
-    )
-    .unwrap();
-    assert_eq!(proxy["url"], "https://example.test/media/s/cap/index.m3u8");
-    assert!(proxy.as_object().unwrap().get("authorization").is_none());
-    // A direct-URL session hands the ORIGINAL absolute source URL to the
-    // client; it passes through unchanged with its source authorization.
-    let direct: Value = serde_json::from_str(
-        &normalize(
-            "playback".into(),
-            json!({"id":"s","url":"https://provider.test/stream.mkv","authorization":{"cookie":"session=1","user_agent":"VIPTV Desktop","headers":{"Referer":"https://provider.test/watch","X-Stream":"opaque","Host":"wrong.test","Bad":"value\\r\\nInjected: yes"}}}).to_string(),
-            "https://example.test".into()
-        )
-        .unwrap(),
-    )
-    .unwrap();
-    assert_eq!(direct["url"], "https://provider.test/stream.mkv");
-    assert_eq!(direct["authorization"]["cookie"], "session=1");
-    assert_eq!(direct["authorization"]["userAgent"], "VIPTV Desktop");
-    assert_eq!(
-        direct["authorization"]["headers"]["Referer"],
-        "https://provider.test/watch"
-    );
-    assert!(direct["authorization"]["headers"].get("Host").is_none());
+fn container_follows_the_url_path_not_its_query() {
     assert_eq!(
         normalize(
             "container".into(),
@@ -423,31 +375,31 @@ fn stream_discovery_requests_and_polling_steps_share_one_policy() {
     let request: Value = serde_json::from_str(
         &normalize(
             "request".into(),
-            json!({"operation":"sources","item":item}).to_string(),
+            json!({"operation":"sourcesV2","item":item}).to_string(),
             "".into(),
         )
         .unwrap(),
     )
     .unwrap();
     assert_eq!(request["method"], "POST");
-    assert_eq!(request["path"], "/api/streams");
+    assert_eq!(request["path"], "/api/v2/streams");
     assert_eq!(request["body"]["id"], "tt123");
     let poll: Value = serde_json::from_str(
         &normalize(
             "request".into(),
-            json!({"operation":"sourcesPoll","id":"job-1","after":7}).to_string(),
+            json!({"operation":"sourcesPollV2","id":"job-1","after":7}).to_string(),
             "".into(),
         )
         .unwrap(),
     )
     .unwrap();
     assert_eq!(poll["method"], "GET");
-    assert_eq!(poll["path"], "/api/streams/job-1?after=7");
+    assert_eq!(poll["path"], "/api/v2/streams/job-1?after=7");
     assert!(poll["body"].is_null());
     assert!(
         normalize(
             "request".into(),
-            json!({"operation":"sourcesPoll","id":"","after":0}).to_string(),
+            json!({"operation":"sourcesPollV2","id":"","after":0}).to_string(),
             "".into()
         )
         .is_err(),

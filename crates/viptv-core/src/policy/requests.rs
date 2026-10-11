@@ -8,21 +8,15 @@ pub(super) fn request(v: &Value) -> Result {
         let mut body = item_request(&v["item"]);
         let (method, path) = match op {
             "nextEpisode" => ("POST", format!("{base}/continue/next")),
-            "sources" => ("POST", "/api/streams".into()),
             "sourcesV2" => ("POST", "/api/v2/streams".into()),
-            "sourcesPoll" | "sourcesPollV2" => {
+            "sourcesPollV2" => {
                 body = Value::Null;
                 let id = text(v, "id");
                 if id.is_empty() {
                     return Err(CoreError::InvalidInput);
                 }
                 let after = v["after"].as_u64().unwrap_or(0);
-                let prefix = if op == "sourcesPollV2" {
-                    "/api/v2/streams"
-                } else {
-                    "/api/streams"
-                };
-                ("GET", format!("{prefix}/{}?after={after}", enc(id)))
+                ("GET", format!("/api/v2/streams/{}?after={after}", enc(id)))
             }
             "livePageV2" | "liveCategoriesV2" => {
                 body = Value::Null;
@@ -56,10 +50,6 @@ pub(super) fn request(v: &Value) -> Result {
             }
             "toggleFavorite" => ("POST", format!("{base}/favorites/toggle")),
             "setFavorite" => ("PUT", format!("{base}/favorites")),
-            "playback" => {
-                body = snake(&v["playback"]);
-                ("POST", "/api/playback".into())
-            }
             "playbackProtocolV2" => {
                 body = Value::Null;
                 ("GET", "/api/v2/playback-protocol".into())
