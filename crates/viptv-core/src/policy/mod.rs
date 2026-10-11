@@ -132,6 +132,7 @@ pub fn normalize(kind: &str, v: &Value) -> Result {
         "enrichHome" => progress::enrich_home(v),
         "resume" => progress::resume(v)?,
         "autoNext" => sources::auto_next(v),
+        "subtitleSelection" => sources::subtitle_selection(v),
         "sourceMatch" => sources::source_match(v),
         "sourceRanks" => sources::source_ranks(v),
         "sourceProducerLabels" => sources::source_producer_labels(v),

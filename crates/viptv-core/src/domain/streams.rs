@@ -45,7 +45,22 @@ pub(super) fn preferences(v: &Value) -> Result<Value> {
     ] {
         out[b] = json!(boolean(v, a)?);
     }
+    out["subtitleMode"] = json!(subtitle_mode(v)?);
     Ok(out)
+}
+
+/// The profile's subtitle mode: `always`, `foreign` (only when the playing
+/// audio is not the preferred audio language) or `never`. Servers that predate
+/// the mode store only `subtitles_enabled`, which maps to `always`/`never`.
+pub(crate) fn subtitle_mode(v: &Value) -> Result<&'static str> {
+    match v["subtitle_mode"].as_str() {
+        Some("always") => Ok("always"),
+        Some("foreign") => Ok("foreign"),
+        Some("never") => Ok("never"),
+        Some(_) => Err(invalid()),
+        None if v["subtitles_enabled"].as_bool() == Some(true) => Ok("always"),
+        None => Ok("never"),
+    }
 }
 
 pub(super) fn page(v: &Value) -> Result<Value> {
