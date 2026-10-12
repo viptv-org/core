@@ -898,6 +898,10 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -962,6 +966,10 @@ fun uniffi_viptv_core_checksum_method_localengine_project_detail(
 fun uniffi_viptv_core_checksum_method_localengine_project_home(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_project_sources(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_remove_addon(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_set_addon_enabled(
 ): Short
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_accept(
 ): Short
@@ -1149,6 +1157,10 @@ fun uniffi_viptv_core_fn_method_localengine_project_home(`ptr`: Pointer,`id`: Ru
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_project_sources(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`responses`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_remove_addon(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Unit
+fun uniffi_viptv_core_fn_method_localengine_set_addon_enabled(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`enabled`: Byte,uniffi_out_err: UniffiRustCallStatus,
+): Unit
 fun uniffi_viptv_core_fn_clone_nativetorrentbridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
 fun uniffi_viptv_core_fn_free_nativetorrentbridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
@@ -1472,6 +1484,12 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_project_sources() != 28269.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_remove_addon() != 46923.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_set_addon_enabled() != 45845.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_accept() != 35008.toShort()) {
@@ -2353,6 +2371,10 @@ public interface LocalEngineInterface {
 
     fun `projectSources`(`operation`: kotlin.String, `responses`: kotlin.String): kotlin.String
 
+    fun `removeAddon`(`id`: kotlin.String)
+
+    fun `setAddonEnabled`(`profile`: kotlin.String, `id`: kotlin.String, `enabled`: kotlin.Boolean)
+
     companion object
 }
 
@@ -2638,6 +2660,30 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     }
     )
     }
+
+
+
+    @Throws(CoreException::class)override fun `removeAddon`(`id`: kotlin.String)
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_remove_addon(
+        it, FfiConverterString.lower(`id`),_status)
+}
+    }
+
+
+
+
+    @Throws(CoreException::class)override fun `setAddonEnabled`(`profile`: kotlin.String, `id`: kotlin.String, `enabled`: kotlin.Boolean)
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_set_addon_enabled(
+        it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`id`),FfiConverterBoolean.lower(`enabled`),_status)
+}
+    }
+
 
 
 

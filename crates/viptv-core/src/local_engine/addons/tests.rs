@@ -123,6 +123,20 @@ fn addon_secret_stays_out_of_sqlite_and_home_uses_its_catalog() {
     .unwrap();
     assert_eq!(prepared["url"], "https://media.example/film.mp4");
     assert_eq!(prepared["headers"][0][0], "Referer");
+    engine
+        .set_addon_enabled("default".into(), provider.into(), false)
+        .unwrap();
+    assert!(
+        engine
+            .open_source(candidates[0]["id"].as_str().unwrap().into())
+            .is_err()
+    );
+    let disabled: Value =
+        serde_json::from_str(&engine.plan_home("default".into()).unwrap()).unwrap();
+    assert!(disabled["requests"].as_array().unwrap().is_empty());
+    engine
+        .set_addon_enabled("default".into(), provider.into(), true)
+        .unwrap();
     let second: Value = serde_json::from_str(&engine.plan_home("second".into()).unwrap()).unwrap();
     assert!(second["requests"].as_array().unwrap().is_empty());
     engine
@@ -148,6 +162,14 @@ fn addon_secret_stays_out_of_sqlite_and_home_uses_its_catalog() {
             .unwrap()
             .len(),
         1
+    );
+    reopened.remove_addon(provider.into()).unwrap();
+    assert!(
+        serde_json::from_str::<Value>(&reopened.addons().unwrap())
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .is_empty()
     );
     drop(reopened);
     std::fs::remove_dir_all(dir).unwrap();

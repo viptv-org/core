@@ -118,6 +118,28 @@ impl LocalEngine {
         .map_err(|_| CoreError::Bridge)
     }
 
+    pub fn set_addon_enabled(
+        &self,
+        profile: String,
+        id: String,
+        enabled: bool,
+    ) -> Result<(), CoreError> {
+        self.store
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .set_assignment(&profile, &id, enabled)
+            .map_err(|_| CoreError::Bridge)
+    }
+
+    pub fn remove_addon(&self, id: String) -> Result<(), CoreError> {
+        self.store
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .remove_connection(&id)
+            .map_err(|_| CoreError::Bridge)?;
+        self.secrets.remove(self.key(&id))
+    }
+
     pub fn plan_home(&self, profile_id: String) -> Result<String, CoreError> {
         let scope = local_scope(&profile_id);
         let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
