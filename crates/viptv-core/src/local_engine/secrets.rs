@@ -1,4 +1,5 @@
 use crate::CoreError;
+#[cfg(not(target_os="android"))]
 use std::sync::Arc;
 
 #[uniffi::export(with_foreign)]
