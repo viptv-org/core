@@ -12,10 +12,11 @@ crate-type = ["lib", "cdylib", "staticlib"]
 default = []
 typegen = ["facet_typegen"]
 facet_typegen = ["crux_core/facet_typegen", "crux_http/facet_typegen"]
-native = ["dep:uniffi"]
+native = ["dep:uniffi", "viptv-engine/runtime"]
 bindgen = ["native", "uniffi/cli"]
 
 [dependencies]
+viptv-engine = { path = "../viptv-engine" }
 base64 = "0.22.1"
 sha1 = "0.10.6"
 unicode-normalization = "0.1.24"

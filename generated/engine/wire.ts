@@ -1,0 +1,25 @@
+// Generated from Rust by viptv-typegen. Serde JSON bridge representation.
+export type Availability = "Available" | "NeedsConfiguration" | "NeedsAuthorization" | "TemporarilyUnavailable" | "Unsupported";
+export type Capability = "Discovery" | "Search" | "Metadata" | "Sources" | "Subtitles" | "Tracking" | "Authorization" | "Mapping" | "LiveTv";
+export type CapabilityState = { readonly capability: Capability; readonly availability: Availability; readonly message: string | null };
+export type Card = { readonly identity: MediaIdentity; readonly provider_id: string; readonly title: string; readonly subtitle: string | null; readonly description: string | null; readonly poster: string | null; readonly landscape: string | null; readonly logo: string | null; readonly progress: number | null; readonly badges: ReadonlyArray<string> };
+export type CatalogPage = { readonly cards: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly complete: boolean };
+export type Choice = { readonly value: string; readonly label: string };
+export type ControlKind = "Text" | "SingleChoice" | "MultiChoice" | "Toggle" | "Number" | "Date";
+export type DetailSnapshot = { readonly item: Card; readonly episodes: ReadonlyArray<Card>; readonly next_cursor: string | null };
+export type EpisodeCoordinates = { readonly order: string; readonly season: number | null; readonly episode: number };
+export type ExecutionMode = "Local" | "Server";
+export type ExternalId = { readonly namespace: string; readonly value: string };
+export type HomeRow = { readonly id: string; readonly title: string; readonly provider_id: string; readonly state: RowState; readonly cards: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly message: string | null };
+export type HomeSnapshot = { readonly scope: Scope; readonly revision: number; readonly hero: Card | null; readonly rows: ReadonlyArray<HomeRow>; readonly complete: boolean };
+export type IntegrationConnection = { readonly id: string; readonly plugin_id: string; readonly account_id: string; readonly private_profile_id: string | null; readonly name: string; readonly enabled: boolean; readonly revision: number; readonly capabilities: ReadonlyArray<Capability> };
+export type MappingConfidence = "Explicit" | "Candidate";
+export type MappingEvidence = { readonly source: string; readonly target: ExternalId; readonly confidence: MappingConfidence; readonly episode: EpisodeCoordinates | null; readonly version: string };
+export type MediaIdentity = { readonly id: string; readonly kind: string; readonly ids: ReadonlyArray<ExternalId>; readonly episode: EpisodeCoordinates | null; readonly edition: string | null };
+export type PluginDescriptor = { readonly id: string; readonly name: string; readonly contract_version: number; readonly locations: ReadonlyArray<ExecutionMode>; readonly capabilities: ReadonlyArray<Capability> };
+export type ProfileAssignment = { readonly connection_id: string; readonly enabled: ReadonlyArray<Capability> };
+export type ProfileConfiguration = { readonly scope: Scope; readonly mode: ExecutionMode; readonly name: string; readonly browsing_plugin: string; readonly assignments: ReadonlyArray<ProfileAssignment> };
+export type QueryControl = { readonly id: string; readonly label: string; readonly kind: ControlKind; readonly required: boolean; readonly choices: ReadonlyArray<Choice>; readonly minimum: number | null; readonly maximum: number | null };
+export type QueryValue = { readonly id: string; readonly values: ReadonlyArray<string> };
+export type RowState = "Pending" | "Ready" | "Empty" | "Failed";
+export type Scope = { readonly connection_id: string; readonly account_id: string; readonly profile_id: string; readonly revision: number };

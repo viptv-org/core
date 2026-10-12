@@ -1,0 +1,77 @@
+#[path = "../wire.rs"]
+mod wire;
+use crux_core::type_generation::facet::TypeRegistry;
+use facet_generate::reflection::format::{ContainerFormat as C, Format as F, VariantFormat as V};
+use viptv_engine::{capabilities::*, identity::*, presentation::*, profile::*, query::*};
+
+fn ty(f: &F) -> String {
+    match f {
+        F::Str | F::Char => "String".into(),
+        F::Bool => "Boolean".into(),
+        F::TypeName(n) => n.name.clone(),
+        F::Option(v) => format!("{}?", ty(v)),
+        F::Seq(v) => format!("List<{}>", ty(v)),
+        F::F32 | F::F64 => "Double".into(),
+        F::U64 | F::I64 | F::U32 => "Long".into(),
+        F::U8 | F::U16 | F::I8 | F::I16 | F::I32 => "Int".into(),
+        other => panic!("Unsupported engine field: {other:?}"),
+    }
+}
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let registry = TypeRegistry::new()
+        .register_type::<PluginDescriptor>()?
+        .register_type::<CapabilityState>()?
+        .register_type::<ProfileConfiguration>()?
+        .register_type::<IntegrationConnection>()?
+        .register_type::<HomeSnapshot>()?
+        .register_type::<DetailSnapshot>()?
+        .register_type::<CatalogPage>()?
+        .register_type::<QueryControl>()?
+        .register_type::<QueryValue>()?
+        .register_type::<MappingEvidence>()?
+        .build()?
+        .registry();
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../generated/engine");
+    std::fs::create_dir_all(&root)?;
+    std::fs::write(root.join("wire.ts"), wire::generate(&registry))?;
+    let mut kotlin = String::from(
+        "// Generated from the Rust engine contracts.\npackage org.viptv.engine.wire\n\nimport kotlinx.serialization.Serializable\nimport kotlinx.serialization.SerialName\n\n",
+    );
+    for (name, container) in &registry {
+        match container {
+            C::Struct(fields, _) => {
+                kotlin.push_str(&format!("@Serializable\ndata class {}(\n", name.name));
+                for f in fields {
+                    let default = if matches!(f.value, F::Option(_)) {
+                        " = null"
+                    } else {
+                        ""
+                    };
+                    kotlin.push_str(&format!(
+                        "    val {}: {}{},\n",
+                        f.name,
+                        ty(&f.value),
+                        default
+                    ));
+                }
+                kotlin.push_str(")\n\n");
+            }
+            C::Enum(variants, _, _) => {
+                assert!(variants.values().all(|v| matches!(v.value, V::Unit)));
+                kotlin.push_str(&format!("@Serializable\nenum class {} {{\n", name.name));
+                for v in variants.values() {
+                    kotlin.push_str(&format!(
+                        "    @SerialName({:?}) {},\n",
+                        v.name,
+                        v.name.to_uppercase()
+                    ));
+                }
+                kotlin.push_str("}\n\n");
+            }
+            _ => return Err("Unsupported engine contract".into()),
+        }
+    }
+    std::fs::write(root.join("EngineWire.kt"), kotlin)?;
+    println!("Generated engine Kotlin and TypeScript contracts");
+    Ok(())
+}

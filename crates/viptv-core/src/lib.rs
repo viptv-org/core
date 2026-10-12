@@ -1,5 +1,9 @@
 //! VIPTV behavior shared by browser WASM and native shells. Roku is independent.
 pub mod app;
+#[cfg(feature = "native")]
+mod local_engine;
+#[cfg(feature = "native")]
+pub use local_engine::LocalEngine;
 pub mod domain;
 pub mod dto;
 mod native_metainfo;
