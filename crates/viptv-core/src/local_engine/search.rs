@@ -1,0 +1,67 @@
+use super::addons::{CatalogRequest, PendingHome};
+use super::*;
+use serde_json::json;
+use viptv_engine::capabilities::Capability;
+use viptv_engine::stremio;
+
+#[uniffi::export]
+impl LocalEngine {
+    pub fn plan_search(&self, profile_id: String, term: String) -> Result<String, CoreError> {
+        let term = term.trim();
+        if term.chars().count() > 256 {
+            return Err(CoreError::InvalidInput);
+        }
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let profile = store
+            .profile(&local_scope(&profile_id))
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
+        let connections = store.connections("local").map_err(|_| CoreError::Bridge)?;
+        let mut rows = Vec::new();
+        if !term.is_empty() {
+            for connection in connections
+                .iter()
+                .filter(|c| {
+                    c.enabled
+                        && c.plugin_id == profile.browsing_plugin
+                        && profile.assignments.iter().any(|a| {
+                            a.connection_id == c.id && a.enabled.contains(&Capability::Search)
+                        })
+                })
+                .take(8)
+            {
+                let stored = match self.addon(&connection.id) {
+                    Ok(v) => v,
+                    Err(_) => continue,
+                };
+                for kind in ["movie", "series"] {
+                    let endpoints =
+                        stremio::search_urls(&stored.manifest_url, &stored.manifest, kind, term)
+                            .unwrap_or_default();
+                    for (index, url) in endpoints.into_iter().enumerate() {
+                        if rows.len() >= 12 {
+                            break;
+                        }
+                        rows.push(CatalogRequest {
+                            id: format!("search:{}:{kind}:{index}", connection.id),
+                            title: connection.name.clone(),
+                            provider_id: connection.id.clone(),
+                            url: Some(url),
+                        });
+                    }
+                }
+            }
+        }
+        let id = uuid::Uuid::new_v4().to_string();
+        let mut operations = self.pending.lock().map_err(|_| CoreError::Bridge)?;
+        operations.retain(|_, p| p.scope.profile_id != profile_id);
+        operations.insert(
+            id.clone(),
+            PendingHome {
+                scope: profile.scope,
+                rows: rows.clone(),
+            },
+        );
+        serde_json::to_string(&json!({"id":id,"requests":rows})).map_err(|_| CoreError::Bridge)
+    }
+}

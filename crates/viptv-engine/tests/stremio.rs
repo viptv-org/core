@@ -33,3 +33,20 @@ fn manifest_url_rejects_embedded_userinfo_and_unbounded_or_wrong_documents() {
     assert!(manifest_url("https://example.com/catalog.json").is_err());
     assert!(parse_manifest("{}").is_err());
 }
+
+#[test]
+fn details_keep_episode_identity_and_reject_other_titles() {
+    let raw = r#"{"meta":{"id":"tt123","type":"series","name":"A series","videos":[{"id":"tt123:2:3","season":2,"episode":3,"title":"Episode three","thumbnail":"https://images.example/still"}]}}"#;
+    let detail = detail(raw, "addon:a", "series", "tt123", 0).unwrap();
+    assert_eq!(detail.item.identity.id, "tt123");
+    assert_eq!(detail.episodes[0].identity.id, "tt123:2:3");
+    assert_eq!(
+        detail.episodes[0].identity.episode.as_ref().unwrap().season,
+        Some(2)
+    );
+    assert_eq!(
+        detail.episodes[0].landscape.as_deref(),
+        Some("https://images.example/still")
+    );
+    assert!(viptv_engine::stremio::detail(raw, "addon:a", "series", "tt999", 0).is_err());
+}

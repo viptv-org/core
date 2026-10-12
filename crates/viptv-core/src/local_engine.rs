@@ -5,6 +5,8 @@ use std::{
     sync::{Arc, Mutex},
 };
 mod addons;
+mod detail;
+mod search;
 mod secrets;
 pub use secrets::SecretStore;
 use viptv_engine::{
@@ -18,6 +20,7 @@ pub struct LocalEngine {
     secrets: Arc<dyn SecretStore>,
     namespace: String,
     pending: Mutex<std::collections::HashMap<String, addons::PendingHome>>,
+    details: Mutex<std::collections::HashMap<String, detail::PendingDetail>>,
 }
 
 fn local_scope(profile: &str) -> Scope {
@@ -68,6 +71,7 @@ impl LocalEngine {
                 )
             ),
             pending: Mutex::new(std::collections::HashMap::new()),
+            details: Mutex::new(std::collections::HashMap::new()),
         })
     }
 
