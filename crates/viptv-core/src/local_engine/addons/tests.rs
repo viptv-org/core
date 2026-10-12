@@ -40,6 +40,13 @@ fn addon_secret_stays_out_of_sqlite_and_home_uses_its_catalog() {
     );
     let plan: Value = serde_json::from_str(&engine.plan_home("default".into()).unwrap()).unwrap();
     assert_eq!(plan["requests"].as_array().unwrap().len(), 1);
+    let prepared: Value = serde_json::from_str(
+        &engine
+            .prepared_home(plan["id"].as_str().unwrap().into())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(prepared["rows"][0]["state"], "Pending");
     assert!(
         plan["requests"][0]["url"]
             .as_str()

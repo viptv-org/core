@@ -22,6 +22,7 @@ pub(super) struct CatalogRequest {
     pub(super) url: Option<String>,
 }
 
+#[derive(Clone)]
 pub(super) struct PendingHome {
     pub(super) scope: Scope,
     pub(super) rows: Vec<CatalogRequest>,
@@ -200,6 +201,46 @@ impl LocalEngine {
         operations.retain(|_, p| p.scope.profile_id != profile_id);
         operations.insert(id.clone(), pending);
         serde_json::to_string(&json!({"id":id,"requests":rows})).map_err(|_| CoreError::Bridge)
+    }
+
+    pub fn prepared_home(&self, operation: String) -> Result<String, CoreError> {
+        let plan = self
+            .pending
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .get(&operation)
+            .cloned()
+            .ok_or(CoreError::InvalidInput)?;
+        let mut rows = self
+            .continue_row(&plan.scope)?
+            .into_iter()
+            .collect::<Vec<_>>();
+        rows.extend(plan.rows.iter().map(|request| {
+            HomeRow {
+                id: request.id.clone(),
+                title: request.title.clone(),
+                provider_id: request.provider_id.clone(),
+                state: if request.url.is_some() {
+                    RowState::Pending
+                } else {
+                    RowState::Failed
+                },
+                cards: vec![],
+                next_cursor: None,
+                message: request
+                    .url
+                    .is_none()
+                    .then(|| "This addon is unavailable. Try again.".into()),
+            }
+        }));
+        serde_json::to_string(&HomeSnapshot {
+            scope: plan.scope.clone(),
+            revision: plan.scope.revision,
+            hero: None,
+            rows,
+            complete: false,
+        })
+        .map_err(|_| CoreError::Bridge)
     }
 
     pub fn project_home(&self, id: String, raw_results: String) -> Result<String, CoreError> {

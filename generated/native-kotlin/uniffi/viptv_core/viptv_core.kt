@@ -908,6 +908,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -966,6 +968,8 @@ fun uniffi_viptv_core_checksum_method_localengine_plan_home(
 fun uniffi_viptv_core_checksum_method_localengine_plan_search(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_plan_sources(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_prepared_home(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_profile(
 ): Short
@@ -1162,6 +1166,8 @@ fun uniffi_viptv_core_fn_method_localengine_plan_home(`ptr`: Pointer,`profileId`
 fun uniffi_viptv_core_fn_method_localengine_plan_search(`ptr`: Pointer,`profileId`: RustBuffer.ByValue,`term`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_plan_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`kind`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_prepared_home(`ptr`: Pointer,`operation`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_profile(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
@@ -1493,6 +1499,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_plan_sources() != 14820.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_prepared_home() != 39653.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_profile() != 52018.toShort()) {
@@ -2392,6 +2401,8 @@ public interface LocalEngineInterface {
 
     fun `planSources`(`profile`: kotlin.String, `kind`: kotlin.String, `id`: kotlin.String): kotlin.String
 
+    fun `preparedHome`(`operation`: kotlin.String): kotlin.String
+
     fun `profile`(`id`: kotlin.String): kotlin.String
 
     fun `profiles`(): kotlin.String
@@ -2649,6 +2660,19 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_plan_sources(
         it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`kind`),FfiConverterString.lower(`id`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `preparedHome`(`operation`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_prepared_home(
+        it, FfiConverterString.lower(`operation`),_status)
 }
     }
     )
