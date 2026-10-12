@@ -902,6 +902,12 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -941,7 +947,11 @@ fun uniffi_viptv_core_checksum_method_localengine_addons(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_check_addon_url(
 ): Short
+fun uniffi_viptv_core_checksum_method_localengine_clear_history(
+): Short
 fun uniffi_viptv_core_checksum_method_localengine_create_profile(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_history(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_home(
 ): Short
@@ -966,6 +976,8 @@ fun uniffi_viptv_core_checksum_method_localengine_project_detail(
 fun uniffi_viptv_core_checksum_method_localengine_project_home(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_project_sources(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_record_progress(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_remove_addon(
 ): Short
@@ -1131,7 +1143,11 @@ fun uniffi_viptv_core_fn_method_localengine_addons(`ptr`: Pointer,uniffi_out_err
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_check_addon_url(`ptr`: Pointer,`url`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_clear_history(`ptr`: Pointer,`profile`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Unit
 fun uniffi_viptv_core_fn_method_localengine_create_profile(`ptr`: Pointer,`id`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_history(`ptr`: Pointer,`profile`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_home(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
@@ -1157,6 +1173,8 @@ fun uniffi_viptv_core_fn_method_localengine_project_home(`ptr`: Pointer,`id`: Ru
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_project_sources(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`responses`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_record_progress(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`revision`: Long,`cardJson`: RustBuffer.ByValue,`positionMillis`: Long,`durationMillis`: Long,uniffi_out_err: UniffiRustCallStatus,
+): Unit
 fun uniffi_viptv_core_fn_method_localengine_remove_addon(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
 fun uniffi_viptv_core_fn_method_localengine_set_addon_enabled(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`enabled`: Byte,uniffi_out_err: UniffiRustCallStatus,
@@ -1447,7 +1465,13 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_method_localengine_check_addon_url() != 30870.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_clear_history() != 41275.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_method_localengine_create_profile() != 19279.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_history() != 52978.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_home() != 4434.toShort()) {
@@ -1484,6 +1508,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_project_sources() != 28269.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_record_progress() != 19446.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_remove_addon() != 46923.toShort()) {
@@ -2345,7 +2372,11 @@ public interface LocalEngineInterface {
 
     fun `checkAddonUrl`(`url`: kotlin.String): kotlin.String
 
+    fun `clearHistory`(`profile`: kotlin.String)
+
     fun `createProfile`(`id`: kotlin.String, `name`: kotlin.String): kotlin.String
+
+    fun `history`(`profile`: kotlin.String): kotlin.String
 
     fun `home`(`id`: kotlin.String): kotlin.String
 
@@ -2370,6 +2401,8 @@ public interface LocalEngineInterface {
     fun `projectHome`(`id`: kotlin.String, `rawResults`: kotlin.String): kotlin.String
 
     fun `projectSources`(`operation`: kotlin.String, `responses`: kotlin.String): kotlin.String
+
+    fun `recordProgress`(`profile`: kotlin.String, `revision`: kotlin.ULong, `cardJson`: kotlin.String, `positionMillis`: kotlin.ULong, `durationMillis`: kotlin.ULong)
 
     fun `removeAddon`(`id`: kotlin.String)
 
@@ -2494,12 +2527,37 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
 
 
 
+    @Throws(CoreException::class)override fun `clearHistory`(`profile`: kotlin.String)
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_clear_history(
+        it, FfiConverterString.lower(`profile`),_status)
+}
+    }
+
+
+
+
     @Throws(CoreException::class)override fun `createProfile`(`id`: kotlin.String, `name`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_create_profile(
         it, FfiConverterString.lower(`id`),FfiConverterString.lower(`name`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `history`(`profile`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_history(
+        it, FfiConverterString.lower(`profile`),_status)
 }
     }
     )
@@ -2660,6 +2718,18 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     }
     )
     }
+
+
+
+    @Throws(CoreException::class)override fun `recordProgress`(`profile`: kotlin.String, `revision`: kotlin.ULong, `cardJson`: kotlin.String, `positionMillis`: kotlin.ULong, `durationMillis`: kotlin.ULong)
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_record_progress(
+        it, FfiConverterString.lower(`profile`),FfiConverterULong.lower(`revision`),FfiConverterString.lower(`cardJson`),FfiConverterULong.lower(`positionMillis`),FfiConverterULong.lower(`durationMillis`),_status)
+}
+    }
+
 
 
 

@@ -97,6 +97,13 @@ data class ExternalId(
 )
 
 @Serializable
+data class HistoryEntry(
+    val card: Card,
+    val updated_at_millis: Long,
+    val completed_at_millis: Long? = null,
+)
+
+@Serializable
 data class HomeRow(
     val id: String,
     val title: String,
@@ -150,6 +157,19 @@ data class MediaIdentity(
     val ids: List<ExternalId>,
     val episode: EpisodeCoordinates? = null,
     val edition: String? = null,
+)
+
+@Serializable
+data class PlaybackRecord(
+    val identity: MediaIdentity,
+    val provider_id: String,
+    val title: String,
+    val poster: String? = null,
+    val landscape: String? = null,
+    val position_millis: Long,
+    val duration_millis: Long,
+    val updated_at_millis: Long,
+    val completed_at_millis: Long? = null,
 )
 
 @Serializable

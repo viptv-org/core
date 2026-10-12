@@ -225,7 +225,7 @@ impl LocalEngine {
         if current.scope.revision != pending.scope.revision {
             return Err(CoreError::Bridge);
         }
-        let rows = pending
+        let mut rows = pending
             .rows
             .iter()
             .map(|request| {
@@ -262,6 +262,9 @@ impl LocalEngine {
             .flat_map(|r| &r.cards)
             .find(|c| c.landscape.is_some())
             .cloned();
+        if let Some(queue) = self.continue_row(&pending.scope)? {
+            rows.insert(0, queue);
+        }
         serde_json::to_string(&HomeSnapshot {
             scope: pending.scope.clone(),
             revision: pending.scope.revision,

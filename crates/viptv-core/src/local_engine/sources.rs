@@ -12,10 +12,14 @@ pub(super) struct Request {
 }
 pub(super) struct PendingSources {
     scope: Scope,
+    kind: String,
+    media_id: String,
     requests: Vec<Request>,
 }
 pub(super) struct Playable {
     scope: Scope,
+    kind: String,
+    media_id: String,
     url: String,
     headers: Vec<(String, String)>,
 }
@@ -71,6 +75,8 @@ impl LocalEngine {
             operation.clone(),
             PendingSources {
                 scope: selected.scope,
+                kind,
+                media_id: id,
                 requests,
             },
         );
@@ -124,6 +130,8 @@ impl LocalEngine {
                     id.clone(),
                     Playable {
                         scope: pending.scope.clone(),
+                        kind: pending.kind.clone(),
+                        media_id: pending.media_id.clone(),
                         url: source.url,
                         headers: source.headers,
                     },
@@ -142,17 +150,21 @@ impl LocalEngine {
     pub fn open_source(&self, id: String) -> Result<String, CoreError> {
         let play = self.playable.lock().map_err(|_| CoreError::Bridge)?;
         let source = play.get(&id).ok_or(CoreError::InvalidInput)?;
-        let current = self
-            .store
-            .lock()
-            .map_err(|_| CoreError::Bridge)?
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let current = store
             .profile(&source.scope)
             .map_err(|_| CoreError::Bridge)?
             .ok_or(CoreError::Bridge)?;
         if current.scope.revision != source.scope.revision {
             return Err(CoreError::Bridge);
         }
-        serde_json::to_string(&json!({"url":source.url,"headers":source.headers}))
+        let resume = store
+            .playback(&source.scope, &source.kind, &source.media_id)
+            .map_err(|_| CoreError::Bridge)?
+            .filter(|record| record.can_resume())
+            .map(|record| record.position_millis)
+            .unwrap_or(0);
+        serde_json::to_string(&json!({"url":source.url,"headers":source.headers,"profile_id":source.scope.profile_id,"revision":source.scope.revision,"position_millis":resume}))
             .map_err(|_| CoreError::Bridge)
     }
 }

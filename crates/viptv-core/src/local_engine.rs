@@ -6,6 +6,7 @@ use std::{
 };
 mod addons;
 mod detail;
+mod history;
 mod search;
 mod secrets;
 mod sources;
@@ -93,11 +94,12 @@ impl LocalEngine {
     pub fn home(&self, id: String) -> Result<String, CoreError> {
         let profile: ProfileConfiguration =
             serde_json::from_str(&self.profile(id)?).map_err(|_| CoreError::Bridge)?;
+        let queue = self.continue_row(&profile.scope)?.into_iter().collect();
         let snapshot = viptv_engine::presentation::HomeSnapshot {
             revision: profile.scope.revision,
             scope: profile.scope,
             hero: None,
-            rows: vec![],
+            rows: queue,
             complete: true,
         };
         serde_json::to_string(&snapshot).map_err(|_| CoreError::Bridge)
