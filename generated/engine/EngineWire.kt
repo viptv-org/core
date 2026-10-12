@@ -192,6 +192,7 @@ data class ProfileConfiguration(
     val scope: Scope,
     val mode: ExecutionMode,
     val name: String,
+    val avatar_id: String? = null,
     val browsing_plugin: String,
     val assignments: List<ProfileAssignment>,
 )

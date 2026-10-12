@@ -6,6 +6,7 @@ struct ProfileCard {
     id: String,
     name: String,
     locked: bool,
+    avatar_id: Option<String>,
 }
 
 #[uniffi::export]
@@ -23,10 +24,24 @@ impl LocalEngine {
                         .map_err(|_| CoreError::Bridge)?,
                     id: profile.scope.profile_id,
                     name: profile.name,
+                    avatar_id: profile.avatar_id,
                 })
             })
             .collect::<Result<Vec<_>, CoreError>>()?;
         serde_json::to_string(&cards).map_err(|_| CoreError::Bridge)
+    }
+
+    pub fn set_profile_avatar(
+        &self,
+        id: String,
+        avatar_id: String,
+        pin: String,
+    ) -> Result<(), CoreError> {
+        self.store
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .set_profile_avatar(&local_scope(&id), &avatar_id, &pin)
+            .map_err(|_| CoreError::InvalidInput)
     }
 
     pub fn rename_profile(&self, id: String, name: String, pin: String) -> Result<(), CoreError> {
