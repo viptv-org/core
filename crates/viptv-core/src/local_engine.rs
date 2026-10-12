@@ -60,6 +60,14 @@ impl LocalEngine {
         .map_err(|_| CoreError::Bridge)
     }
 
+    pub fn home(&self, id: String) -> Result<String, CoreError> {
+        let profile: ProfileConfiguration=serde_json::from_str(&self.profile(id)?).map_err(|_|CoreError::Bridge)?;
+        let snapshot=viptv_engine::presentation::HomeSnapshot {
+            revision:profile.scope.revision,scope:profile.scope,hero:None,rows:vec![],complete:true,
+        };
+        serde_json::to_string(&snapshot).map_err(|_|CoreError::Bridge)
+    }
+
     pub fn create_profile(&self, id: String, name: String) -> Result<String, CoreError> {
         if id.is_empty()
             || id.len() > 128
