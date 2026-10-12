@@ -1,5 +1,12 @@
 use crate::CoreError;
-use std::{path::Path, sync::Mutex};
+use sha1::Digest;
+use std::{
+    path::Path,
+    sync::{Arc, Mutex},
+};
+mod addons;
+mod secrets;
+pub use secrets::SecretStore;
 use viptv_engine::{
     profile::{ProfileConfiguration, Scope},
     store::Store,
@@ -8,6 +15,9 @@ use viptv_engine::{
 #[derive(uniffi::Object)]
 pub struct LocalEngine {
     store: Mutex<Store>,
+    secrets: Arc<dyn SecretStore>,
+    namespace: String,
+    pending: Mutex<std::collections::HashMap<String, addons::PendingHome>>,
 }
 
 fn local_scope(profile: &str) -> Scope {
@@ -22,7 +32,7 @@ fn local_scope(profile: &str) -> Scope {
 #[uniffi::export]
 impl LocalEngine {
     #[uniffi::constructor]
-    pub fn new(database_path: String) -> Result<Self, CoreError> {
+    pub fn new(database_path: String, secrets: Arc<dyn SecretStore>) -> Result<Self, CoreError> {
         let path = Path::new(&database_path);
         if let Some(parent) = path.parent().filter(|p| !p.as_os_str().is_empty()) {
             std::fs::create_dir_all(parent).map_err(|_| CoreError::Bridge)?;
@@ -47,6 +57,17 @@ impl LocalEngine {
         }
         Ok(Self {
             store: Mutex::new(store),
+            secrets,
+            namespace: format!(
+                "{:x}",
+                sha1::Sha1::digest(
+                    path.canonicalize()
+                        .map_err(|_| CoreError::Bridge)?
+                        .to_string_lossy()
+                        .as_bytes()
+                )
+            ),
+            pending: Mutex::new(std::collections::HashMap::new()),
         })
     }
 
@@ -61,11 +82,16 @@ impl LocalEngine {
     }
 
     pub fn home(&self, id: String) -> Result<String, CoreError> {
-        let profile: ProfileConfiguration=serde_json::from_str(&self.profile(id)?).map_err(|_|CoreError::Bridge)?;
-        let snapshot=viptv_engine::presentation::HomeSnapshot {
-            revision:profile.scope.revision,scope:profile.scope,hero:None,rows:vec![],complete:true,
+        let profile: ProfileConfiguration =
+            serde_json::from_str(&self.profile(id)?).map_err(|_| CoreError::Bridge)?;
+        let snapshot = viptv_engine::presentation::HomeSnapshot {
+            revision: profile.scope.revision,
+            scope: profile.scope,
+            hero: None,
+            rows: vec![],
+            complete: true,
         };
-        serde_json::to_string(&snapshot).map_err(|_|CoreError::Bridge)
+        serde_json::to_string(&snapshot).map_err(|_| CoreError::Bridge)
     }
 
     pub fn create_profile(&self, id: String, name: String) -> Result<String, CoreError> {

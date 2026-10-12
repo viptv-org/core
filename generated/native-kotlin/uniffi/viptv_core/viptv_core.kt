@@ -654,6 +654,58 @@ internal open class UniffiForeignFutureStructVoid(
 internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
     fun callback(`callbackData`: Long,`result`: UniffiForeignFutureStructVoid.UniffiByValue,)
 }
+internal interface UniffiCallbackInterfaceSecretStoreMethod0 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceSecretStoreMethod1 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+internal interface UniffiCallbackInterfaceSecretStoreMethod2 : com.sun.jna.Callback {
+    fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,)
+}
+@Structure.FieldOrder("get", "put", "remove", "uniffiFree")
+internal open class UniffiVTableCallbackInterfaceSecretStore(
+    @JvmField internal var `get`: UniffiCallbackInterfaceSecretStoreMethod0? = null,
+    @JvmField internal var `put`: UniffiCallbackInterfaceSecretStoreMethod1? = null,
+    @JvmField internal var `remove`: UniffiCallbackInterfaceSecretStoreMethod2? = null,
+    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+) : Structure() {
+    class UniffiByValue(
+        `get`: UniffiCallbackInterfaceSecretStoreMethod0? = null,
+        `put`: UniffiCallbackInterfaceSecretStoreMethod1? = null,
+        `remove`: UniffiCallbackInterfaceSecretStoreMethod2? = null,
+        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
+    ): UniffiVTableCallbackInterfaceSecretStore(`get`,`put`,`remove`,`uniffiFree`,), Structure.ByValue
+
+   internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceSecretStore) {
+        `get` = other.`get`
+        `put` = other.`put`
+        `remove` = other.`remove`
+        `uniffiFree` = other.`uniffiFree`
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -851,6 +903,8 @@ internal interface IntegrityCheckingUniffiLib : Library {
     // Integrity check functions only
     fun uniffi_viptv_core_checksum_func_normalize(
 ): Short
+fun uniffi_viptv_core_checksum_func_system_secret_store(
+): Short
 fun uniffi_viptv_core_checksum_func_vizio_deviceinfo_name(
 ): Short
 fun uniffi_viptv_core_checksum_func_vizio_discovery_candidates(
@@ -867,13 +921,23 @@ fun uniffi_viptv_core_checksum_method_corebridge_update(
 ): Short
 fun uniffi_viptv_core_checksum_method_corebridge_view(
 ): Short
+fun uniffi_viptv_core_checksum_method_localengine_addons(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_check_addon_url(
+): Short
 fun uniffi_viptv_core_checksum_method_localengine_create_profile(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_home(
 ): Short
+fun uniffi_viptv_core_checksum_method_localengine_install_addon(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_plan_home(
+): Short
 fun uniffi_viptv_core_checksum_method_localengine_profile(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_profiles(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_project_home(
 ): Short
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_accept(
 ): Short
@@ -904,6 +968,12 @@ fun uniffi_viptv_core_checksum_method_nativetorrentbridge_private_input_value(
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_state(
 ): Short
 fun uniffi_viptv_core_checksum_method_nativetorrentbridge_trusted_wall_upper_unix_millis(
+): Short
+fun uniffi_viptv_core_checksum_method_secretstore_get(
+): Short
+fun uniffi_viptv_core_checksum_method_secretstore_put(
+): Short
+fun uniffi_viptv_core_checksum_method_secretstore_remove(
 ): Short
 fun uniffi_viptv_core_checksum_method_smartcastbridge_cancel(
 ): Short
@@ -995,6 +1065,7 @@ internal interface UniffiLib : Library {
             val lib = loadIndirect<UniffiLib>(componentName)
             // No need to check the contract version and checksums, since
             // we already did that with `IntegrityCheckingUniffiLib` above.
+            uniffiCallbackInterfaceSecretStore.register(lib)
             // Loading of library with integrity check done.
             lib
         }
@@ -1022,15 +1093,25 @@ fun uniffi_viptv_core_fn_clone_localengine(`ptr`: Pointer,uniffi_out_err: Uniffi
 ): Pointer
 fun uniffi_viptv_core_fn_free_localengine(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
-fun uniffi_viptv_core_fn_constructor_localengine_new(`databasePath`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+fun uniffi_viptv_core_fn_constructor_localengine_new(`databasePath`: RustBuffer.ByValue,`secrets`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
+fun uniffi_viptv_core_fn_method_localengine_addons(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_check_addon_url(`ptr`: Pointer,`url`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_create_profile(`ptr`: Pointer,`id`: RustBuffer.ByValue,`name`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_home(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_install_addon(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`url`: RustBuffer.ByValue,`rawManifest`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_plan_home(`ptr`: Pointer,`profileId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_profile(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_profiles(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_project_home(`ptr`: Pointer,`id`: RustBuffer.ByValue,`rawResults`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_clone_nativetorrentbridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
@@ -1072,6 +1153,18 @@ fun uniffi_viptv_core_fn_method_nativetorrentbridge_uniffi_trait_debug(`ptr`: Po
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_nativetorrentbridge_uniffi_trait_display(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_clone_secretstore(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): Pointer
+fun uniffi_viptv_core_fn_free_secretstore(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): Unit
+fun uniffi_viptv_core_fn_init_callback_vtable_secretstore(`vtable`: UniffiVTableCallbackInterfaceSecretStore,
+): Unit
+fun uniffi_viptv_core_fn_method_secretstore_get(`ptr`: Pointer,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_secretstore_put(`ptr`: Pointer,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Unit
+fun uniffi_viptv_core_fn_method_secretstore_remove(`ptr`: Pointer,`key`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Unit
 fun uniffi_viptv_core_fn_clone_smartcastbridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
 fun uniffi_viptv_core_fn_free_smartcastbridge(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
@@ -1132,6 +1225,8 @@ fun uniffi_viptv_core_fn_method_torrentruntimebridge_uniffi_trait_display(`ptr`:
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_func_normalize(`kind`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,`origin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_func_system_secret_store(uniffi_out_err: UniffiRustCallStatus,
+): Pointer
 fun uniffi_viptv_core_fn_func_vizio_deviceinfo_name(`body`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_func_vizio_discovery_candidates(`subnet`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
@@ -1271,6 +1366,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_func_normalize() != 57983.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_func_system_secret_store() != 38748.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_func_vizio_deviceinfo_name() != 43515.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1295,16 +1393,31 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_method_corebridge_view() != 3339.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_addons() != 43169.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_check_addon_url() != 30870.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_method_localengine_create_profile() != 19279.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_home() != 4434.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_install_addon() != 22114.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_plan_home() != 1268.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_method_localengine_profile() != 52018.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_profiles() != 38029.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_project_home() != 36804.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_accept() != 35008.toShort()) {
@@ -1350,6 +1463,15 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_nativetorrentbridge_trusted_wall_upper_unix_millis() != 25858.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_secretstore_get() != 61955.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_secretstore_put() != 25132.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_secretstore_remove() != 3885.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_smartcastbridge_cancel() != 30724.toShort()) {
@@ -1418,7 +1540,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_constructor_corebridge_new() != 23242.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_viptv_core_checksum_constructor_localengine_new() != 17335.toShort()) {
+    if (lib.uniffi_viptv_core_checksum_constructor_localengine_new() != 12017.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_constructor_nativetorrentbridge_new() != 12551.toShort()) {
@@ -1507,7 +1629,38 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
  *
  * @suppress
  * */
-object NoPointer
+object NoPointer// Magic number for the Rust proxy to call using the same mechanism as every other method,
+// to free the callback once it's dropped by Rust.
+internal const val IDX_CALLBACK_FREE = 0
+// Callback return codes
+internal const val UNIFFI_CALLBACK_SUCCESS = 0
+internal const val UNIFFI_CALLBACK_ERROR = 1
+internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
+
+/**
+ * @suppress
+ */
+public abstract class FfiConverterCallbackInterface<CallbackInterface: Any>: FfiConverter<CallbackInterface, Long> {
+    internal val handleMap = UniffiHandleMap<CallbackInterface>()
+
+    internal fun drop(handle: Long) {
+        handleMap.remove(handle)
+    }
+
+    override fun lift(value: Long): CallbackInterface {
+        return handleMap.get(value)
+    }
+
+    override fun read(buf: ByteBuffer) = lift(buf.getLong())
+
+    override fun lower(value: CallbackInterface) = handleMap.insert(value)
+
+    override fun allocationSize(value: CallbackInterface) = 8UL
+
+    override fun write(value: CallbackInterface, buf: ByteBuffer) {
+        buf.putLong(lower(value))
+    }
+}
 /**
  * The cleaner interface for Object finalization code to run.
  * This is the entry point to any implementation that we're using.
@@ -2116,13 +2269,23 @@ public object FfiConverterTypeCoreBridge: FfiConverter<CoreBridge, Pointer> {
 
 public interface LocalEngineInterface {
 
+    fun `addons`(): kotlin.String
+
+    fun `checkAddonUrl`(`url`: kotlin.String): kotlin.String
+
     fun `createProfile`(`id`: kotlin.String, `name`: kotlin.String): kotlin.String
 
     fun `home`(`id`: kotlin.String): kotlin.String
 
+    fun `installAddon`(`profile`: kotlin.String, `url`: kotlin.String, `rawManifest`: kotlin.String): kotlin.String
+
+    fun `planHome`(`profileId`: kotlin.String): kotlin.String
+
     fun `profile`(`id`: kotlin.String): kotlin.String
 
     fun `profiles`(): kotlin.String
+
+    fun `projectHome`(`id`: kotlin.String, `rawResults`: kotlin.String): kotlin.String
 
     companion object
 }
@@ -2145,11 +2308,11 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
         this.pointer = null
         this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
     }
-    constructor(`databasePath`: kotlin.String) :
+    constructor(`databasePath`: kotlin.String, `secrets`: SecretStore) :
         this(
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_constructor_localengine_new(
-        FfiConverterString.lower(`databasePath`),_status)
+        FfiConverterString.lower(`databasePath`),FfiConverterTypeSecretStore.lower(`secrets`),_status)
 }
     )
 
@@ -2217,6 +2380,32 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     }
 
 
+    @Throws(CoreException::class)override fun `addons`(): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_addons(
+        it, _status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `checkAddonUrl`(`url`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_check_addon_url(
+        it, FfiConverterString.lower(`url`),_status)
+}
+    }
+    )
+    }
+
+
+
     @Throws(CoreException::class)override fun `createProfile`(`id`: kotlin.String, `name`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
@@ -2243,6 +2432,32 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
 
 
 
+    @Throws(CoreException::class)override fun `installAddon`(`profile`: kotlin.String, `url`: kotlin.String, `rawManifest`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_install_addon(
+        it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`url`),FfiConverterString.lower(`rawManifest`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `planHome`(`profileId`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_plan_home(
+        it, FfiConverterString.lower(`profileId`),_status)
+}
+    }
+    )
+    }
+
+
+
     @Throws(CoreException::class)override fun `profile`(`id`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
@@ -2262,6 +2477,19 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_profiles(
         it, _status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `projectHome`(`id`: kotlin.String, `rawResults`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_project_home(
+        it, FfiConverterString.lower(`id`),FfiConverterString.lower(`rawResults`),_status)
 }
     }
     )
@@ -2798,6 +3026,348 @@ public object FfiConverterTypeNativeTorrentBridge: FfiConverter<NativeTorrentBri
     override fun allocationSize(value: NativeTorrentBridge) = 8UL
 
     override fun write(value: NativeTorrentBridge, buf: ByteBuffer) {
+        // The Rust code always expects pointers written as 8 bytes,
+        // and will fail to compile if they don't fit.
+        buf.putLong(Pointer.nativeValue(lower(value)))
+    }
+}
+
+
+// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
+// to the live Rust struct on the other side of the FFI.
+//
+// Each instance implements core operations for working with the Rust `Arc<T>` and the
+// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
+//
+// There's some subtlety here, because we have to be careful not to operate on a Rust
+// struct after it has been dropped, and because we must expose a public API for freeing
+// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
+//
+//   * Each instance holds an opaque pointer to the underlying Rust struct.
+//     Method calls need to read this pointer from the object's state and pass it in to
+//     the Rust FFI.
+//
+//   * When an instance is no longer needed, its pointer should be passed to a
+//     special destructor function provided by the Rust FFI, which will drop the
+//     underlying Rust struct.
+//
+//   * Given an instance, calling code is expected to call the special
+//     `destroy` method in order to free it after use, either by calling it explicitly
+//     or by using a higher-level helper like the `use` method. Failing to do so risks
+//     leaking the underlying Rust struct.
+//
+//   * We can't assume that calling code will do the right thing, and must be prepared
+//     to handle Kotlin method calls executing concurrently with or even after a call to
+//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
+//
+//   * We must never allow Rust code to operate on the underlying Rust struct after
+//     the destructor has been called, and must never call the destructor more than once.
+//     Doing so may trigger memory unsafety.
+//
+//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
+//     is implemented to call the destructor when the Kotlin object becomes unreachable.
+//     This is done in a background thread. This is not a panacea, and client code should be aware that
+//      1. the thread may starve if some there are objects that have poorly performing
+//     `drop` methods or do significant work in their `drop` methods.
+//      2. the thread is shared across the whole library. This can be tuned by using `android_cleaner = true`,
+//         or `android = true` in the [`kotlin` section of the `uniffi.toml` file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
+//
+// If we try to implement this with mutual exclusion on access to the pointer, there is the
+// possibility of a race between a method call and a concurrent call to `destroy`:
+//
+//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
+//      before it can pass the pointer over the FFI to Rust.
+//    * Thread B calls `destroy` and frees the underlying Rust struct.
+//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
+//      a use-after-free.
+//
+// One possible solution would be to use a `ReadWriteLock`, with each method call taking
+// a read lock (and thus allowed to run concurrently) and the special `destroy` method
+// taking a write lock (and thus blocking on live method calls). However, we aim not to
+// generate methods with any hidden blocking semantics, and a `destroy` method that might
+// block if called incorrectly seems to meet that bar.
+//
+// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
+// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
+// has been called. These are updated according to the following rules:
+//
+//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
+//      The initial value for the flag is false.
+//
+//    * At the start of each method call, we atomically check the counter.
+//      If it is 0 then the underlying Rust struct has already been destroyed and the call is aborted.
+//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
+//
+//    * At the end of each method call, we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+//    * When `destroy` is called, we atomically flip the flag from false to true.
+//      If the flag was already true we silently fail.
+//      Otherwise we atomically decrement and check the counter.
+//      If it has reached zero then we destroy the underlying Rust struct.
+//
+// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>` works,
+// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
+//
+// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
+// called *and* all in-flight method calls have completed, avoiding violating any of the expectations
+// of the underlying Rust code.
+//
+// This makes a cleaner a better alternative to _not_ calling `destroy()` as
+// and when the object is finished with, but the abstraction is not perfect: if the Rust object's `drop`
+// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device, then the cleaner
+// thread may be starved, and the app will leak memory.
+//
+// In this case, `destroy`ing manually may be a better solution.
+//
+// The cleaner can live side by side with the manual calling of `destroy`. In the order of responsiveness, uniffi objects
+// with Rust peers are reclaimed:
+//
+// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that doesn't happen:
+// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`. If the thread is starved then:
+// 3. The memory is reclaimed when the process terminates.
+//
+// [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
+//
+
+
+public interface SecretStore {
+
+    fun `get`(`key`: kotlin.String): kotlin.String?
+
+    fun `put`(`key`: kotlin.String, `value`: kotlin.String)
+
+    fun `remove`(`key`: kotlin.String)
+
+    companion object
+}
+
+open class SecretStoreImpl: Disposable, AutoCloseable, SecretStore
+{
+
+    constructor(pointer: Pointer) {
+        this.pointer = pointer
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
+    }
+
+    /**
+     * This constructor can be used to instantiate a fake object. Only used for tests. Any
+     * attempt to actually use an object constructed this way will fail as there is no
+     * connected Rust object.
+     */
+    @Suppress("UNUSED_PARAMETER")
+    constructor(noPointer: NoPointer) {
+        this.pointer = null
+        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
+    }
+
+    protected val pointer: Pointer?
+    protected val cleanable: UniffiCleaner.Cleanable
+
+    private val wasDestroyed = AtomicBoolean(false)
+    private val callCounter = AtomicLong(1)
+
+    override fun destroy() {
+        // Only allow a single call to this method.
+        // TODO: maybe we should log a warning if called more than once?
+        if (this.wasDestroyed.compareAndSet(false, true)) {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    @Synchronized
+    override fun close() {
+        this.destroy()
+    }
+
+    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        do {
+            val c = this.callCounter.get()
+            if (c == 0L) {
+                throw IllegalStateException("${this.javaClass.simpleName} object has already been destroyed")
+            }
+            if (c == Long.MAX_VALUE) {
+                throw IllegalStateException("${this.javaClass.simpleName} call counter would overflow")
+            }
+        } while (! this.callCounter.compareAndSet(c, c + 1L))
+        // Now we can safely do the method call without the pointer being freed concurrently.
+        try {
+            return block(this.uniffiClonePointer())
+        } finally {
+            // This decrement always matches the increment we performed above.
+            if (this.callCounter.decrementAndGet() == 0L) {
+                cleanable.clean()
+            }
+        }
+    }
+
+    // Use a static inner class instead of a closure so as not to accidentally
+    // capture `this` as part of the cleanable's action.
+    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
+        override fun run() {
+            pointer?.let { ptr ->
+                uniffiRustCall { status ->
+                    UniffiLib.INSTANCE.uniffi_viptv_core_fn_free_secretstore(ptr, status)
+                }
+            }
+        }
+    }
+
+    fun uniffiClonePointer(): Pointer {
+        return uniffiRustCall() { status ->
+            UniffiLib.INSTANCE.uniffi_viptv_core_fn_clone_secretstore(pointer!!, status)
+        }
+    }
+
+
+    @Throws(CoreException::class)override fun `get`(`key`: kotlin.String): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_secretstore_get(
+        it, FfiConverterString.lower(`key`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `put`(`key`: kotlin.String, `value`: kotlin.String)
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_secretstore_put(
+        it, FfiConverterString.lower(`key`),FfiConverterString.lower(`value`),_status)
+}
+    }
+
+
+
+
+    @Throws(CoreException::class)override fun `remove`(`key`: kotlin.String)
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_secretstore_remove(
+        it, FfiConverterString.lower(`key`),_status)
+}
+    }
+
+
+
+
+
+
+
+    companion object
+
+}
+
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceSecretStore {
+    internal object `get`: UniffiCallbackInterfaceSecretStoreMethod0 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: RustBuffer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeSecretStore.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`get`(
+                    FfiConverterString.lift(`key`),
+                )
+            }
+            val writeReturn = { value: kotlin.String? -> uniffiOutReturn.setValue(FfiConverterOptionalString.lower(value)) }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: CoreException -> FfiConverterTypeCoreError.lower(e) }
+            )
+        }
+    }
+    internal object `put`: UniffiCallbackInterfaceSecretStoreMethod1 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`value`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeSecretStore.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`put`(
+                    FfiConverterString.lift(`key`),
+                    FfiConverterString.lift(`value`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: CoreException -> FfiConverterTypeCoreError.lower(e) }
+            )
+        }
+    }
+    internal object `remove`: UniffiCallbackInterfaceSecretStoreMethod2 {
+        override fun callback(`uniffiHandle`: Long,`key`: RustBuffer.ByValue,`uniffiOutReturn`: Pointer,uniffiCallStatus: UniffiRustCallStatus,) {
+            val uniffiObj = FfiConverterTypeSecretStore.handleMap.get(uniffiHandle)
+            val makeCall = { ->
+                uniffiObj.`remove`(
+                    FfiConverterString.lift(`key`),
+                )
+            }
+            val writeReturn = { _: Unit -> Unit }
+            uniffiTraitInterfaceCallWithError(
+                uniffiCallStatus,
+                makeCall,
+                writeReturn,
+                { e: CoreException -> FfiConverterTypeCoreError.lower(e) }
+            )
+        }
+    }
+
+    internal object uniffiFree: UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeSecretStore.handleMap.remove(handle)
+        }
+    }
+
+    internal var vtable = UniffiVTableCallbackInterfaceSecretStore.UniffiByValue(
+        `get`,
+        `put`,
+        `remove`,
+        uniffiFree,
+    )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_viptv_core_fn_init_callback_vtable_secretstore(vtable)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSecretStore: FfiConverter<SecretStore, Pointer> {
+    internal val handleMap = UniffiHandleMap<SecretStore>()
+
+    override fun lower(value: SecretStore): Pointer {
+        return Pointer(handleMap.insert(value))
+    }
+
+    override fun lift(value: Pointer): SecretStore {
+        return SecretStoreImpl(value)
+    }
+
+    override fun read(buf: ByteBuffer): SecretStore {
+        // The Rust code always writes pointers as 8 bytes, and will
+        // fail to compile if they don't fit.
+        return lift(Pointer(buf.getLong()))
+    }
+
+    override fun allocationSize(value: SecretStore) = 8UL
+
+    override fun write(value: SecretStore, buf: ByteBuffer) {
         // The Rust code always expects pointers written as 8 bytes,
         // and will fail to compile if they don't fit.
         buf.putLong(Pointer.nativeValue(lower(value)))
@@ -3807,6 +4377,15 @@ public object FfiConverterSequenceString: FfiConverterRustBuffer<List<kotlin.Str
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_normalize(
         FfiConverterString.lower(`kind`),FfiConverterString.lower(`input`),FfiConverterString.lower(`origin`),_status)
+}
+    )
+    }
+
+ fun `systemSecretStore`(): SecretStore {
+            return FfiConverterTypeSecretStore.lift(
+    uniffiRustCall() { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_func_system_secret_store(
+        _status)
 }
     )
     }
