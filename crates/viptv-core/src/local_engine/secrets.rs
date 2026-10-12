@@ -40,8 +40,30 @@ impl SecretStore for SystemSecrets {
     }
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(target_os = "android")]
+struct UnavailableSecrets;
+
+#[cfg(target_os = "android")]
+impl SecretStore for UnavailableSecrets {
+    fn get(&self, _key: String) -> Result<Option<String>, CoreError> {
+        Err(CoreError::Bridge)
+    }
+    fn put(&self, _key: String, _value: String) -> Result<(), CoreError> {
+        Err(CoreError::Bridge)
+    }
+    fn remove(&self, _key: String) -> Result<(), CoreError> {
+        Err(CoreError::Bridge)
+    }
+}
+
 #[uniffi::export]
 pub fn system_secret_store() -> Arc<dyn SecretStore> {
-    Arc::new(SystemSecrets)
+    #[cfg(not(target_os = "android"))]
+    {
+        Arc::new(SystemSecrets)
+    }
+    #[cfg(target_os = "android")]
+    {
+        Arc::new(UnavailableSecrets)
+    }
 }
