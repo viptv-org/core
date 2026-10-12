@@ -1,6 +1,36 @@
 use super::*;
 
 impl Store {
+    pub fn assign(
+        &mut self,
+        profile_id: &str,
+        connection: &IntegrationConnection,
+    ) -> Result<(), Error> {
+        let scope = Scope {
+            connection_id: "local".into(),
+            account_id: "local".into(),
+            profile_id: profile_id.into(),
+            revision: 0,
+        };
+        let mut profile = self.profile(&scope)?.ok_or(Error::Forbidden)?;
+        if connection.account_id != "local" {
+            return Err(Error::Forbidden);
+        }
+        if profile
+            .assignments
+            .iter()
+            .any(|a| a.connection_id == connection.id)
+        {
+            return Ok(());
+        }
+        let previous = profile.scope.revision;
+        profile.scope.revision = previous.checked_add(1).ok_or(Error::Conflict)?;
+        profile.assignments.push(ProfileAssignment {
+            connection_id: connection.id.clone(),
+            enabled: connection.capabilities.clone(),
+        });
+        self.save_profile(&profile, Some(previous))
+    }
     pub fn connections(&self, account: &str) -> Result<Vec<IntegrationConnection>, Error> {
         let mut query = self
             .db

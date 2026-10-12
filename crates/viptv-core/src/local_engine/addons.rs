@@ -55,6 +55,25 @@ impl LocalEngine {
         let manifest_url = stremio::manifest_url(&url).map_err(|_| CoreError::InvalidInput)?;
         let manifest =
             stremio::parse_manifest(&raw_manifest).map_err(|_| CoreError::InvalidInput)?;
+        let existing = self
+            .store
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .connections("local")
+            .map_err(|_| CoreError::Bridge)?;
+        for connection in existing {
+            if self
+                .addon(&connection.id)
+                .is_ok_and(|stored| stored.manifest_url == manifest_url)
+            {
+                self.store
+                    .lock()
+                    .map_err(|_| CoreError::Bridge)?
+                    .assign(&profile, &connection)
+                    .map_err(|_| CoreError::Bridge)?;
+                return serde_json::to_string(&connection).map_err(|_| CoreError::Bridge);
+            }
+        }
         let id = format!("addon:{}", uuid::Uuid::new_v4());
         let record = IntegrationConnection {
             id: id.clone(),

@@ -125,6 +125,20 @@ fn addon_secret_stays_out_of_sqlite_and_home_uses_its_catalog() {
     assert_eq!(prepared["headers"][0][0], "Referer");
     let second: Value = serde_json::from_str(&engine.plan_home("second".into()).unwrap()).unwrap();
     assert!(second["requests"].as_array().unwrap().is_empty());
+    engine
+        .install_addon("second".into(), url.into(), manifest.into())
+        .unwrap();
+    assert_eq!(
+        serde_json::from_str::<Value>(&engine.addons().unwrap())
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
+    let assigned: Value =
+        serde_json::from_str(&engine.plan_home("second".into()).unwrap()).unwrap();
+    assert_eq!(assigned["requests"].as_array().unwrap().len(), 1);
     drop(engine);
     let reopened = LocalEngine::new(path.to_string_lossy().into(), vault).unwrap();
     assert_eq!(
