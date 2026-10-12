@@ -36,11 +36,12 @@ impl From<&PlaybackRecord> for HistoryEntry {
 impl PlaybackRecord {
     pub fn card(&self) -> Card {
         let subtitle = if self.can_resume() {
-            let minutes = self
-                .duration_millis
-                .saturating_sub(self.position_millis)
-                .div_ceil(60_000);
-            Some(format!("{minutes}m left"))
+            let remaining = self.duration_millis.saturating_sub(self.position_millis);
+            if remaining < 60_000 {
+                Some(format!("{}s left", remaining.div_ceil(1_000)))
+            } else {
+                Some(format!("{}m left", remaining.div_ceil(60_000)))
+            }
         } else if self.completed_at_millis.is_some() {
             Some("Watched".into())
         } else {

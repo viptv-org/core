@@ -38,6 +38,10 @@ fn history_is_profile_scoped_completion_survives_rewatch_and_private_art_is_not_
         .unwrap()
         .unwrap();
     assert!(first.can_resume());
+    let mut short = first.clone();
+    short.duration_millis = 5_000;
+    short.position_millis = 2_000;
+    assert_eq!(short.card().subtitle.as_deref(), Some("3s left"));
     assert_eq!(first.poster, None);
     assert_eq!(
         first.landscape.as_deref(),
