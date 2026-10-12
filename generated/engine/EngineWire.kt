@@ -209,3 +209,11 @@ data class Scope(
     val revision: Long,
 )
 
+@Serializable
+data class SourceCandidate(
+    val id: String,
+    val provider_id: String,
+    val label: String,
+    val detail: String? = null,
+)
+

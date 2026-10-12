@@ -8,6 +8,7 @@ mod addons;
 mod detail;
 mod search;
 mod secrets;
+mod sources;
 pub use secrets::SecretStore;
 use viptv_engine::{
     profile::{ProfileConfiguration, Scope},
@@ -21,6 +22,8 @@ pub struct LocalEngine {
     namespace: String,
     pending: Mutex<std::collections::HashMap<String, addons::PendingHome>>,
     details: Mutex<std::collections::HashMap<String, detail::PendingDetail>>,
+    source_jobs: Mutex<std::collections::HashMap<String, sources::PendingSources>>,
+    playable: Mutex<std::collections::HashMap<String, sources::Playable>>,
 }
 
 fn local_scope(profile: &str) -> Scope {
@@ -72,6 +75,8 @@ impl LocalEngine {
             ),
             pending: Mutex::new(std::collections::HashMap::new()),
             details: Mutex::new(std::collections::HashMap::new()),
+            source_jobs: Mutex::new(std::collections::HashMap::new()),
+            playable: Mutex::new(std::collections::HashMap::new()),
         })
     }
 

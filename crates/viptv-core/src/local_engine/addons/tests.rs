@@ -96,6 +96,33 @@ fn addon_secret_stays_out_of_sqlite_and_home_uses_its_catalog() {
     )
     .unwrap();
     assert_eq!(item["item"]["title"], "Film");
+    let sources: Value = serde_json::from_str(
+        &engine
+            .plan_sources("default".into(), "movie".into(), "tt123".into())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(sources["requests"].as_array().unwrap().len(), 1);
+    let response = json!([{"provider":sources["requests"][0]["provider"],"body":r#"{"streams":[{"name":"Full HD","url":"https://media.example/film.mp4","behaviorHints":{"proxyHeaders":{"request":{"Referer":"https://addon.example/"}}}}]}"#}]);
+    let candidates: Value = serde_json::from_str(
+        &engine
+            .project_sources(
+                sources["operation"].as_str().unwrap().into(),
+                response.to_string(),
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(candidates.as_array().unwrap().len(), 1);
+    assert!(!candidates.to_string().contains("media.example"));
+    let prepared: Value = serde_json::from_str(
+        &engine
+            .open_source(candidates[0]["id"].as_str().unwrap().into())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(prepared["url"], "https://media.example/film.mp4");
+    assert_eq!(prepared["headers"][0][0], "Referer");
     let second: Value = serde_json::from_str(&engine.plan_home("second".into()).unwrap()).unwrap();
     assert!(second["requests"].as_array().unwrap().is_empty());
     drop(engine);

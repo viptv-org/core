@@ -23,3 +23,4 @@ export type QueryControl = { readonly id: string; readonly label: string; readon
 export type QueryValue = { readonly id: string; readonly values: ReadonlyArray<string> };
 export type RowState = "Pending" | "Ready" | "Empty" | "Failed";
 export type Scope = { readonly connection_id: string; readonly account_id: string; readonly profile_id: string; readonly revision: number };
+export type SourceCandidate = { readonly id: string; readonly provider_id: string; readonly label: string; readonly detail: string | null };
