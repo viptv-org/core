@@ -7,6 +7,7 @@ use std::{
 mod addons;
 mod detail;
 mod history;
+mod profiles;
 mod search;
 mod secrets;
 mod sources;
@@ -51,11 +52,7 @@ impl LocalEngine {
             std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
                 .map_err(|_| CoreError::Bridge)?;
         }
-        if store
-            .profile(&local_scope("default"))
-            .map_err(|_| CoreError::Bridge)?
-            .is_none()
-        {
+        if store.profiles("local", "local").map_err(|_| CoreError::Bridge)?.is_empty() {
             let profile =
                 ProfileConfiguration::local("local".into(), "default".into(), "Default".into());
             store
