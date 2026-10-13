@@ -11,6 +11,7 @@ mod profiles;
 mod search;
 mod secrets;
 mod sources;
+mod subtitles;
 pub use secrets::SecretStore;
 use viptv_engine::{
     profile::{ProfileConfiguration, Scope},
@@ -26,6 +27,8 @@ pub struct LocalEngine {
     details: Mutex<std::collections::HashMap<String, detail::PendingDetail>>,
     source_jobs: Mutex<std::collections::HashMap<String, sources::PendingSources>>,
     playable: Mutex<std::collections::HashMap<String, sources::Playable>>,
+    subtitle_jobs: Mutex<std::collections::HashMap<String, subtitles::PendingSubtitles>>,
+    subtitle_selections: Mutex<std::collections::HashMap<String, subtitles::SelectedSubtitle>>,
 }
 
 fn local_scope(profile: &str) -> Scope {
@@ -75,6 +78,8 @@ impl LocalEngine {
             details: Mutex::new(std::collections::HashMap::new()),
             source_jobs: Mutex::new(std::collections::HashMap::new()),
             playable: Mutex::new(std::collections::HashMap::new()),
+            subtitle_jobs: Mutex::new(std::collections::HashMap::new()),
+            subtitle_selections: Mutex::new(std::collections::HashMap::new()),
         })
     }
 

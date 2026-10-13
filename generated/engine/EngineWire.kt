@@ -238,3 +238,26 @@ data class SourceCandidate(
     val detail: String? = null,
 )
 
+@Serializable
+data class SubtitleCandidate(
+    val id: String,
+    val provider_id: String,
+    val language: String,
+    val label: String,
+)
+
+@Serializable
+data class SubtitleProvider(
+    val provider_id: String,
+    val state: RowState,
+    val message: String? = null,
+)
+
+@Serializable
+data class SubtitleSnapshot(
+    val scope: Scope,
+    val candidates: List<SubtitleCandidate>,
+    val providers: List<SubtitleProvider>,
+    val complete: Boolean,
+)
+

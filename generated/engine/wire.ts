@@ -26,3 +26,6 @@ export type QueryValue = { readonly id: string; readonly values: ReadonlyArray<s
 export type RowState = "Pending" | "Ready" | "Empty" | "Failed";
 export type Scope = { readonly connection_id: string; readonly account_id: string; readonly profile_id: string; readonly revision: number };
 export type SourceCandidate = { readonly id: string; readonly provider_id: string; readonly label: string; readonly detail: string | null };
+export type SubtitleCandidate = { readonly id: string; readonly provider_id: string; readonly language: string; readonly label: string };
+export type SubtitleProvider = { readonly provider_id: string; readonly state: RowState; readonly message: string | null };
+export type SubtitleSnapshot = { readonly scope: Scope; readonly candidates: ReadonlyArray<SubtitleCandidate>; readonly providers: ReadonlyArray<SubtitleProvider>; readonly complete: boolean };

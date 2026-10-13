@@ -3,7 +3,7 @@ mod wire;
 use crux_core::type_generation::facet::TypeRegistry;
 use facet_generate::reflection::format::{ContainerFormat as C, Format as F, VariantFormat as V};
 use viptv_engine::playback::{HistoryEntry, PlaybackRecord};
-use viptv_engine::stremio::SourceCandidate;
+use viptv_engine::stremio::{SourceCandidate, SubtitleSnapshot};
 use viptv_engine::{capabilities::*, identity::*, presentation::*, profile::*, query::*};
 
 fn ty(f: &F) -> String {
@@ -29,6 +29,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<DetailSnapshot>()?
         .register_type::<CatalogPage>()?
         .register_type::<SourceCandidate>()?
+        .register_type::<SubtitleSnapshot>()?
         .register_type::<PlaybackRecord>()?
         .register_type::<HistoryEntry>()?
         .register_type::<QueryControl>()?

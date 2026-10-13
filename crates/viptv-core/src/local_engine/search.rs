@@ -60,6 +60,8 @@ impl LocalEngine {
             PendingHome {
                 scope: profile.scope,
                 rows: rows.clone(),
+                cached: Default::default(),
+                cache_home: false,
             },
         );
         serde_json::to_string(&json!({"id":id,"requests":rows})).map_err(|_| CoreError::Bridge)

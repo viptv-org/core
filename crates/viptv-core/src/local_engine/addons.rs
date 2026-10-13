@@ -26,6 +26,8 @@ pub(super) struct CatalogRequest {
 pub(super) struct PendingHome {
     pub(super) scope: Scope,
     pub(super) rows: Vec<CatalogRequest>,
+    pub(super) cached: std::collections::HashMap<String, Vec<viptv_engine::presentation::Card>>,
+    pub(super) cache_home: bool,
 }
 
 impl LocalEngine {
@@ -38,6 +40,7 @@ impl LocalEngine {
     }
 }
 
+mod home;
 #[cfg(test)]
 mod tests;
 
@@ -139,180 +142,5 @@ impl LocalEngine {
             .remove_connection(&id)
             .map_err(|_| CoreError::Bridge)?;
         self.secrets.remove(self.key(&id))
-    }
-
-    pub fn plan_home(&self, profile_id: String) -> Result<String, CoreError> {
-        let scope = local_scope(&profile_id);
-        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
-        let profile = store
-            .profile(&scope)
-            .map_err(|_| CoreError::Bridge)?
-            .ok_or(CoreError::InvalidInput)?;
-        let connections = store.connections("local").map_err(|_| CoreError::Bridge)?;
-        let mut rows = Vec::new();
-        for connection in connections
-            .iter()
-            .filter(|c| {
-                c.enabled
-                    && c.plugin_id == profile.browsing_plugin
-                    && profile.assignments.iter().any(|a| {
-                        a.connection_id == c.id && a.enabled.contains(&Capability::Discovery)
-                    })
-            })
-            .take(8)
-        {
-            let secret = match self.addon(&connection.id) {
-                Ok(s) => s,
-                Err(_) => {
-                    rows.push(CatalogRequest {
-                        id: format!("{}:unavailable", connection.id),
-                        title: connection.name.clone(),
-                        provider_id: connection.id.clone(),
-                        url: None,
-                    });
-                    continue;
-                }
-            };
-            let parsed = stremio::parse_manifest(&secret.manifest.to_string())
-                .map_err(|_| CoreError::Bridge)?;
-            for catalog in parsed
-                .catalogs
-                .into_iter()
-                .filter(|c| !c.required_extras)
-                .take(4)
-            {
-                if rows.len() >= 12 {
-                    break;
-                }
-                rows.push(CatalogRequest {
-                    id: format!("{}:{}:{}", connection.id, catalog.kind, catalog.id),
-                    title: format!("{} · {}", connection.name, catalog.name),
-                    provider_id: connection.id.clone(),
-                    url: stremio::catalog_url(&secret.manifest_url, &catalog).ok(),
-                });
-            }
-        }
-        let id = uuid::Uuid::new_v4().to_string();
-        let pending = PendingHome {
-            scope: profile.scope,
-            rows: rows.clone(),
-        };
-        let mut operations = self.pending.lock().map_err(|_| CoreError::Bridge)?;
-        operations.retain(|_, p| p.scope.profile_id != profile_id);
-        operations.insert(id.clone(), pending);
-        serde_json::to_string(&json!({"id":id,"requests":rows})).map_err(|_| CoreError::Bridge)
-    }
-
-    pub fn prepared_home(&self, operation: String) -> Result<String, CoreError> {
-        let plan = self
-            .pending
-            .lock()
-            .map_err(|_| CoreError::Bridge)?
-            .get(&operation)
-            .cloned()
-            .ok_or(CoreError::InvalidInput)?;
-        let mut rows = self
-            .continue_row(&plan.scope)?
-            .into_iter()
-            .collect::<Vec<_>>();
-        rows.extend(plan.rows.iter().map(|request| {
-            HomeRow {
-                id: request.id.clone(),
-                title: request.title.clone(),
-                provider_id: request.provider_id.clone(),
-                state: if request.url.is_some() {
-                    RowState::Pending
-                } else {
-                    RowState::Failed
-                },
-                cards: vec![],
-                next_cursor: None,
-                message: request
-                    .url
-                    .is_none()
-                    .then(|| "This addon is unavailable. Try again.".into()),
-            }
-        }));
-        serde_json::to_string(&HomeSnapshot {
-            scope: plan.scope.clone(),
-            revision: plan.scope.revision,
-            hero: None,
-            rows,
-            complete: false,
-        })
-        .map_err(|_| CoreError::Bridge)
-    }
-
-    pub fn project_home(&self, id: String, raw_results: String) -> Result<String, CoreError> {
-        if raw_results.len() > 12 * 2 * 1024 * 1024 {
-            return Err(CoreError::InvalidInput);
-        }
-        let values: Value =
-            serde_json::from_str(&raw_results).map_err(|_| CoreError::InvalidInput)?;
-        let responses = values.as_array().ok_or(CoreError::InvalidInput)?;
-        let pending = self
-            .pending
-            .lock()
-            .map_err(|_| CoreError::Bridge)?
-            .remove(&id)
-            .ok_or(CoreError::InvalidInput)?;
-        let current = self
-            .store
-            .lock()
-            .map_err(|_| CoreError::Bridge)?
-            .profile(&pending.scope)
-            .map_err(|_| CoreError::Bridge)?
-            .ok_or(CoreError::Bridge)?;
-        if current.scope.revision != pending.scope.revision {
-            return Err(CoreError::Bridge);
-        }
-        let mut rows = pending
-            .rows
-            .iter()
-            .map(|request| {
-                let result = responses
-                    .iter()
-                    .find(|v| v["id"].as_str() == Some(&request.id));
-                let cards = result
-                    .and_then(|v| v["body"].as_str())
-                    .and_then(|body| stremio::cards(body, &request.provider_id).ok());
-                let state = if cards.is_none() {
-                    RowState::Failed
-                } else if cards.as_ref().is_some_and(Vec::is_empty) {
-                    RowState::Empty
-                } else {
-                    RowState::Ready
-                };
-                HomeRow {
-                    id: request.id.clone(),
-                    title: request.title.clone(),
-                    provider_id: request.provider_id.clone(),
-                    state,
-                    cards: cards.unwrap_or_default(),
-                    next_cursor: None,
-                    message: if request.url.is_none() || result.is_none() {
-                        Some("This addon is unavailable. Try again.".into())
-                    } else {
-                        None
-                    },
-                }
-            })
-            .collect::<Vec<_>>();
-        let hero = rows
-            .iter()
-            .flat_map(|r| &r.cards)
-            .find(|c| c.landscape.is_some())
-            .cloned();
-        if let Some(queue) = self.continue_row(&pending.scope)? {
-            rows.insert(0, queue);
-        }
-        serde_json::to_string(&HomeSnapshot {
-            scope: pending.scope.clone(),
-            revision: pending.scope.revision,
-            hero,
-            rows,
-            complete: true,
-        })
-        .map_err(|_| CoreError::Bridge)
     }
 }
