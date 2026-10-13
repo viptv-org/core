@@ -180,6 +180,7 @@ data class LibrarySnapshot(
     val statistics: List<LibraryStatistics> = emptyList(),
     val availability: Availability,
     val reason: String? = null,
+    val refresh_after_millis: Long? = null,
 )
 
 @Serializable
