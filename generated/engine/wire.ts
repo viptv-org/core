@@ -2,7 +2,7 @@
 export type Availability = "Available" | "NeedsConfiguration" | "NeedsAuthorization" | "TemporarilyUnavailable" | "Unsupported";
 export type Capability = "Discovery" | "Search" | "Metadata" | "Sources" | "Subtitles" | "Tracking" | "Authorization" | "Mapping" | "LiveTv";
 export type CapabilityState = { readonly capability: Capability; readonly availability: Availability; readonly message: string | null };
-export type Card = { readonly identity: MediaIdentity; readonly provider_id: string; readonly title: string; readonly subtitle: string | null; readonly description: string | null; readonly poster: string | null; readonly landscape: string | null; readonly logo: string | null; readonly progress: number | null; readonly badges: ReadonlyArray<string> };
+export type Card = { readonly identity: MediaIdentity; readonly provider_id: string; readonly title: string; readonly subtitle: string | null; readonly description: string | null; readonly poster: string | null; readonly landscape: string | null; readonly logo: string | null; readonly progress: number | null; readonly badges: ReadonlyArray<string>; readonly parent_identity: MediaIdentity | null };
 export type CatalogPage = { readonly cards: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly complete: boolean };
 export type Choice = { readonly value: string; readonly label: string };
 export type ControlKind = "Text" | "SingleChoice" | "MultiChoice" | "Toggle" | "Number" | "Date";
@@ -17,7 +17,7 @@ export type IntegrationConnection = { readonly id: string; readonly plugin_id: s
 export type MappingConfidence = "Explicit" | "Candidate";
 export type MappingEvidence = { readonly source: string; readonly target: ExternalId; readonly confidence: MappingConfidence; readonly episode: EpisodeCoordinates | null; readonly version: string };
 export type MediaIdentity = { readonly id: string; readonly kind: string; readonly ids: ReadonlyArray<ExternalId>; readonly episode: EpisodeCoordinates | null; readonly edition: string | null };
-export type PlaybackRecord = { readonly identity: MediaIdentity; readonly provider_id: string; readonly title: string; readonly poster: string | null; readonly landscape: string | null; readonly position_millis: number; readonly duration_millis: number; readonly updated_at_millis: number; readonly completed_at_millis: number | null };
+export type PlaybackRecord = { readonly identity: MediaIdentity; readonly provider_id: string; readonly title: string; readonly poster: string | null; readonly landscape: string | null; readonly position_millis: number; readonly duration_millis: number; readonly updated_at_millis: number; readonly completed_at_millis: number | null; readonly parent_identity: MediaIdentity | null };
 export type PluginDescriptor = { readonly id: string; readonly name: string; readonly contract_version: number; readonly locations: ReadonlyArray<ExecutionMode>; readonly capabilities: ReadonlyArray<Capability> };
 export type ProfileAssignment = { readonly connection_id: string; readonly enabled: ReadonlyArray<Capability> };
 export type ProfileConfiguration = { readonly scope: Scope; readonly mode: ExecutionMode; readonly name: string; readonly avatar_id: string | null; readonly browsing_plugin: string; readonly assignments: ReadonlyArray<ProfileAssignment> };

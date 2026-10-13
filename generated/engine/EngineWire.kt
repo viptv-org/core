@@ -45,6 +45,7 @@ data class Card(
     val logo: String? = null,
     val progress: Double? = null,
     val badges: List<String>,
+    val parent_identity: MediaIdentity? = null,
 )
 
 @Serializable
@@ -170,6 +171,7 @@ data class PlaybackRecord(
     val duration_millis: Long,
     val updated_at_millis: Long,
     val completed_at_millis: Long? = null,
+    val parent_identity: MediaIdentity? = null,
 )
 
 @Serializable
