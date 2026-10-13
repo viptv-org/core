@@ -974,6 +974,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1110,6 +1112,8 @@ fun uniffi_viptv_core_checksum_method_localengine_set_profile_pin(
 fun uniffi_viptv_core_checksum_method_localengine_source_integration_schemas(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_start_integration_sources(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_subtitle_content(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_update_profile_preferences(
 ): Short
@@ -1372,6 +1376,8 @@ fun uniffi_viptv_core_fn_method_localengine_set_profile_pin(`ptr`: Pointer,`id`:
 fun uniffi_viptv_core_fn_method_localengine_source_integration_schemas(`ptr`: Pointer,`profile`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_start_integration_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`cardJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_subtitle_content(`ptr`: Pointer,`candidateId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_update_profile_preferences(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`revision`: Long,`preferencesJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
@@ -1808,6 +1814,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_start_integration_sources() != 10809.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_subtitle_content() != 55191.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_update_profile_preferences() != 62103.toShort()) {
@@ -2773,6 +2782,11 @@ public interface LocalEngineInterface {
 
     fun `startIntegrationSources`(`profile`: kotlin.String, `cardJson`: kotlin.String): kotlin.String
 
+    /**
+     * SRT/VTT normalization is additive; openSubtitle retains raw native paths.
+     */
+    fun `subtitleContent`(`candidateId`: kotlin.String): kotlin.String
+
     fun `updateProfilePreferences`(`profile`: kotlin.String, `revision`: kotlin.ULong, `preferencesJson`: kotlin.String): kotlin.String
 
     fun `verifyProfilePin`(`id`: kotlin.String, `pin`: kotlin.String): kotlin.Boolean
@@ -3520,6 +3534,22 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_start_integration_sources(
         it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`cardJson`),_status)
+}
+    }
+    )
+    }
+
+
+
+    /**
+     * SRT/VTT normalization is additive; openSubtitle retains raw native paths.
+     */
+    @Throws(CoreException::class)override fun `subtitleContent`(`candidateId`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_subtitle_content(
+        it, FfiConverterString.lower(`candidateId`),_status)
 }
     }
     )

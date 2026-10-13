@@ -18,6 +18,7 @@ mod secrets;
 mod sources;
 mod source_integrations;
 mod subtitles;
+mod subtitle_content;
 pub use secrets::SecretStore;
 use viptv_engine::{
     profile::{ProfileConfiguration, Scope},

@@ -19,10 +19,11 @@ pub(super) struct PendingSubtitles {
     scope: Scope,
     requests: Vec<Request>,
 }
+#[derive(Clone)]
 pub(super) struct SelectedSubtitle {
-    scope: Scope,
-    file: SubtitleFile,
-    created: Instant,
+    pub(super) scope: Scope,
+    pub(super) file: SubtitleFile,
+    pub(super) created: Instant,
 }
 
 #[uniffi::export]

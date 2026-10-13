@@ -3532,6 +3532,7 @@ dependencies = [
  "argon2",
  "async-trait",
  "chrono",
+ "encoding_rs",
  "facet",
  "flate2",
  "futures",
