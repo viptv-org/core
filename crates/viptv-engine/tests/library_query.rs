@@ -21,3 +21,7 @@ fn empty_optional_filter_choices_mean_any_without_accepting_unknown_filters(){
  assert!(serde_json::from_value::<LibraryQuery>(json!({"invented_filter":true})).is_err());
  assert!(serde_json::from_value::<LibraryQuery>(json!({"status":"invented"})).unwrap().validate().is_err());
 }
+#[test]
+fn provider_next_episode_marker_wins_over_counts_for_caught_up_filter(){
+ let scope=ProfileConfiguration::local("local".into(),"one".into(),"One".into()).scope;let card=simkl::card(&json!({"title":"Skipped old episodes","ids":{"simkl":1}}),"tv").unwrap();let mut statistics=LibraryStatistics::empty(card.identity.clone());statistics.watched_episode_count=Some(3);statistics.aired_episode_count=Some(7);statistics.has_unwatched_aired_episodes=Some(false);let entry=Entry{card,statistics};let mut query=LibraryQuery::default();query.source="simkl".into();query.show="caught_up".into();assert_eq!(project(scope.clone(),0,query.clone(),vec![entry.clone()],vec![],100,None).unwrap().cards.len(),1);query.show="has_new_episode".into();assert!(project(scope,0,query,vec![entry],vec![],100,None).unwrap().cards.is_empty());
+}

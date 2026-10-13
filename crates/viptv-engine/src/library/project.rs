@@ -72,15 +72,15 @@ pub fn project(
             "watched" => s.watched,
             "not_watched" => !s.watched,
             "has_new_episode" => {
-                s.next_episode.is_some() && s.next_air_millis.is_some_and(|date| date <= now)
+                s.has_unwatched_aired_episodes.unwrap_or_else(|| s.next_episode.is_some() && s.next_air_millis.is_some_and(|date| date <= now))
             }
             "not_started" => {
                 s.watched_episode_count == Some(0) || c.identity.kind == "movie" && !s.watched
             }
-            "caught_up" => s
+            "caught_up" => s.has_unwatched_aired_episodes.map(|has| !has).unwrap_or_else(|| s
                 .aired_episode_count
                 .zip(s.watched_episode_count)
-                .is_some_and(|(aired, watched)| aired > 0 && watched >= aired),
+                .is_some_and(|(aired, watched)| aired > 0 && watched >= aired)),
             "episodes_to_air" => s
                 .total_episode_count
                 .zip(s.aired_episode_count)

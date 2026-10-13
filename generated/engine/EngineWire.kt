@@ -200,6 +200,7 @@ data class LibraryStatistics(
     val watched_episode_count: Long? = null,
     val total_episode_count: Long? = null,
     val aired_episode_count: Long? = null,
+    val has_unwatched_aired_episodes: Boolean? = null,
     val status: String? = null,
     val next_episode: EpisodeCoordinates? = null,
     val next_air_millis: Long? = null,
