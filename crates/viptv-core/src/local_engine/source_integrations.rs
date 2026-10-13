@@ -1,0 +1,479 @@
+use super::*;
+use serde_json::json;
+use std::{
+    sync::atomic::{AtomicBool, Ordering},
+    time::Instant,
+};
+use viptv_engine::{
+    capabilities::Capability,
+    profile::IntegrationConnection,
+    source_integration::{VsourcesConfiguration, vsources_schema},
+};
+pub(super) struct Job {
+    scope: Scope,
+    created: Instant,
+    cancel: AtomicBool,
+    state: Mutex<JobState>,
+}
+struct JobState {
+    events: Vec<serde_json::Value>,
+    done: bool,
+    error: Option<String>,
+}
+impl LocalEngine {
+    fn source_key(&self, profile: &str, id: &str) -> String {
+        format!("{}:source:{profile}:{id}", self.namespace)
+    }
+}
+#[uniffi::export]
+impl LocalEngine {
+    pub fn source_integration_schemas(&self, profile: String) -> Result<String, CoreError> {
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let selected = store
+            .profile(&local_scope(&profile))
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
+        let connection = store
+            .connections("local")
+            .map_err(|_| CoreError::Bridge)?
+            .into_iter()
+            .find(|c| {
+                c.plugin_id == "vsources" && c.private_profile_id.as_deref() == Some(&profile)
+            });
+        let configured = connection.as_ref().is_some_and(|c| {
+            self.secrets
+                .get(self.source_key(&profile, &c.id))
+                .ok()
+                .flatten()
+                .is_some()
+        });
+        serde_json::to_string(&json!({"schemas":[vsources_schema(configured,connection.as_ref().map(|c|c.id.clone()))],"revision":selected.scope.revision,"connections":connection.into_iter().collect::<Vec<_>>()}))
+            .map_err(|_| CoreError::Bridge)
+    }
+    pub fn configure_source_integration(
+        &self,
+        profile: String,
+        revision: u64,
+        plugin_id: String,
+        configuration_json: String,
+    ) -> Result<String, CoreError> {
+        if plugin_id != "vsources"
+            || !cfg!(feature = "vsources-runtime")
+            || configuration_json.len() > 4096
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        let config: VsourcesConfiguration =
+            serde_json::from_str(&configuration_json).map_err(|_| CoreError::InvalidInput)?;
+        config.validate().map_err(|_| CoreError::InvalidInput)?;
+        let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let selected = store
+            .profile(&local_scope(&profile))
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
+        if selected.scope.revision != revision {
+            return Err(CoreError::InvalidInput);
+        }
+        #[cfg(feature = "vsources-runtime")]
+        viptv_engine::vsources_runtime::engine(
+            &config,
+            Arc::new(viptv_engine::vsources_runtime::ScopedFetcher::new(
+                Arc::new(|| false),
+            )),
+        )
+        .map_err(|_| CoreError::InvalidInput)?;
+        let existing = store
+            .connections("local")
+            .map_err(|_| CoreError::Bridge)?
+            .into_iter()
+            .find(|c| {
+                c.plugin_id == plugin_id && c.private_profile_id.as_deref() == Some(&profile)
+            });
+        let connection = IntegrationConnection {
+            id: existing
+                .as_ref()
+                .map(|c| c.id.clone())
+                .unwrap_or_else(|| format!("vsources:{}", uuid::Uuid::new_v4())),
+            plugin_id,
+            account_id: "local".into(),
+            private_profile_id: Some(profile.clone()),
+            name: "VIPTV Sources".into(),
+            enabled: true,
+            revision: existing
+                .as_ref()
+                .map(|c| c.revision.checked_add(1).ok_or(CoreError::InvalidInput))
+                .transpose()?
+                .unwrap_or(0),
+            capabilities: vec![Capability::Sources],
+        };
+        let key = self.source_key(&profile, &connection.id);
+        let old = self.secrets.get(key.clone())?;
+        self.secrets.put(
+            key.clone(),
+            serde_json::to_string(&config).map_err(|_| CoreError::Bridge)?,
+        )?;
+        let saved = if existing.is_some() {
+            store.replace_source_connection(&profile, revision, &connection)
+        } else {
+            store.install(&profile, &connection)
+        };
+        if saved.is_err() {
+            if let Some(old) = old {
+                let _ = self.secrets.put(key, old);
+            } else {
+                let _ = self.secrets.remove(key);
+            }
+            return Err(CoreError::Bridge);
+        }
+        serde_json::to_string(&connection).map_err(|_| CoreError::Bridge)
+    }
+    pub fn remove_source_integration(
+        &self,
+        profile: String,
+        revision: u64,
+        connection_id: String,
+    ) -> Result<(), CoreError> {
+        let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let selected = store
+            .profile(&local_scope(&profile))
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
+        if selected.scope.revision != revision
+            || !store
+                .connections("local")
+                .map_err(|_| CoreError::Bridge)?
+                .iter()
+                .any(|c| {
+                    c.id == connection_id
+                        && c.plugin_id == "vsources"
+                        && c.private_profile_id.as_deref() == Some(&profile)
+                })
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        store
+            .remove_connection(&connection_id)
+            .map_err(|_| CoreError::Bridge)?;
+        self.secrets
+            .remove(self.source_key(&profile, &connection_id))
+    }
+    pub fn start_integration_sources(
+        &self,
+        profile: String,
+        card_json: String,
+    ) -> Result<String, CoreError> {
+        #[cfg(not(feature = "vsources-runtime"))]
+        {
+            let _ = (profile, card_json);
+            Err(CoreError::InvalidInput)
+        }
+        #[cfg(feature = "vsources-runtime")]
+        {
+            self.start_sdk(profile, card_json)
+        }
+    }
+    pub fn poll_integration_sources(
+        &self,
+        profile: String,
+        job_id: String,
+        after: u64,
+    ) -> Result<String, CoreError> {
+        let jobs = self
+            .integration_jobs
+            .lock()
+            .map_err(|_| CoreError::Bridge)?;
+        let job = jobs.get(&job_id).ok_or(CoreError::InvalidInput)?;
+        if job.scope.profile_id != profile
+            || job.created.elapsed().as_secs() > 120
+            || job.cancel.load(Ordering::Relaxed)
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        let current = self
+            .store
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .profile(&job.scope)
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
+        if current.scope.revision != job.scope.revision {
+            return Err(CoreError::InvalidInput);
+        }
+        let state = job.state.lock().map_err(|_| CoreError::Bridge)?;
+        Ok(json!({"id":job_id,"events":state.events.iter().filter(|e|e["seq"].as_u64().unwrap_or(0)>after).collect::<Vec<_>>(),"done":state.done,"error_code":state.error}).to_string())
+    }
+    pub fn cancel_integration_sources(
+        &self,
+        profile: String,
+        job_id: String,
+    ) -> Result<(), CoreError> {
+        let mut jobs = self
+            .integration_jobs
+            .lock()
+            .map_err(|_| CoreError::Bridge)?;
+        if jobs
+            .get(&job_id)
+            .is_none_or(|job| job.scope.profile_id != profile)
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        if let Some(job) = jobs.remove(&job_id) {
+            job.cancel.store(true, Ordering::Relaxed);
+        }
+        Ok(())
+    }
+}
+#[cfg(feature = "vsources-runtime")]
+impl LocalEngine {
+    fn start_sdk(&self, profile: String, card_json: String) -> Result<String, CoreError> {
+        if card_json.len() > 64 * 1024 {
+            return Err(CoreError::InvalidInput);
+        }
+        let card: viptv_engine::presentation::Card =
+            serde_json::from_str(&card_json).map_err(|_| CoreError::InvalidInput)?;
+        card.validate_library()
+            .map_err(|_| CoreError::InvalidInput)?;
+        let (verified_scope, card) = self
+            .verified_cards
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .get(&(
+                profile.clone(),
+                card.identity.kind.clone(),
+                card.identity.id.clone(),
+            ))
+            .cloned()
+            .ok_or(CoreError::InvalidInput)?;
+        let media = viptv_engine::vsources_runtime::media_ref(
+            &card.identity,
+            card.parent_identity.as_ref(),
+            &[],
+        )
+        .map_err(|_| CoreError::InvalidInput)?;
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let selected = store
+            .profile(&local_scope(&profile))
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
+        if verified_scope.revision != selected.scope.revision {
+            return Err(CoreError::InvalidInput);
+        }
+        let connection = store
+            .connections("local")
+            .map_err(|_| CoreError::Bridge)?
+            .into_iter()
+            .find(|c| {
+                c.plugin_id == "vsources"
+                    && c.enabled
+                    && c.private_profile_id.as_deref() == Some(&profile)
+                    && selected.assignments.iter().any(|a| {
+                        a.connection_id == c.id && a.enabled.contains(&Capability::Sources)
+                    })
+            })
+            .ok_or(CoreError::InvalidInput)?;
+        let raw = self
+            .secrets
+            .get(self.source_key(&profile, &connection.id))?
+            .ok_or(CoreError::Bridge)?;
+        let config: VsourcesConfiguration =
+            serde_json::from_str(&raw).map_err(|_| CoreError::Bridge)?;
+        let id = uuid::Uuid::new_v4().to_string();
+        let job = Arc::new(Job {
+            scope: selected.scope.clone(),
+            created: Instant::now(),
+            cancel: AtomicBool::new(false),
+            state: Mutex::new(JobState {
+                events: vec![],
+                done: false,
+                error: None,
+            }),
+        });
+        let mut jobs = self
+            .integration_jobs
+            .lock()
+            .map_err(|_| CoreError::Bridge)?;
+        jobs.retain(|_, j| {
+            let keep = j.scope.profile_id != profile && j.created.elapsed().as_secs() < 120;
+            if !keep {
+                j.cancel.store(true, Ordering::Relaxed);
+            }
+            keep
+        });
+        if jobs.len() >= 12 {
+            return Err(CoreError::InvalidInput);
+        }
+        jobs.insert(id.clone(), job.clone());
+        drop(jobs);
+        drop(store);
+        let store = self.store.clone();
+        let scope = job.scope.clone();
+        let guard_job = job.clone();
+        let authorize: Arc<dyn Fn() -> bool + Send + Sync> = Arc::new(move || {
+            !guard_job.cancel.load(Ordering::Relaxed)
+                && store
+                    .lock()
+                    .ok()
+                    .and_then(|s| s.profile(&scope).ok().flatten())
+                    .is_some_and(|p| p.scope.revision == scope.revision)
+        });
+        let playable = self.playable.clone();
+        playable
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .retain(|_, grant| grant.scope.profile_id != profile || grant.job_id.is_none());
+        let worker_id = id.clone();
+        std::thread::spawn(move || {
+            let runtime = tokio::runtime::Builder::new_multi_thread()
+                .worker_threads(2)
+                .enable_all()
+                .build();
+            let result = runtime.map_err(|_| ()).and_then(|rt| {
+                rt.block_on(viptv_engine::vsources_runtime::resolve_progressive(
+                    config,
+                    media,
+                    authorize.clone(),
+                    |streams| {
+                        if !authorize() {
+                            return;
+                        }
+                        let mut grants = playable.lock().unwrap();
+                        let sources = streams
+                            .into_iter()
+                            .map(|stream| {
+                                let id = uuid::Uuid::new_v4().to_string();
+                                let label = "VIPTV Sources".to_string();
+                                let detail = stream.meta.resolution.map(|r| format!("{r}p"));
+                                grants.insert(
+                                    id.clone(),
+                                    sources::Playable {
+                                        scope: job.scope.clone(),
+                                        kind: card.identity.kind.clone(),
+                                        media_id: card.identity.id.clone(),
+                                        url: stream.url.to_string(),
+                                        headers: stream.meta.request_headers.into_iter().collect(),
+                                        job_id: Some(worker_id.clone()),
+                                        expires: Some(
+                                            Instant::now()
+                                                + stream
+                                                    .ttl
+                                                    .min(std::time::Duration::from_secs(1800)),
+                                        ),
+                                    },
+                                );
+                                viptv_engine::stremio::SourceCandidate {
+                                    id,
+                                    provider_id: connection.id.clone(),
+                                    label,
+                                    detail,
+                                }
+                            })
+                            .collect::<Vec<_>>();
+                        let mut state = job.state.lock().unwrap();
+                        let seq = state.events.len() + 1;
+                        state.events.push(json!({"seq":seq,"sources":sources}));
+                    },
+                ))
+                .map_err(|_| ())
+            });
+            let mut state = job.state.lock().unwrap();
+            state.done = true;
+            if result.is_err() {
+                state.error = Some("source_unavailable".into());
+            }
+        });
+        Ok(json!({"id":id}).to_string())
+    }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[derive(Default)]
+    struct Secrets(Mutex<std::collections::HashMap<String, String>>);
+    impl SecretStore for Secrets {
+        fn get(&self, k: String) -> Result<Option<String>, CoreError> {
+            Ok(self.0.lock().unwrap().get(&k).cloned())
+        }
+        fn put(&self, k: String, v: String) -> Result<(), CoreError> {
+            self.0.lock().unwrap().insert(k, v);
+            Ok(())
+        }
+        fn remove(&self, k: String) -> Result<(), CoreError> {
+            self.0.lock().unwrap().remove(&k);
+            Ok(())
+        }
+    }
+    #[test]
+    fn credentials_are_write_only_and_feature_availability_is_honest() {
+        let dir =
+            std::env::temp_dir().join(format!("viptv-source-config-{}", uuid::Uuid::new_v4()));
+        let secrets = Arc::new(Secrets::default());
+        let engine = LocalEngine::new(
+            dir.join("local.sqlite").to_string_lossy().into(),
+            secrets.clone(),
+        )
+        .unwrap();
+        engine
+            .create_profile("other".into(), "Other".into())
+            .unwrap();
+        let schemas = engine.source_integration_schemas("default".into()).unwrap();
+        let value: serde_json::Value = serde_json::from_str(&schemas).unwrap();
+        assert_eq!(
+            value["schemas"][0]["runtime_enabled"],
+            cfg!(feature = "vsources-runtime")
+        );
+        let configured = engine.configure_source_integration(
+            "default".into(),
+            0,
+            "vsources".into(),
+            json!({"tmdb_api_key":"fixture-write-only-key"}).to_string(),
+        );
+        if cfg!(feature = "vsources-runtime") {
+            let public = configured.unwrap();
+            assert!(!public.contains("fixture-write-only-key"));
+            let id: serde_json::Value = serde_json::from_str(&public).unwrap();
+            assert!(
+                engine
+                    .remove_source_integration("other".into(), 0, id["id"].as_str().unwrap().into())
+                    .is_err()
+            );
+            assert!(
+                !engine
+                    .profiles()
+                    .unwrap()
+                    .contains("fixture-write-only-key")
+            );
+            assert_eq!(secrets.0.lock().unwrap().len(), 1);
+            let update = engine
+                .configure_source_integration(
+                    "default".into(),
+                    1,
+                    "vsources".into(),
+                    json!({"tmdb_api_key":"fixture-updated-key"}).to_string(),
+                )
+                .unwrap();
+            assert!(!update.contains("fixture-updated-key"));
+            let snapshot: serde_json::Value =
+                serde_json::from_str(&engine.source_integration_schemas("default".into()).unwrap())
+                    .unwrap();
+            assert_eq!(snapshot["revision"], 2);
+            assert_eq!(snapshot["schemas"][0]["state"], "Ready");
+            assert!(
+                snapshot["schemas"][0]["provider_choices"]
+                    .as_array()
+                    .unwrap()
+                    .len()
+                    > 20
+            );
+
+            engine
+                .remove_source_integration("default".into(), 2, id["id"].as_str().unwrap().into())
+                .unwrap();
+            assert!(secrets.0.lock().unwrap().is_empty());
+        } else {
+            assert!(configured.is_err());
+            assert!(secrets.0.lock().unwrap().is_empty());
+        }
+        drop(engine);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}

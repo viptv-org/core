@@ -13,6 +13,7 @@ mod profiles;
 mod search;
 mod secrets;
 mod sources;
+mod source_integrations;
 mod subtitles;
 pub use secrets::SecretStore;
 use viptv_engine::{
@@ -22,13 +23,15 @@ use viptv_engine::{
 
 #[derive(uniffi::Object)]
 pub struct LocalEngine {
-    store: Mutex<Store>,
+    store: Arc<Mutex<Store>>,
     secrets: Arc<dyn SecretStore>,
     namespace: String,
     pending: Mutex<std::collections::HashMap<String, addons::PendingHome>>,
     details: Mutex<std::collections::HashMap<String, detail::PendingDetail>>,
     source_jobs: Mutex<std::collections::HashMap<String, sources::PendingSources>>,
-    playable: Mutex<std::collections::HashMap<String, sources::Playable>>,
+    playable: Arc<Mutex<std::collections::HashMap<String, sources::Playable>>>,
+    verified_cards: Mutex<std::collections::HashMap<(String,String,String), (Scope,viptv_engine::presentation::Card)>>,
+    integration_jobs: Mutex<std::collections::HashMap<String, Arc<source_integrations::Job>>>,
     subtitle_jobs: Mutex<std::collections::HashMap<String, subtitles::PendingSubtitles>>,
     subtitle_selections: Mutex<std::collections::HashMap<String, subtitles::SelectedSubtitle>>,
 }
@@ -69,7 +72,7 @@ impl LocalEngine {
                 .map_err(|_| CoreError::Bridge)?;
         }
         Ok(Self {
-            store: Mutex::new(store),
+            store: Arc::new(Mutex::new(store)),
             secrets,
             namespace: format!(
                 "{:x}",
@@ -83,7 +86,9 @@ impl LocalEngine {
             pending: Mutex::new(std::collections::HashMap::new()),
             details: Mutex::new(std::collections::HashMap::new()),
             source_jobs: Mutex::new(std::collections::HashMap::new()),
-            playable: Mutex::new(std::collections::HashMap::new()),
+            playable: Arc::new(Mutex::new(std::collections::HashMap::new())),
+            verified_cards: Mutex::new(std::collections::HashMap::new()),
+            integration_jobs: Mutex::new(std::collections::HashMap::new()),
             subtitle_jobs: Mutex::new(std::collections::HashMap::new()),
             subtitle_selections: Mutex::new(std::collections::HashMap::new()),
         })

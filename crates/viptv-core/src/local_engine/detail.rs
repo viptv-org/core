@@ -89,6 +89,10 @@ impl LocalEngine {
             offset as usize,
         )
         .map_err(|_| CoreError::InvalidInput)?;
+        let mut verified=self.verified_cards.lock().map_err(|_|CoreError::Bridge)?;
+        verified.retain(|(profile,_,_),(scope,_)|profile!=&pending.scope.profile_id || scope.revision==pending.scope.revision);
+        if verified.len()>4096 {verified.clear();}
+        for card in std::iter::once(&detail.item).chain(detail.episodes.iter()){verified.insert((pending.scope.profile_id.clone(),card.identity.kind.clone(),card.identity.id.clone()),(pending.scope.clone(),card.clone()));}
         serde_json::to_string(&detail).map_err(|_| CoreError::Bridge)
     }
 }

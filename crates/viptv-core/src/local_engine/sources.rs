@@ -17,11 +17,13 @@ pub(super) struct PendingSources {
     requests: Vec<Request>,
 }
 pub(super) struct Playable {
-    scope: Scope,
-    kind: String,
-    media_id: String,
-    url: String,
-    headers: Vec<(String, String)>,
+    pub(super) scope: Scope,
+    pub(super) kind: String,
+    pub(super) media_id: String,
+    pub(super) url: String,
+    pub(super) headers: Vec<(String, String)>,
+    pub(super) job_id: Option<String>,
+    pub(super) expires: Option<std::time::Instant>,
 }
 
 #[uniffi::export]
@@ -111,7 +113,7 @@ impl LocalEngine {
             return Err(CoreError::Bridge);
         }
         let mut playable = self.playable.lock().map_err(|_| CoreError::Bridge)?;
-        playable.retain(|_, item| item.scope.profile_id != pending.scope.profile_id);
+        playable.retain(|_, item| item.scope.profile_id != pending.scope.profile_id || item.job_id.is_some());
         let mut output = Vec::<SourceCandidate>::new();
         for request in &pending.requests {
             let raw = items
@@ -134,6 +136,8 @@ impl LocalEngine {
                         media_id: pending.media_id.clone(),
                         url: source.url,
                         headers: source.headers,
+                        expires: None,
+                        job_id: None,
                     },
                 );
                 output.push(SourceCandidate {
@@ -150,6 +154,7 @@ impl LocalEngine {
     pub fn open_source(&self, id: String) -> Result<String, CoreError> {
         let play = self.playable.lock().map_err(|_| CoreError::Bridge)?;
         let source = play.get(&id).ok_or(CoreError::InvalidInput)?;
+        if source.expires.is_some_and(|expiry| std::time::Instant::now() >= expiry) { return Err(CoreError::InvalidInput); }
         let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
         let current = store
             .profile(&source.scope)

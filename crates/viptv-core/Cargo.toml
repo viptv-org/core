@@ -12,6 +12,7 @@ crate-type = ["lib", "cdylib", "staticlib"]
 default = []
 typegen = ["facet_typegen"]
 facet_typegen = ["crux_core/facet_typegen", "crux_http/facet_typegen"]
+vsources-runtime = ["native", "viptv-engine/vsources-runtime", "dep:tokio"]
 native = ["dep:uniffi", "viptv-engine/runtime"]
 bindgen = ["native", "uniffi/cli"]
 
@@ -31,6 +32,8 @@ url = "2"
 thiserror = "2"
 uniffi = { version = "0.29.4", optional = true }
 uuid = { version = "1", features = ["v4"] }
+
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync"], optional = true }
 
 [target.'cfg(not(target_os = "android"))'.dependencies]
 keyring = { version = "3.6.3", default-features = false, features = ["apple-native", "windows-native", "sync-secret-service", "crypto-rust"] }
