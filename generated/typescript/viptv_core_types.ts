@@ -877,7 +877,7 @@ export class PlaybackSeekFacts {
 }
 
 export class PlaybackSession {
-    constructor (public deliveryKind: Optional<PlaybackDeliveryKind>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
+    constructor (public deliveryKind: Optional<PlaybackDeliveryKind>, public preferredAudioLanguage: Optional<str>, public preferredSubtitleLanguage: Optional<str>, public headers: Map<str,str>, public id: str, public url: str, public format: str, public mode: str, public videoMode: str, public audioMode: str, public position: float64, public timelineOffsetSeconds: Optional<float64>, public live: bool, public duration: float64, public audioTracks: Seq<MediaTrack>, public subtitleTracks: Seq<MediaTrack>, public subtitlesSupported: bool, public authorization: Optional<PlaybackAuthorization>) {
     }
 }
 

@@ -423,6 +423,7 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `videoMode`: String,
     val `audioMode`: String,
     val `position`: Double,
+    val `timelineOffsetSeconds`: Double? = null,
     val `live`: Boolean,
     val `duration`: Double,
     val `audioTracks`: List<MediaTrack> = emptyList(),

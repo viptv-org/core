@@ -227,6 +227,9 @@ pub struct PlaybackSession {
     pub video_mode: String,
     pub audio_mode: String,
     pub position: f64,
+    /// Original source clock at the start of a managed rendition.
+    #[serde(default)]
+    pub timeline_offset_seconds: Option<f64>,
     pub live: bool,
     pub duration: f64,
     pub audio_tracks: Vec<MediaTrack>,

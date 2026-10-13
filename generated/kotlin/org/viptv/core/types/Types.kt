@@ -771,6 +771,8 @@ data class PlaybackSession(
     val videoMode: String,
     val audioMode: String,
     val position: Double,
+    /// Original source clock at the start of a managed rendition.
+    val timelineOffsetSeconds: Double? = null,
     val live: Boolean,
     val duration: Double,
     val audioTracks: List<org.viptv.core.types.MediaTrack>,

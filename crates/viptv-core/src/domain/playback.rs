@@ -63,7 +63,24 @@ pub(super) fn playback_v2(v: &Value, origin: &str) -> Result<Value> {
         return Err(invalid());
     }
     let live = boolean(value, "live")?;
+    let offset = if value["timeline_offset_seconds"].is_null() {
+        None
+    } else {
+        let offset = number(value, "timeline_offset_seconds")?;
+        if !offset.is_finite()
+            || !(0.0..=1e9).contains(&offset)
+            || (kind == "direct" && offset != 0.0)
+            || (live && offset != 0.0)
+            || (kind == "gateway" && position != 0.0)
+        {
+            return Err(invalid());
+        }
+        Some(offset)
+    };
     let mut safe = json!({"id":id,"url":url.as_str(),"position":if live { 0.0 } else { position },"live":live});
+    if let Some(offset) = offset {
+        safe["timeline_offset_seconds"] = json!(offset);
+    }
     if kind == "direct" {
         if value["format"] != "original" {
             return Err(invalid());
@@ -231,6 +248,12 @@ pub fn playback(v: &Value, origin: &str) -> Result<Value> {
         parsed
     };
     let mut out = json!({"headers":v["headers"].as_object().map(|h|h.iter().filter(|(_,v)|v.is_string()).map(|(k,v)|(k.clone(),v.clone())).collect::<Map<String,Value>>()).unwrap_or_default(),"id":string(v,"id")?,"url":url.as_str(),"format":fallback(v,&["format"],"hls"),"mode":fallback(v,&["mode"],"direct"),"videoMode":fallback(v,&["video_mode"],"copy"),"audioMode":fallback(v,&["audio_mode"],"copy"),"position":v["position"].as_f64().unwrap_or(0.0),"live":v["live"].as_bool().unwrap_or(false),"duration":v["duration"].as_f64().unwrap_or(0.0),"audioTracks":v["audio_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitleTracks":v["subtitle_tracks"].as_array().into_iter().flatten().filter(|v|v.is_object()).map(track).collect::<Result<Vec<_>>>()?,"subtitlesSupported":v["subtitles_supported"].as_bool().unwrap_or(false)});
+    if let Some(offset) = v["timeline_offset_seconds"].as_f64() {
+        if !offset.is_finite() || !(0.0..=1e9).contains(&offset) {
+            return Err(invalid());
+        }
+        out["timelineOffsetSeconds"] = json!(offset);
+    }
     // Source authorization is present only when the session carries one;
     // absent fields are omitted, matching the generated wire types.
     if let Some(authorization) = authorization(v) {
