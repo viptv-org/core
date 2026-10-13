@@ -91,6 +91,7 @@ data class DetailSnapshot(
     val recommendations: List<Card> = emptyList(),
     val episodes: List<Card>,
     val next_cursor: String? = null,
+    val seasons: List<EpisodeSeason> = emptyList(),
 )
 
 @Serializable
@@ -98,6 +99,13 @@ data class EpisodeCoordinates(
     val order: String,
     val season: Long? = null,
     val episode: Long,
+)
+
+@Serializable
+data class EpisodeSeason(
+    val season: Long? = null,
+    val episode_count: Long,
+    val offset: Long,
 )
 
 @Serializable
