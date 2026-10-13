@@ -133,12 +133,14 @@ impl LocalEngine {
             }
         }));
         for row in &mut rows {self.merge_cached_presentation(&plan.scope,&mut row.cards)?;}
-        let hero = viptv_engine::home::select_hero(&rows);
+        let featured = viptv_engine::home::select_featured(&rows);
+        let hero=featured.first().cloned();
         let complete = rows.iter().all(|row| row.state != RowState::Pending);
         serde_json::to_string(&HomeSnapshot {
             scope: plan.scope.clone(),
             revision: self.home_revision(&plan.scope)?,
             hero,
+            featured,
             rows,
             complete,
         })
@@ -208,7 +210,8 @@ impl LocalEngine {
             .collect::<Vec<_>>();
         drop(store);
         for row in &mut rows{self.merge_cached_presentation(&pending.scope,&mut row.cards)?;}
-        let hero = viptv_engine::home::select_hero(&rows);
+        let featured = viptv_engine::home::select_featured(&rows);
+        let hero=featured.first().cloned();
         if pending.cache_home {
             if let Some(favorites) = self.favorites_row(&pending.scope)? {
                 rows.insert(0, favorites);
@@ -221,6 +224,7 @@ impl LocalEngine {
             scope: pending.scope.clone(),
             revision: self.home_revision(&pending.scope)?,
             hero,
+            featured,
             rows,
             complete: true,
         })

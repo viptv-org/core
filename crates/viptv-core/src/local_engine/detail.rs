@@ -196,6 +196,7 @@ fn enrich_snapshot(
     for original in snapshot
         .hero
         .iter_mut()
+        .chain(snapshot.featured.iter_mut())
         .chain(snapshot.rows.iter_mut().flat_map(|r| r.cards.iter_mut()))
     {
         let identity = original
@@ -225,13 +226,17 @@ impl LocalEngine {
         let current: ProfileConfiguration =
             serde_json::from_str(&self.profile(profile.clone())?).map_err(|_| CoreError::Bridge)?;
         if snapshot.scope != current.scope
+            || snapshot.featured.len() > 5
             || snapshot.rows.len() > 14
             || snapshot.rows.iter().any(|r| r.cards.len() > 24)
         {
             return Err(CoreError::InvalidInput);
         }
+        if snapshot.featured.is_empty() {
+            snapshot.featured = snapshot.hero.iter().cloned().collect();
+        }
         let candidates = snapshot
-            .hero
+            .featured
             .iter()
             .chain(
                 snapshot
@@ -284,7 +289,7 @@ impl LocalEngine {
         let mut staged = Vec::new();
         let mut requests = Vec::new();
         let mut operations = Vec::new();
-        for (identity, provider) in needed.into_iter().take(13) {
+        for (identity, provider) in needed.into_iter().take(17) {
             if let Ok(plan) =
                 self.plan_detail(profile.clone(), identity.kind, identity.id, provider)
             {
@@ -329,7 +334,7 @@ impl LocalEngine {
         operation: String,
         raw_results: String,
     ) -> Result<String, CoreError> {
-        if raw_results.len() > 26 * 1024 * 1024 {
+        if raw_results.len() > 34 * 1024 * 1024 {
             return Err(CoreError::InvalidInput);
         }
         let values: Value =

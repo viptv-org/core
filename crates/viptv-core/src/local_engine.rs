@@ -124,6 +124,7 @@ impl LocalEngine {
             revision,
             scope: profile.scope,
             hero: None,
+            featured:vec![],
             rows: queue,
             complete: true,
         };

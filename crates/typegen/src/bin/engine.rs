@@ -50,7 +50,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for f in fields {
                     let default = if matches!(f.value, F::Option(_)) {
                         " = null"
-                    } else if (name.name=="SourceCandidate" && f.name=="audio_languages") || (name.name=="DetailSnapshot" && f.name=="recommendations") || (name.name=="CardMetadata" && matches!(f.name.as_str(),"genres"|"alternate_titles")) {
+                    } else if (name.name=="SourceCandidate" && f.name=="audio_languages") || (name.name=="DetailSnapshot" && f.name=="recommendations") || (name.name=="HomeSnapshot" && f.name=="featured") || (name.name=="CardMetadata" && matches!(f.name.as_str(),"genres"|"alternate_titles")) {
                         " = emptyList()"
                     } else {
                         ""

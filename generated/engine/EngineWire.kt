@@ -135,6 +135,7 @@ data class HomeSnapshot(
     val scope: Scope,
     val revision: Long,
     val hero: Card? = null,
+    val featured: List<Card> = emptyList(),
     val rows: List<HomeRow>,
     val complete: Boolean,
 )
