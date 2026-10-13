@@ -62,6 +62,7 @@ impl LocalEngine {
                 rows: rows.clone(),
                 cached: Default::default(),
                 cache_home: false,
+                discover: None,
             },
         );
         serde_json::to_string(&json!({"id":id,"requests":rows})).map_err(|_| CoreError::Bridge)

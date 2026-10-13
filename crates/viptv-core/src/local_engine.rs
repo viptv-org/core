@@ -6,6 +6,7 @@ use std::{
 };
 mod addons;
 mod detail;
+mod browse;
 mod history;
 mod library;
 mod profiles;

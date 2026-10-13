@@ -28,6 +28,7 @@ pub(super) struct PendingHome {
     pub(super) rows: Vec<CatalogRequest>,
     pub(super) cached: std::collections::HashMap<String, Vec<viptv_engine::presentation::Card>>,
     pub(super) cache_home: bool,
+    pub(super) discover: Option<(u32,bool)>,
 }
 
 impl LocalEngine {

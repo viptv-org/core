@@ -81,6 +81,7 @@ impl LocalEngine {
             rows: rows.clone(),
             cached,
             cache_home: true,
+            discover: None,
         };
         let mut operations = self.pending.lock().map_err(|_| CoreError::Bridge)?;
         operations.retain(|_, p| p.scope.profile_id != profile_id);
@@ -102,11 +103,11 @@ impl LocalEngine {
         if current.scope.revision != plan.scope.revision {
             return Err(CoreError::Bridge);
         }
-        let mut rows = self
-            .continue_row(&plan.scope)?
-            .into_iter()
-            .collect::<Vec<_>>();
-        rows.extend(self.favorites_row(&plan.scope)?);
+        let mut rows = Vec::new();
+        if plan.cache_home {
+            rows.extend(self.continue_row(&plan.scope)?);
+            rows.extend(self.favorites_row(&plan.scope)?);
+        }
         rows.extend(plan.rows.iter().map(|request| {
             HomeRow {
                 id: request.id.clone(),
@@ -215,11 +216,13 @@ impl LocalEngine {
             .flat_map(|r| &r.cards)
             .find(|c| c.landscape.is_some())
             .cloned();
-        if let Some(favorites) = self.favorites_row(&pending.scope)? {
-            rows.insert(0, favorites);
-        }
-        if let Some(queue) = self.continue_row(&pending.scope)? {
-            rows.insert(0, queue);
+        if pending.cache_home {
+            if let Some(favorites) = self.favorites_row(&pending.scope)? {
+                rows.insert(0, favorites);
+            }
+            if let Some(queue) = self.continue_row(&pending.scope)? {
+                rows.insert(0, queue);
+            }
         }
         serde_json::to_string(&HomeSnapshot {
             scope: pending.scope.clone(),
