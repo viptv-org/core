@@ -153,6 +153,59 @@ data class IntegrationConnection(
 )
 
 @Serializable
+data class LibraryQuery(
+    val source: String,
+    val offset: Long,
+    val limit: Long,
+    val sort: String,
+    val show: String,
+    val type: String,
+    val status: String? = null,
+    val genre: String? = null,
+    val rated: String? = null,
+    val added: String? = null,
+    val episodes_left_max: Long? = null,
+)
+
+@Serializable
+data class LibrarySnapshot(
+    val scope: Scope,
+    val revision: Long,
+    val query: LibraryQuery,
+    val cards: List<Card>,
+    val next_cursor: String? = null,
+    val complete: Boolean,
+    val controls: List<QueryControl> = emptyList(),
+    val sources: List<LibrarySource> = emptyList(),
+    val statistics: List<LibraryStatistics> = emptyList(),
+    val availability: Availability,
+    val reason: String? = null,
+)
+
+@Serializable
+data class LibrarySource(
+    val id: String,
+    val label: String,
+    val availability: Availability,
+    val reason: String? = null,
+)
+
+@Serializable
+data class LibraryStatistics(
+    val identity: MediaIdentity,
+    val watched: Boolean,
+    val last_watched_millis: Long? = null,
+    val times_watched: Long? = null,
+    val user_rating: Double? = null,
+    val watched_episode_count: Long? = null,
+    val total_episode_count: Long? = null,
+    val aired_episode_count: Long? = null,
+    val status: String? = null,
+    val next_episode: EpisodeCoordinates? = null,
+    val next_air_millis: Long? = null,
+)
+
+@Serializable
 enum class MappingConfidence {
     @SerialName("Explicit") EXPLICIT,
     @SerialName("Candidate") CANDIDATE,
@@ -178,6 +231,7 @@ data class MediaIdentity(
 
 @Serializable
 data class PlaybackRecord(
+    val times_watched: Long? = null,
     val presentation: Card? = null,
     val identity: MediaIdentity,
     val provider_id: String,

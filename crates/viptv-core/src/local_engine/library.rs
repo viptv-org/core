@@ -34,6 +34,58 @@ impl LocalEngine {
 }
 #[uniffi::export]
 impl LocalEngine {
+    pub fn library_page(&self, profile: String, query_json: String) -> Result<String, CoreError> {
+        use viptv_engine::{capabilities::Availability, library::*};
+        if query_json.len() > 8192 {
+            return Err(CoreError::InvalidInput);
+        }
+        let query: LibraryQuery =
+            serde_json::from_str(&query_json).map_err(|_| CoreError::InvalidInput)?;
+        if query.source != "favorites" {
+            return Err(CoreError::InvalidInput);
+        }
+        let (scope, revision, mut entries) = {
+            let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+            let scope = store
+                .profile(&local_scope(&profile))
+                .map_err(|_| CoreError::Bridge)?
+                .ok_or(CoreError::InvalidInput)?
+                .scope;
+            let revision = scope.revision.saturating_add(
+                store
+                    .library_revision(&scope)
+                    .map_err(|_| CoreError::Bridge)?,
+            );
+            let entries = store
+                .library_entries(&scope)
+                .map_err(|_| CoreError::InvalidInput)?;
+            (scope, revision, entries)
+        };
+        for entry in &mut entries {
+            self.merge_cached_presentation(&scope, std::slice::from_mut(&mut entry.card))?;
+        }
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(|_| CoreError::Bridge)?
+            .as_millis() as u64;
+        let lower = added_lower_bound(&query, now);
+        let snapshot = project(
+            scope,
+            revision,
+            query,
+            entries,
+            vec![LibrarySource {
+                id: "favorites".into(),
+                label: "Saved titles".into(),
+                availability: Availability::Available,
+                reason: None,
+            }],
+            now,
+            lower,
+        )
+        .map_err(|_| CoreError::InvalidInput)?;
+        serde_json::to_string(&snapshot).map_err(|_| CoreError::Bridge)
+    }
     pub fn library(&self, profile: String, offset: u32, limit: u32) -> Result<String, CoreError> {
         let (scope, mut page) = {
             let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
