@@ -152,3 +152,12 @@ mod tests {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+#[uniffi::export]
+impl LocalEngine {
+ pub fn bootstrap_profile(&self,profile:String)->Result<String,CoreError>{
+  let home:serde_json::Value=serde_json::from_str(&self.home(profile.clone())?).map_err(|_|CoreError::Bridge)?;
+  let library:serde_json::Value=serde_json::from_str(&self.library(profile.clone(),0,100)?).map_err(|_|CoreError::Bridge)?;
+  let preferences:serde_json::Value=serde_json::from_str(&self.profile_preferences(profile)?).map_err(|_|CoreError::Bridge)?;
+  Ok(serde_json::json!({"home":home,"library":library,"preferences":preferences}).to_string())
+ }
+}

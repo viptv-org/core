@@ -964,6 +964,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1000,6 +1002,8 @@ fun uniffi_viptv_core_checksum_method_corebridge_update(
 fun uniffi_viptv_core_checksum_method_corebridge_view(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_addons(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_bootstrap_profile(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_cancel_integration_sources(
 ): Short
@@ -1252,6 +1256,8 @@ fun uniffi_viptv_core_fn_free_localengine(`ptr`: Pointer,uniffi_out_err: UniffiR
 fun uniffi_viptv_core_fn_constructor_localengine_new(`databasePath`: RustBuffer.ByValue,`secrets`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): Pointer
 fun uniffi_viptv_core_fn_method_localengine_addons(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_bootstrap_profile(`ptr`: Pointer,`profile`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_cancel_integration_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`jobId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
@@ -1628,6 +1634,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_addons() != 43169.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_bootstrap_profile() != 1484.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_cancel_integration_sources() != 54225.toShort()) {
@@ -2622,6 +2631,8 @@ public interface LocalEngineInterface {
 
     fun `addons`(): kotlin.String
 
+    fun `bootstrapProfile`(`profile`: kotlin.String): kotlin.String
+
     fun `cancelIntegrationSources`(`profile`: kotlin.String, `jobId`: kotlin.String)
 
     fun `checkAddonUrl`(`url`: kotlin.String): kotlin.String
@@ -2821,6 +2832,19 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_addons(
         it, _status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `bootstrapProfile`(`profile`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_bootstrap_profile(
+        it, FfiConverterString.lower(`profile`),_status)
 }
     }
     )
