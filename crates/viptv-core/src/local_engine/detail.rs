@@ -43,9 +43,7 @@ impl LocalEngine {
             {
                 let operation = uuid::Uuid::new_v4().to_string();
                 let mut pending = self.details.lock().map_err(|_| CoreError::Bridge)?;
-                pending.retain(|_, p| {
-                    p.scope.profile_id != profile || p.scope.revision == selected.scope.revision
-                });
+                pending.retain(|_, p| p.scope.profile_id != profile);
                 if pending.len() >= 64 {
                     return Err(CoreError::Bridge);
                 }
@@ -86,7 +84,7 @@ impl LocalEngine {
         if current.scope.revision != pending.scope.revision {
             return Err(CoreError::Bridge);
         }
-        let detail = stremio::detail(
+        let mut detail = stremio::detail(
             &body,
             &pending.provider,
             &pending.kind,
@@ -94,6 +92,17 @@ impl LocalEngine {
             offset as usize,
         )
         .map_err(|_| CoreError::InvalidInput)?;
+        if detail.recommendations.is_empty() {
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map_or(0, |t| t.as_secs() as i64);
+            detail.recommendations = self
+                .store
+                .lock()
+                .map_err(|_| CoreError::Bridge)?
+                .related_catalog_cards(&pending.scope, &detail.item, now)
+                .unwrap_or_default();
+        }
         let mut verified = self.verified_cards.lock().map_err(|_| CoreError::Bridge)?;
         verified.retain(|(profile, _, _), (scope, _)| {
             profile != &pending.scope.profile_id || scope.revision == pending.scope.revision
@@ -194,6 +203,25 @@ impl LocalEngine {
         }
         drop(verified);
         enrich_snapshot(&mut snapshot, &cached);
+        let mut retired = Vec::new();
+        self.enrichments
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .retain(|_, pending| {
+                if pending.scope.profile_id == profile {
+                    retired.extend(pending.requests.iter().cloned());
+                    false
+                } else {
+                    true
+                }
+            });
+        {
+            let mut pending = self.details.lock().map_err(|_| CoreError::Bridge)?;
+            for id in retired {
+                pending.remove(&id);
+            }
+        }
+        let mut staged = Vec::new();
         let mut requests = Vec::new();
         let mut operations = Vec::new();
         for (identity, provider) in needed.into_iter().take(13) {
@@ -202,11 +230,23 @@ impl LocalEngine {
             {
                 let request: Value = serde_json::from_str(&plan).map_err(|_| CoreError::Bridge)?;
                 if let Some(operation) = request["operation"].as_str() {
+                    if let Some(pending) = self
+                        .details
+                        .lock()
+                        .map_err(|_| CoreError::Bridge)?
+                        .remove(operation)
+                    {
+                        staged.push((operation.to_owned(), pending));
+                    }
                     operations.push(operation.to_owned());
                     requests.push(request);
                 }
             }
         }
+        self.details
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .extend(staged);
         let operation = uuid::Uuid::new_v4().to_string();
         let prepared = snapshot.clone();
         let mut pending = self.enrichments.lock().map_err(|_| CoreError::Bridge)?;

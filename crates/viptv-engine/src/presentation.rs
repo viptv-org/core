@@ -155,6 +155,9 @@ pub fn enrich_card(original: &Card, metadata: &Card) -> Card {
         return original.clone();
     }
     let mut card = original.clone();
+    if original.parent_identity.is_some() {
+        card.title = metadata.title.clone();
+    }
     if metadata.description.is_some() {
         card.description = metadata.description.clone();
     }

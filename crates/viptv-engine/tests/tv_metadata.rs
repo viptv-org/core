@@ -100,3 +100,26 @@ fn anime_episodes_use_only_provider_asserted_tvdb_coordinates() {
         "tt0409591:5:20"
     );
 }
+#[test]
+fn continue_episode_uses_parent_title_and_logo_without_changing_exact_episode_or_resume() {
+    let parent = simkl::card(
+        &json!({"title":"Parent Show","ids":{"simkl":42},"overview":"Parent overview"}),
+        "tv",
+    )
+    .unwrap();
+    let mut episode = simkl::episodes(
+        &json!([{"title":"Pilot","season":1,"episode":1,"ids":{"simkl":43}}]),
+        &parent,
+    )
+    .unwrap()
+    .remove(0);
+    episode.progress = Some(0.4);
+    episode.subtitle = Some("20m left".into());
+    let original = episode.identity.clone();
+    let enriched = viptv_engine::presentation::enrich_card(&episode, &parent);
+    assert_eq!(enriched.title, "Parent Show");
+    assert_eq!(enriched.identity, original);
+    assert_eq!(enriched.progress, Some(0.4));
+    assert_eq!(enriched.subtitle.as_deref(), Some("20m left"));
+    assert_eq!(enriched.description.as_deref(), Some("Parent overview"));
+}
