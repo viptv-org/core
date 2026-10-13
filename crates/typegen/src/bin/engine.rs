@@ -26,6 +26,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<ProfileConfiguration>()?
         .register_type::<IntegrationConnection>()?
         .register_type::<HomeSnapshot>()?
+        .register_type::<viptv_engine::live::LivePage>()?
+        .register_type::<viptv_engine::live::LiveGuide>()?
+        .register_type::<viptv_engine::live::LiveQuery>()?
         .register_type::<DetailSnapshot>()?
         .register_type::<CatalogPage>()?
         .register_type::<viptv_engine::library::LibrarySnapshot>()?
@@ -51,7 +54,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for f in fields {
                     let default = if matches!(f.value, F::Option(_)) {
                         " = null"
-                    } else if (name.name=="SourceCandidate" && f.name=="audio_languages") || (name.name=="DetailSnapshot" && matches!(f.name.as_str(),"recommendations"|"seasons")) || (name.name=="HomeSnapshot" && f.name=="featured") || (name.name=="LibrarySnapshot" && matches!(f.name.as_str(),"controls"|"sources"|"statistics")) || (name.name=="CardMetadata" && matches!(f.name.as_str(),"genres"|"alternate_titles")) {
+                    } else if (name.name=="LiveChannel"&&f.name=="group_ids") || (name.name=="SourceCandidate" && f.name=="audio_languages") || (name.name=="DetailSnapshot" && matches!(f.name.as_str(),"recommendations"|"seasons")) || (name.name=="HomeSnapshot" && f.name=="featured") || (name.name=="LibrarySnapshot" && matches!(f.name.as_str(),"controls"|"sources"|"statistics")) || (name.name=="CardMetadata" && matches!(f.name.as_str(),"genres"|"alternate_titles")) {
                         " = emptyList()"
                     } else {
                         ""

@@ -216,6 +216,59 @@ data class LibraryStatistics(
 )
 
 @Serializable
+data class LiveChannel(
+    val id: String,
+    val connection_id: String,
+    val card: Card,
+    val group_id: String? = null,
+    val group_name: String? = null,
+    val group_ids: List<String> = emptyList(),
+)
+
+@Serializable
+data class LiveGroup(
+    val id: String,
+    val label: String,
+)
+
+@Serializable
+data class LiveGuide(
+    val channel_id: String,
+    val programs: List<LiveProgram>,
+    val availability: Availability,
+    val reason: String? = null,
+)
+
+@Serializable
+data class LivePage(
+    val channels: List<LiveChannel>,
+    val groups: List<LiveGroup>,
+    val connections: List<IntegrationConnection>,
+    val next_cursor: String? = null,
+    val complete: Boolean,
+    val availability: Availability,
+    val reason: String? = null,
+)
+
+@Serializable
+data class LiveProgram(
+    val id: String,
+    val title: String,
+    val description: String? = null,
+    val start_millis: Long,
+    val end_millis: Long,
+)
+
+@Serializable
+data class LiveQuery(
+    val connection_id: String? = null,
+    val group_id: String? = null,
+    val search: String? = null,
+    val offset: Long,
+    val limit: Long? = null,
+)
+
+@Serializable
 enum class MappingConfidence {
     @SerialName("Explicit") EXPLICIT,
     @SerialName("Candidate") CANDIDATE,

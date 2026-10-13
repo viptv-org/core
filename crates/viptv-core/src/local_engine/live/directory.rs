@@ -37,14 +37,9 @@ impl LocalEngine {
             .map_err(|_| CoreError::Bridge)?;
             let mut seen = std::collections::HashSet::new();
             for channel in &channels {
-                if let Some((id, label)) = channel
-                    .channel
-                    .group_id
-                    .clone()
-                    .zip(channel.channel.group_name.clone())
-                {
-                    if seen.insert(id.clone()) {
-                        groups.push(LiveGroup { id, label });
+                for group in &channel.groups {
+                    if seen.insert(group.id.clone()) {
+                        groups.push(group.clone());
                     }
                 }
             }

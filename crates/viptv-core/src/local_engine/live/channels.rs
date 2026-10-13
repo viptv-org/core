@@ -61,7 +61,7 @@ impl LocalEngine {
                     query
                         .group_id
                         .as_ref()
-                        .is_none_or(|g| c.channel.group_id.as_ref() == Some(g))
+                        .is_none_or(|g| c.channel.in_group(g))
                         && query.search.as_ref().is_none_or(|search| {
                             c.channel
                                 .card

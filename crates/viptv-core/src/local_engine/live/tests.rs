@@ -203,9 +203,120 @@ fn inflight_live_directory_cannot_publish_after_profile_revision_changes() {
     std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
-fn xtream_directory_categories_and_guide_are_host_owned_and_credentials_stay_private(){
+fn xtream_directory_categories_and_guide_are_host_owned_and_credentials_stay_private() {
     use base64::Engine;
-    let dir=std::env::temp_dir().join(format!("viptv-live-xtream-{}",uuid::Uuid::new_v4()));let engine=LocalEngine::new(dir.join("live.sqlite").to_string_lossy().into(),Arc::new(Secrets(Mutex::new(Default::default())))).unwrap();engine.configure_source_integration("default".into(),0,"xtream".into(),serde_json::json!({"server_url":"https://fixture.example","username":"fixture-user","password":"fixture-pass"}).to_string()).unwrap();let now=std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_secs();
-    *engine.live_fixture.lock().unwrap()=Some(Arc::new(move|_,raw|{let uri=url::Url::parse(raw).unwrap();let query=uri.query_pairs().collect::<std::collections::HashMap<_,_>>();assert_eq!(query["username"],"fixture-user");assert_eq!(query["password"],"fixture-pass");let value=match query["action"].as_ref(){"get_live_streams"=>serde_json::json!([{ "stream_id":7,"name":"Fixture News","category_id":99,"epg_channel_id":"news"}]),"get_live_categories"=>serde_json::json!([{ "category_id":99,"category_name":"News"}]),"get_short_epg"=>{assert_eq!(query["stream_id"],"7");serde_json::json!({"epg_listings":[{"id":"one","title":base64::engine::general_purpose::STANDARD.encode("Fixture program"),"description":base64::engine::general_purpose::STANDARD.encode("Fixture description"),"start_timestamp":now-60,"stop_timestamp":now+3600}]})},_=>panic!("unexpected fixture action")};Ok((raw.into(),value.to_string()))}));
-    let raw=engine.live_channels("default".into(),"{}".into()).unwrap();assert!(!raw.contains("fixture-user")&&!raw.contains("fixture-pass"));let page:LivePage=serde_json::from_str(&raw).unwrap();assert_eq!(page.groups[0].label,"News");assert_eq!(page.channels[0].group_name.as_deref(),Some("News"));let guide:LiveGuide=serde_json::from_str(&engine.live_guide("default".into(),page.channels[0].id.clone()).unwrap()).unwrap();assert_eq!(guide.programs[0].title,"Fixture program");let candidates:Vec<viptv_engine::stremio::SourceCandidate>=serde_json::from_str(&engine.live_sources("default".into(),page.channels[0].id.clone()).unwrap()).unwrap();assert_eq!(candidates.len(),1);let opened:serde_json::Value=serde_json::from_str(&engine.open_source(candidates[0].id.clone()).unwrap()).unwrap();assert_eq!(opened["live"],true);assert!(opened["url"].as_str().unwrap().contains("/live/fixture-user/fixture-pass/7.ts"));drop(engine);std::fs::remove_dir_all(dir).unwrap();
+    let dir = std::env::temp_dir().join(format!("viptv-live-xtream-{}", uuid::Uuid::new_v4()));
+    let engine = LocalEngine::new(
+        dir.join("live.sqlite").to_string_lossy().into(),
+        Arc::new(Secrets(Mutex::new(Default::default()))),
+    )
+    .unwrap();
+    engine.configure_source_integration("default".into(),0,"xtream".into(),serde_json::json!({"server_url":"https://fixture.example","username":"fixture-user","password":"fixture-pass"}).to_string()).unwrap();
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    *engine.live_fixture.lock().unwrap() = Some(Arc::new(move |_, raw| {
+        let uri = url::Url::parse(raw).unwrap();
+        let query = uri
+            .query_pairs()
+            .collect::<std::collections::HashMap<_, _>>();
+        assert_eq!(query["username"], "fixture-user");
+        assert_eq!(query["password"], "fixture-pass");
+        let value = match query["action"].as_ref() {
+            "get_live_streams" => {
+                serde_json::json!([{ "stream_id":7,"name":"Fixture News","category_id":99,"epg_channel_id":"news"}])
+            }
+            "get_live_categories" => {
+                serde_json::json!([{ "category_id":99,"category_name":"News"}])
+            }
+            "get_short_epg" => {
+                assert_eq!(query["stream_id"], "7");
+                serde_json::json!({"epg_listings":[{"id":"one","title":base64::engine::general_purpose::STANDARD.encode("Fixture program"),"description":base64::engine::general_purpose::STANDARD.encode("Fixture description"),"start_timestamp":now-60,"stop_timestamp":now+3600}]})
+            }
+            _ => panic!("unexpected fixture action"),
+        };
+        Ok((raw.into(), value.to_string()))
+    }));
+    let raw = engine.live_channels("default".into(), "{}".into()).unwrap();
+    assert!(!raw.contains("fixture-user") && !raw.contains("fixture-pass"));
+    let page: LivePage = serde_json::from_str(&raw).unwrap();
+    assert_eq!(page.groups[0].label, "News");
+    assert_eq!(page.channels[0].group_name.as_deref(), Some("News"));
+    let guide: LiveGuide = serde_json::from_str(
+        &engine
+            .live_guide("default".into(), page.channels[0].id.clone())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(guide.programs[0].title, "Fixture program");
+    let candidates: Vec<viptv_engine::stremio::SourceCandidate> = serde_json::from_str(
+        &engine
+            .live_sources("default".into(), page.channels[0].id.clone())
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(candidates.len(), 1);
+    let opened: serde_json::Value =
+        serde_json::from_str(&engine.open_source(candidates[0].id.clone()).unwrap()).unwrap();
+    assert_eq!(opened["live"], true);
+    assert!(
+        opened["url"]
+            .as_str()
+            .unwrap()
+            .contains("/live/fixture-user/fixture-pass/7.ts")
+    );
+    drop(engine);
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn m3u_multi_categories_are_independent_memberships_and_legacy_json_defaults() {
+    let dir = std::env::temp_dir().join(format!("viptv-live-groups-{}", uuid::Uuid::new_v4()));
+    let engine = LocalEngine::new(
+        dir.join("live.sqlite").to_string_lossy().into(),
+        Arc::new(Secrets(Mutex::new(Default::default()))),
+    )
+    .unwrap();
+    let connection: IntegrationConnection = serde_json::from_str(
+        &engine
+            .configure_source_integration(
+                "default".into(),
+                0,
+                "m3u".into(),
+                serde_json::json!({"playlist_url":"https://fixture.example/list.m3u"}).to_string(),
+            )
+            .unwrap(),
+    )
+    .unwrap();
+    *engine.live_fixture.lock().unwrap() = Some(Arc::new(|_, _| {
+        Ok(("https://fixture.example/list.m3u".into(),"#EXTM3U\n#EXTINF:-1 tvg-id=\"one\" group-title=\"Animation;Kids;Religious;Kids;;\",One\nhttps://stream.example/one.m3u8\n#EXTINF:-1 tvg-id=\"two\" group-title=\"News\",Two\nhttps://stream.example/two.m3u8\n".into()))
+    }));
+    let page: LivePage =
+        serde_json::from_str(&engine.live_channels("default".into(), "{}".into()).unwrap())
+            .unwrap();
+    assert_eq!(page.groups.len(), 4);
+    assert_eq!(page.channels[0].group_name.as_deref(), Some("Animation"));
+    assert_eq!(page.channels[0].group_ids.len(), 3);
+    for name in ["Animation", "Kids", "Religious"] {
+        let id = &page.groups.iter().find(|g| g.label == name).unwrap().id;
+        let filtered: LivePage = serde_json::from_str(
+            &engine
+                .live_channels(
+                    "default".into(),
+                    serde_json::json!({"group_id":id}).to_string(),
+                )
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(filtered.channels.len(), 1);
+        assert_eq!(filtered.channels[0].id, page.channels[0].id);
+    }
+    let mut legacy = serde_json::to_value(&page.channels[0]).unwrap();
+    legacy.as_object_mut().unwrap().remove("group_ids");
+    let decoded: LiveChannel = serde_json::from_value(legacy).unwrap();
+    assert!(decoded.group_ids.is_empty());
+    assert!(decoded.in_group(decoded.group_id.as_deref().unwrap()));
+    drop(engine);
+    std::fs::remove_dir_all(dir).unwrap();
 }
