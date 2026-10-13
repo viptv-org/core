@@ -62,44 +62,6 @@ impl LocalEngine {
         Err(CoreError::InvalidInput)
     }
 
-    pub fn cached_detail(
-        &self,
-        profile: String,
-        kind: String,
-        id: String,
-        offset: u32,
-    ) -> Result<Option<String>, CoreError> {
-        if id.is_empty()
-            || id.len() > 512
-            || !matches!(kind.as_str(), "movie" | "series")
-            || offset > 100000
-        {
-            return Err(CoreError::InvalidInput);
-        }
-        let current: ProfileConfiguration =
-            serde_json::from_str(&self.profile(profile.clone())?).map_err(|_| CoreError::Bridge)?;
-        let result = {
-            let snapshots = self
-                .detail_snapshots
-                .lock()
-                .map_err(|_| CoreError::Bridge)?;
-            snapshots
-                .get(&(profile.clone(), kind, id, offset))
-                .filter(|(scope, created, _)| {
-                    scope == &current.scope
-                        && created.elapsed() < std::time::Duration::from_secs(300)
-                })
-                .map(|(_, _, detail)| serde_json::to_string(detail).map_err(|_| CoreError::Bridge))
-                .transpose()?
-        };
-        let after: ProfileConfiguration =
-            serde_json::from_str(&self.profile(profile)?).map_err(|_| CoreError::Bridge)?;
-        if after.scope != current.scope {
-            return Ok(None);
-        }
-        Ok(result)
-    }
-
     pub fn project_detail(
         &self,
         operation: String,
@@ -141,24 +103,8 @@ impl LocalEngine {
                 .related_catalog_cards(&pending.scope, &detail.item, now)
                 .unwrap_or_default();
         }
-        let mut verified = self.verified_cards.lock().map_err(|_| CoreError::Bridge)?;
-        verified.retain(|(profile, _, _), (scope, _)| {
-            profile != &pending.scope.profile_id || scope.revision == pending.scope.revision
-        });
-        if verified.len() > 4096 {
-            verified.clear();
-        }
-        for card in std::iter::once(&detail.item).chain(detail.episodes.iter()) {
-            verified.insert(
-                (
-                    pending.scope.profile_id.clone(),
-                    card.identity.kind.clone(),
-                    card.identity.id.clone(),
-                ),
-                (pending.scope.clone(), card.clone()),
-            );
-        }
-        drop(verified);
+        self.remember_detail_cards(&pending.scope,&detail)?;
+        self.remember_detail_document(&pending.scope,&pending.kind,&pending.id,&pending.provider,body,&detail)?;
         let mut snapshots = self
             .detail_snapshots
             .lock()

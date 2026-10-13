@@ -6,6 +6,7 @@ use std::{
 };
 mod addons;
 mod detail;
+mod detail_cache;
 mod browse;
 mod history;
 mod library;
@@ -35,6 +36,7 @@ pub struct LocalEngine {
     live_cache: Mutex<std::collections::HashMap<String,live::Cache>>,
     live_fetch_lock: Mutex<()>,
     enrichments: Mutex<std::collections::HashMap<String, detail::PendingEnrichment>>,
+    detail_documents: Mutex<std::collections::HashMap<(String,String,String), detail_cache::Document>>,
     detail_snapshots: Mutex<std::collections::HashMap<(String,String,String,u32),(Scope,std::time::Instant,viptv_engine::presentation::DetailSnapshot)>>,
     verified_cards: Mutex<std::collections::HashMap<(String,String,String), (Scope,viptv_engine::presentation::Card)>>,
     integration_jobs: Mutex<std::collections::HashMap<String, Arc<source_integrations::Job>>>,
@@ -97,6 +99,7 @@ impl LocalEngine {
             live_fetch_lock: Mutex::new(()),
             enrichments:Mutex::new(Default::default()),
             detail_snapshots:Mutex::new(Default::default()),
+            detail_documents:Mutex::new(Default::default()),
             verified_cards: Mutex::new(std::collections::HashMap::new()),
             integration_jobs: Mutex::new(std::collections::HashMap::new()),
             subtitle_jobs: Mutex::new(std::collections::HashMap::new()),
