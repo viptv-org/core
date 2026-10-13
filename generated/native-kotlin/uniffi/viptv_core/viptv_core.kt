@@ -952,6 +952,10 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1035,6 +1039,8 @@ fun uniffi_viptv_core_checksum_method_localengine_profile(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_profile_cards(
 ): Short
+fun uniffi_viptv_core_checksum_method_localengine_profile_preferences(
+): Short
 fun uniffi_viptv_core_checksum_method_localengine_profiles(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_project_detail(
@@ -1068,6 +1074,8 @@ fun uniffi_viptv_core_checksum_method_localengine_set_profile_pin(
 fun uniffi_viptv_core_checksum_method_localengine_source_integration_schemas(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_start_integration_sources(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_update_profile_preferences(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_verify_profile_pin(
 ): Short
@@ -1275,6 +1283,8 @@ fun uniffi_viptv_core_fn_method_localengine_profile(`ptr`: Pointer,`id`: RustBuf
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_profile_cards(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_profile_preferences(`ptr`: Pointer,`profile`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_profiles(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_project_detail(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`body`: RustBuffer.ByValue,`offset`: Int,uniffi_out_err: UniffiRustCallStatus,
@@ -1308,6 +1318,8 @@ fun uniffi_viptv_core_fn_method_localengine_set_profile_pin(`ptr`: Pointer,`id`:
 fun uniffi_viptv_core_fn_method_localengine_source_integration_schemas(`ptr`: Pointer,`profile`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_start_integration_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`cardJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_update_profile_preferences(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`revision`: Long,`preferencesJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_verify_profile_pin(`ptr`: Pointer,`id`: RustBuffer.ByValue,`pin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): Byte
@@ -1663,6 +1675,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_method_localengine_profile_cards() != 23067.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_profile_preferences() != 62106.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_viptv_core_checksum_method_localengine_profiles() != 38029.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1712,6 +1727,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_start_integration_sources() != 10809.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_update_profile_preferences() != 62103.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_verify_profile_pin() != 34419.toShort()) {
@@ -2617,6 +2635,8 @@ public interface LocalEngineInterface {
 
     fun `profileCards`(): kotlin.String
 
+    fun `profilePreferences`(`profile`: kotlin.String): kotlin.String
+
     fun `profiles`(): kotlin.String
 
     fun `projectDetail`(`operation`: kotlin.String, `body`: kotlin.String, `offset`: kotlin.UInt): kotlin.String
@@ -2650,6 +2670,8 @@ public interface LocalEngineInterface {
     fun `sourceIntegrationSchemas`(`profile`: kotlin.String): kotlin.String
 
     fun `startIntegrationSources`(`profile`: kotlin.String, `cardJson`: kotlin.String): kotlin.String
+
+    fun `updateProfilePreferences`(`profile`: kotlin.String, `revision`: kotlin.ULong, `preferencesJson`: kotlin.String): kotlin.String
 
     fun `verifyProfilePin`(`id`: kotlin.String, `pin`: kotlin.String): kotlin.Boolean
 
@@ -3058,6 +3080,19 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
 
 
 
+    @Throws(CoreException::class)override fun `profilePreferences`(`profile`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_profile_preferences(
+        it, FfiConverterString.lower(`profile`),_status)
+}
+    }
+    )
+    }
+
+
+
     @Throws(CoreException::class)override fun `profiles`(): kotlin.String {
             return FfiConverterString.lift(
     callWithPointer {
@@ -3263,6 +3298,19 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_start_integration_sources(
         it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`cardJson`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `updateProfilePreferences`(`profile`: kotlin.String, `revision`: kotlin.ULong, `preferencesJson`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_update_profile_preferences(
+        it, FfiConverterString.lower(`profile`),FfiConverterULong.lower(`revision`),FfiConverterString.lower(`preferencesJson`),_status)
 }
     }
     )

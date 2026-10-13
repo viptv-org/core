@@ -145,6 +145,8 @@ impl LocalEngine {
                     provider_id: request.provider.clone(),
                     label: source.label,
                     detail: source.detail,
+                    quality_height:source.quality_height,
+                    audio_languages:source.audio_languages,
                 });
             }
         }

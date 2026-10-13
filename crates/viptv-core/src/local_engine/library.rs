@@ -103,12 +103,14 @@ mod tests {
         let path = dir.join("library.sqlite").to_string_lossy().to_string();
         let secrets = Arc::new(Secrets::default());
         let engine = LocalEngine::new(path.clone(), secrets.clone()).unwrap();
-        let card = json!({"identity":{"id":"opaque-film","kind":"movie","ids":[{"namespace":"imdb","value":"tt1234567"}],"episode":null,"edition":null},"provider_id":"stremio","title":"My film","subtitle":null,"description":null,"poster":null,"landscape":"https://images.example/frame.jpg","logo":null,"progress":null,"badges":[],"parent_identity":null});
+        let mut card = json!({"identity":{"id":"opaque-film","kind":"movie","ids":[{"namespace":"imdb","value":"tt1234567"}],"episode":null,"edition":null},"provider_id":"stremio","title":"My film","subtitle":null,"description":null,"poster":null,"landscape":"https://images.example/frame.jpg","logo":null,"progress":null,"badges":[],"parent_identity":null});
         engine
             .save_favorite("default".into(), 0, card.to_string())
             .unwrap();
         let page: Value =
             serde_json::from_str(&engine.library("default".into(), 0, 40).unwrap()).unwrap();
+        assert!(page["cards"][0]["added_at_millis"].as_u64().is_some());
+        card["added_at_millis"]=page["cards"][0]["added_at_millis"].clone();
         assert_eq!(page["cards"][0], card);
         let home: Value = serde_json::from_str(&engine.home("default".into()).unwrap()).unwrap();
         assert_eq!(home["rows"][0]["id"], "favorites");

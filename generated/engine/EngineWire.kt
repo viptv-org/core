@@ -46,6 +46,7 @@ data class Card(
     val progress: Double? = null,
     val badges: List<String>,
     val parent_identity: MediaIdentity? = null,
+    val added_at_millis: Long? = null,
 )
 
 @Serializable
@@ -238,6 +239,8 @@ data class SourceCandidate(
     val provider_id: String,
     val label: String,
     val detail: String? = null,
+    val quality_height: Long? = null,
+    val audio_languages: List<String>,
 )
 
 @Serializable

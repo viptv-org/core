@@ -341,7 +341,7 @@ impl LocalEngine {
                             .into_iter()
                             .map(|stream| {
                                 let id = uuid::Uuid::new_v4().to_string();
-                                let label = "VIPTV Sources".to_string();
+                                let label = stream.meta.source_label.clone().unwrap_or_else(||"VIPTV Sources".into());
                                 let detail = stream.meta.resolution.map(|r| format!("{r}p"));
                                 grants.insert(
                                     id.clone(),
@@ -365,6 +365,8 @@ impl LocalEngine {
                                     provider_id: connection.id.clone(),
                                     label,
                                     detail,
+                                    quality_height:stream.meta.resolution.map(u32::from),
+                                    audio_languages:stream.meta.audio_selection.as_ref().map(|a|vec![a.language.as_str().into()]).unwrap_or_default(),
                                 }
                             })
                             .collect::<Vec<_>>();
@@ -476,4 +478,28 @@ mod tests {
         drop(engine);
         std::fs::remove_dir_all(dir).unwrap();
     }
+}
+#[cfg(all(test,feature="vsources-runtime"))]
+mod real_native_qualification {
+ use super::*;
+ struct Memory(Mutex<std::collections::HashMap<String,String>>);
+ impl SecretStore for Memory {
+  fn get(&self,k:String)->Result<Option<String>,CoreError>{Ok(self.0.lock().unwrap().get(&k).cloned())}
+  fn put(&self,k:String,v:String)->Result<(),CoreError>{self.0.lock().unwrap().insert(k,v);Ok(())}
+  fn remove(&self,k:String)->Result<(),CoreError>{self.0.lock().unwrap().remove(&k);Ok(())}
+ }
+ #[test]
+ #[ignore="requires explicitly injected owned TMDB credential and real public provider access"]
+ fn native_sdk_job_publishes_opaque_grants_and_early_cancel_preserves_selection(){
+  let dir=std::env::temp_dir().join(format!("viptv-native-sdk-{}",uuid::Uuid::new_v4()));let engine=LocalEngine::new(dir.join("native.sqlite").to_string_lossy().into(),Arc::new(Memory(Mutex::new(Default::default())))).unwrap();
+  let manifest=r#"{"id":"metadata","name":"Metadata","version":"1","resources":["meta"],"types":["movie"]}"#;
+  let addon:serde_json::Value=serde_json::from_str(&engine.install_addon("default".into(),"https://v3-cinemeta.strem.io/manifest.json".into(),manifest.into()).unwrap()).unwrap();
+  engine.configure_source_integration("default".into(),1,"vsources".into(),json!({"tmdb_api_key":std::env::var("VIPTV_QA_TMDB_KEY").unwrap()}).to_string()).unwrap();
+  let plan:serde_json::Value=serde_json::from_str(&engine.plan_detail("default".into(),"movie".into(),"tt1375666".into(),addon["id"].as_str().unwrap().into()).unwrap()).unwrap();
+  let detail:serde_json::Value=serde_json::from_str(&engine.project_detail(plan["operation"].as_str().unwrap().into(),json!({"meta":{"id":"tt1375666","name":"Inception","type":"movie"}}).to_string(),0).unwrap()).unwrap();
+  let mut hint=detail["item"].clone();hint["identity"]["ids"]=json!([{"namespace":"tmdb","value":"1"}]);
+  let job:serde_json::Value=serde_json::from_str(&engine.start_integration_sources("default".into(),hint.to_string()).unwrap()).unwrap();let job_id=job["id"].as_str().unwrap();let start=Instant::now();
+  let selected=loop{let poll=engine.poll_integration_sources("default".into(),job_id.into(),0).unwrap();assert!(!poll.contains("request_headers"));assert!(!poll.contains("https://"));let poll:serde_json::Value=serde_json::from_str(&poll).unwrap();if let Some(id)=poll["events"].as_array().and_then(|events|events.iter().find_map(|event|event["sources"][0]["id"].as_str())){break id.to_string();}assert!(start.elapsed().as_secs()<55 && poll["done"]!=true,"No native SDK candidate qualified");std::thread::sleep(std::time::Duration::from_millis(250));};
+  engine.cancel_integration_sources("default".into(),job_id.into()).unwrap();assert!(engine.open_source(selected).is_ok());println!("Native SDK opaque grant qualified; early cancel preserves selected source; elapsed_seconds={}",start.elapsed().as_secs());drop(engine);
+ }
 }

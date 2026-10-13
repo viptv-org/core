@@ -2,7 +2,7 @@
 export type Availability = "Available" | "NeedsConfiguration" | "NeedsAuthorization" | "TemporarilyUnavailable" | "Unsupported";
 export type Capability = "Discovery" | "Search" | "Metadata" | "Sources" | "Subtitles" | "Tracking" | "Authorization" | "Mapping" | "LiveTv";
 export type CapabilityState = { readonly capability: Capability; readonly availability: Availability; readonly message: string | null };
-export type Card = { readonly identity: MediaIdentity; readonly provider_id: string; readonly title: string; readonly subtitle: string | null; readonly description: string | null; readonly poster: string | null; readonly landscape: string | null; readonly logo: string | null; readonly progress: number | null; readonly badges: ReadonlyArray<string>; readonly parent_identity: MediaIdentity | null };
+export type Card = { readonly identity: MediaIdentity; readonly provider_id: string; readonly title: string; readonly subtitle: string | null; readonly description: string | null; readonly poster: string | null; readonly landscape: string | null; readonly logo: string | null; readonly progress: number | null; readonly badges: ReadonlyArray<string>; readonly parent_identity: MediaIdentity | null; readonly added_at_millis: number | null };
 export type CatalogPage = { readonly cards: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly complete: boolean };
 export type Choice = { readonly value: string; readonly label: string };
 export type ControlKind = "Text" | "SingleChoice" | "MultiChoice" | "Toggle" | "Number" | "Date";
@@ -25,7 +25,7 @@ export type QueryControl = { readonly id: string; readonly label: string; readon
 export type QueryValue = { readonly id: string; readonly values: ReadonlyArray<string> };
 export type RowState = "Pending" | "Ready" | "Empty" | "Failed";
 export type Scope = { readonly connection_id: string; readonly account_id: string; readonly profile_id: string; readonly revision: number };
-export type SourceCandidate = { readonly id: string; readonly provider_id: string; readonly label: string; readonly detail: string | null };
+export type SourceCandidate = { readonly id: string; readonly provider_id: string; readonly label: string; readonly detail: string | null; readonly quality_height: number | null; readonly audio_languages: ReadonlyArray<string> };
 export type SubtitleCandidate = { readonly id: string; readonly provider_id: string; readonly language: string; readonly label: string };
 export type SubtitleProvider = { readonly provider_id: string; readonly state: RowState; readonly message: string | null };
 export type SubtitleSnapshot = { readonly scope: Scope; readonly candidates: ReadonlyArray<SubtitleCandidate>; readonly providers: ReadonlyArray<SubtitleProvider>; readonly complete: boolean };

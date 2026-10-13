@@ -10,6 +10,7 @@ mod browse;
 mod history;
 mod library;
 mod profiles;
+mod preferences;
 mod search;
 mod secrets;
 mod sources;

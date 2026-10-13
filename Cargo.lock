@@ -3446,7 +3446,7 @@ dependencies = [
 [[package]]
 name = "vsources"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=9463d486eb6e8054fd02e38c7f61a2ed01aa2956#9463d486eb6e8054fd02e38c7f61a2ed01aa2956"
+source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
 dependencies = [
  "async-trait",
  "futures",
@@ -3464,7 +3464,7 @@ dependencies = [
 [[package]]
 name = "vsources-cloudflare"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=9463d486eb6e8054fd02e38c7f61a2ed01aa2956#9463d486eb6e8054fd02e38c7f61a2ed01aa2956"
+source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
 dependencies = [
  "async-trait",
  "serde",
@@ -3479,7 +3479,7 @@ dependencies = [
 [[package]]
 name = "vsources-core"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=9463d486eb6e8054fd02e38c7f61a2ed01aa2956#9463d486eb6e8054fd02e38c7f61a2ed01aa2956"
+source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
 dependencies = [
  "async-trait",
  "fancy-regex",
@@ -3496,7 +3496,7 @@ dependencies = [
 [[package]]
 name = "vsources-extractors"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=9463d486eb6e8054fd02e38c7f61a2ed01aa2956#9463d486eb6e8054fd02e38c7f61a2ed01aa2956"
+source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
 dependencies = [
  "aes",
  "async-trait",
@@ -3518,7 +3518,7 @@ dependencies = [
 [[package]]
 name = "vsources-providers"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=9463d486eb6e8054fd02e38c7f61a2ed01aa2956#9463d486eb6e8054fd02e38c7f61a2ed01aa2956"
+source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
 dependencies = [
  "aes",
  "async-trait",
@@ -3543,7 +3543,7 @@ dependencies = [
 [[package]]
 name = "vsources-tt"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=9463d486eb6e8054fd02e38c7f61a2ed01aa2956#9463d486eb6e8054fd02e38c7f61a2ed01aa2956"
+source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
 dependencies = [
  "fancy-regex",
  "serde",
