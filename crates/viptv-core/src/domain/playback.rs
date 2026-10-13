@@ -71,7 +71,8 @@ pub(super) fn playback_v2(v: &Value, origin: &str) -> Result<Value> {
             || !(0.0..=1e9).contains(&offset)
             || (kind == "direct" && offset != 0.0)
             || (live && offset != 0.0)
-            || (kind == "gateway" && position != 0.0)
+            || (kind == "gateway" && value["format"]=="hls" && position != 0.0)
+            || (kind=="gateway" && value["format"]=="mp4" && offset!=0.0)
         {
             return Err(invalid());
         }
@@ -132,8 +133,9 @@ pub(super) fn playback_v2(v: &Value, origin: &str) -> Result<Value> {
         {
             return Err(invalid());
         }
+        if value["format"]=="mp4" && (value["mode"]!="direct" || value["video_mode"]!="copy" || !matches!(value["audio_mode"].as_str(),Some("copy"|"none")) || live || offset!=Some(0.0)){return Err(invalid());}
         for (field, allowed) in [
-            ("format", &["hls"][..]),
+            ("format", &["hls","mp4"][..]),
             ("mode", &["direct", "remux", "transcode"][..]),
             ("video_mode", &["copy", "encode"][..]),
             ("audio_mode", &["copy", "encode", "none"][..]),
