@@ -343,10 +343,19 @@ impl LocalEngine {
                                 let id = uuid::Uuid::new_v4().to_string();
                                 let label = stream.meta.source_label.clone().unwrap_or_else(||"VIPTV Sources".into());
                                 let detail = stream.meta.resolution.map(|r| format!("{r}p"));
+                                let candidate=viptv_engine::stremio::SourceCandidate {
+                                    id:id.clone(),
+                                    provider_id: connection.id.clone(),
+                                    label,
+                                    detail,
+                                    quality_height:stream.meta.resolution.map(u32::from),
+                                    audio_languages:stream.meta.audio_selection.as_ref().map(|a|vec![a.language.as_str().into()]).unwrap_or_default(),
+                                };
                                 grants.insert(
                                     id.clone(),
                                     sources::Playable {
                                         scope: job.scope.clone(),
+                                        candidate:candidate.clone(),
                                         kind: card.identity.kind.clone(),
                                         media_id: card.identity.id.clone(),
                                         url: stream.url.to_string(),
@@ -360,14 +369,7 @@ impl LocalEngine {
                                         ),
                                     },
                                 );
-                                viptv_engine::stremio::SourceCandidate {
-                                    id,
-                                    provider_id: connection.id.clone(),
-                                    label,
-                                    detail,
-                                    quality_height:stream.meta.resolution.map(u32::from),
-                                    audio_languages:stream.meta.audio_selection.as_ref().map(|a|vec![a.language.as_str().into()]).unwrap_or_default(),
-                                }
+                                candidate
                             })
                             .collect::<Vec<_>>();
                         let mut state = job.state.lock().unwrap();

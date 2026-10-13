@@ -956,6 +956,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1052,6 +1054,8 @@ fun uniffi_viptv_core_checksum_method_localengine_project_home(
 fun uniffi_viptv_core_checksum_method_localengine_project_sources(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_project_subtitles(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_rank_sources(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_record_progress(
 ): Short
@@ -1296,6 +1300,8 @@ fun uniffi_viptv_core_fn_method_localengine_project_home(`ptr`: Pointer,`id`: Ru
 fun uniffi_viptv_core_fn_method_localengine_project_sources(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`responses`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_project_subtitles(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`responsesJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_rank_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`sourcesJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_record_progress(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`revision`: Long,`cardJson`: RustBuffer.ByValue,`positionMillis`: Long,`durationMillis`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
@@ -1694,6 +1700,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_project_subtitles() != 45861.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources() != 47395.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_record_progress() != 19446.toShort()) {
@@ -2649,6 +2658,11 @@ public interface LocalEngineInterface {
 
     fun `projectSubtitles`(`operation`: kotlin.String, `responsesJson`: kotlin.String): kotlin.String
 
+    /**
+     * Supplied metadata is ignored; only IDs address current profile-owned private grants.
+     */
+    fun `rankSources`(`profile`: kotlin.String, `sourcesJson`: kotlin.String): kotlin.String
+
     fun `recordProgress`(`profile`: kotlin.String, `revision`: kotlin.ULong, `cardJson`: kotlin.String, `positionMillis`: kotlin.ULong, `durationMillis`: kotlin.ULong)
 
     fun `removeAddon`(`id`: kotlin.String)
@@ -3164,6 +3178,22 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_project_subtitles(
         it, FfiConverterString.lower(`operation`),FfiConverterString.lower(`responsesJson`),_status)
+}
+    }
+    )
+    }
+
+
+
+    /**
+     * Supplied metadata is ignored; only IDs address current profile-owned private grants.
+     */
+    @Throws(CoreException::class)override fun `rankSources`(`profile`: kotlin.String, `sourcesJson`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_rank_sources(
+        it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`sourcesJson`),_status)
 }
     }
     )

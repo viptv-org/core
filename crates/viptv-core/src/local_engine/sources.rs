@@ -18,6 +18,7 @@ pub(super) struct PendingSources {
 }
 pub(super) struct Playable {
     pub(super) scope: Scope,
+    pub(super) candidate:SourceCandidate,
     pub(super) kind: String,
     pub(super) media_id: String,
     pub(super) url: String,
@@ -128,10 +129,12 @@ impl LocalEngine {
                     break;
                 }
                 let id = uuid::Uuid::new_v4().to_string();
+                let candidate=SourceCandidate{id:id.clone(),provider_id:request.provider.clone(),label:source.label.clone(),detail:source.detail.clone(),quality_height:source.quality_height,audio_languages:source.audio_languages.clone()};
                 playable.insert(
                     id.clone(),
                     Playable {
                         scope: pending.scope.clone(),
+                        candidate:candidate.clone(),
                         kind: pending.kind.clone(),
                         media_id: pending.media_id.clone(),
                         url: source.url,
@@ -140,14 +143,7 @@ impl LocalEngine {
                         job_id: None,
                     },
                 );
-                output.push(SourceCandidate {
-                    id,
-                    provider_id: request.provider.clone(),
-                    label: source.label,
-                    detail: source.detail,
-                    quality_height:source.quality_height,
-                    audio_languages:source.audio_languages,
-                });
+                output.push(candidate);
             }
         }
         serde_json::to_string(&output).map_err(|_| CoreError::Bridge)
