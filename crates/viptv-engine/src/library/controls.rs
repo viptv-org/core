@@ -49,6 +49,9 @@ pub fn controls(entries: &[Entry], sources: &[LibrarySource], source: &str) -> V
             ],
         ),
     ];
+    if source == "simkl" && entries.iter().all(|e| e.statistics.times_watched.is_none()) {
+        result[1].choices.retain(|choice| choice.value != "times_watched");
+    }
     let mut shows = vec![
         ("all", "All titles"),
         ("watched", "Watched"),

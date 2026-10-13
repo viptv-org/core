@@ -84,6 +84,11 @@ impl LocalEngine {
             lower,
         )
         .map_err(|_| CoreError::InvalidInput)?;
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let current = store.profile(&snapshot.scope).map_err(|_| CoreError::Bridge)?.ok_or(CoreError::InvalidInput)?;
+        if current.scope != snapshot.scope || current.scope.revision.saturating_add(store.library_revision(&snapshot.scope).map_err(|_| CoreError::Bridge)?) != snapshot.revision {
+            return Err(CoreError::InvalidInput);
+        }
         serde_json::to_string(&snapshot).map_err(|_| CoreError::Bridge)
     }
     pub fn library(&self, profile: String, offset: u32, limit: u32) -> Result<String, CoreError> {

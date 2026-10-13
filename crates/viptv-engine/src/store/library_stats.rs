@@ -61,9 +61,9 @@ impl Store {
                     .filter(|n| *n > 0)
                     .max();
                 statistics.watched = matched.iter().any(|r| r.completed_at_millis.is_some());
-                statistics.times_watched = matched.iter().try_fold(0u64, |sum, r| {
-                    r.times_watched.map(|n| sum.saturating_add(n))
-                });
+                statistics.times_watched = (!matched.iter().any(|r| r.identity.episode.is_some()))
+                    .then(|| matched.iter().try_fold(0u64, |sum, r| r.times_watched.map(|n| sum.saturating_add(n))))
+                    .flatten();
                 if card.identity.kind == "series" {
                     statistics.watched_episode_count = Some(
                         matched
