@@ -68,6 +68,10 @@ impl LocalEngine {
         body: String,
         offset: u32,
     ) -> Result<String, CoreError> {
+        self.project_detail_page(operation,body,offset,24)
+    }
+    pub fn project_detail_page(&self,operation:String,body:String,offset:u32,limit:u32)->Result<String,CoreError>{
+        if offset>100_000||!(1..=128).contains(&limit){return Err(CoreError::InvalidInput);}
         let pending = self
             .details
             .lock()
@@ -84,12 +88,13 @@ impl LocalEngine {
         if current.scope.revision != pending.scope.revision {
             return Err(CoreError::Bridge);
         }
-        let mut detail = stremio::detail(
+        let mut detail = stremio::detail_page(
             &body,
             &pending.provider,
             &pending.kind,
             &pending.id,
             offset as usize,
+            limit as usize,
         )
         .map_err(|_| CoreError::InvalidInput)?;
         if detail.recommendations.is_empty() {
@@ -103,6 +108,7 @@ impl LocalEngine {
                 .related_catalog_cards(&pending.scope, &detail.item, now)
                 .unwrap_or_default();
         }
+        if !self.store.lock().map_err(|_|CoreError::Bridge)?.profile(&pending.scope).map_err(|_|CoreError::Bridge)?.is_some_and(|profile|profile.scope==pending.scope){return Err(CoreError::Bridge);}
         self.remember_detail_cards(&pending.scope,&detail)?;
         self.remember_detail_document(&pending.scope,&pending.kind,&pending.id,&pending.provider,body,&detail)?;
         let mut snapshots = self
@@ -123,6 +129,7 @@ impl LocalEngine {
                 pending.kind,
                 pending.id,
                 offset,
+                limit,
             ),
             (pending.scope, std::time::Instant::now(), detail.clone()),
         );

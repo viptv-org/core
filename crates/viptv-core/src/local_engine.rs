@@ -40,7 +40,7 @@ pub struct LocalEngine {
     live_fixture: Mutex<Option<live::Fixture>>,
     enrichments: Mutex<std::collections::HashMap<String, detail::PendingEnrichment>>,
     detail_documents: Mutex<std::collections::HashMap<(String,String,String), detail_cache::Document>>,
-    detail_snapshots: Mutex<std::collections::HashMap<(String,String,String,u32),(Scope,std::time::Instant,viptv_engine::presentation::DetailSnapshot)>>,
+    detail_snapshots: Mutex<std::collections::HashMap<(String,String,String,u32,u32),(Scope,std::time::Instant,viptv_engine::presentation::DetailSnapshot)>>,
     verified_cards: Mutex<std::collections::HashMap<(String,String,String), (Scope,viptv_engine::presentation::Card)>>,
     integration_jobs: Mutex<std::collections::HashMap<String, Arc<source_integrations::Job>>>,
     subtitle_jobs: Mutex<std::collections::HashMap<String, subtitles::PendingSubtitles>>,

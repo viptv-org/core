@@ -43,7 +43,9 @@ impl LocalEngine {
         body: String,
         detail: &viptv_engine::presentation::DetailSnapshot,
     ) -> Result<(), CoreError> {
-        if kind!="series" {return Ok(());}
+        if kind != "series" {
+            return Ok(());
+        }
         let mut documents = self
             .detail_documents
             .lock()
@@ -84,7 +86,19 @@ impl LocalEngine {
         id: String,
         offset: u32,
     ) -> Result<Option<String>, CoreError> {
-        if id.is_empty()
+        self.detail_page(profile, kind, id, offset, 24)
+    }
+    /// A null result asks the native host to run the existing planned HTTP fetch.
+    pub fn detail_page(
+        &self,
+        profile: String,
+        kind: String,
+        id: String,
+        offset: u32,
+        limit: u32,
+    ) -> Result<Option<String>, CoreError> {
+        if !(1..=128).contains(&limit)
+            || id.is_empty()
             || id.len() > 512
             || !matches!(kind.as_str(), "movie" | "series")
             || offset > 100000
@@ -97,7 +111,7 @@ impl LocalEngine {
             .detail_snapshots
             .lock()
             .map_err(|_| CoreError::Bridge)?
-            .get(&(profile.clone(), kind.clone(), id.clone(), offset))
+            .get(&(profile.clone(), kind.clone(), id.clone(), offset, limit))
             .filter(|(scope, created, _)| {
                 scope == &current.scope && created.elapsed() < std::time::Duration::from_secs(300)
             })
@@ -116,12 +130,13 @@ impl LocalEngine {
                 })
                 .cloned();
             if let Some(document) = document {
-                let mut detail = stremio::detail(
+                let mut detail = stremio::detail_page(
                     &document.body,
                     &document.provider,
                     &kind,
                     &id,
                     offset as usize,
+                    limit as usize,
                 )
                 .map_err(|_| CoreError::InvalidInput)?;
                 if detail.recommendations.is_empty() {
