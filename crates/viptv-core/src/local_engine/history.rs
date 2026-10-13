@@ -14,12 +14,13 @@ impl LocalEngine {
             .map_err(|_| CoreError::Bridge)?
             .history(scope, 100)
             .map_err(|_| CoreError::Bridge)?;
-        let cards = records
+        let mut cards = records
             .iter()
             .filter(|r| r.can_resume())
             .take(12)
             .map(|r| r.card())
             .collect::<Vec<_>>();
+        self.merge_cached_presentation(scope, &mut cards)?;
         if cards.is_empty() {
             return Ok(None);
         }

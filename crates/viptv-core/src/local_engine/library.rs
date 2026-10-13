@@ -11,12 +11,13 @@ impl LocalEngine {
         ))
     }
     pub(super) fn favorites_row(&self, scope: &Scope) -> Result<Option<HomeRow>, CoreError> {
-        let page = self
+        let mut page = self
             .store
             .lock()
             .map_err(|_| CoreError::Bridge)?
             .favorites(scope, 0, 12)
             .map_err(|_| CoreError::Bridge)?;
+        self.merge_cached_presentation(scope, &mut page.cards)?;
         if page.cards.is_empty() {
             return Ok(None);
         }
@@ -34,12 +35,19 @@ impl LocalEngine {
 #[uniffi::export]
 impl LocalEngine {
     pub fn library(&self, profile: String, offset: u32, limit: u32) -> Result<String, CoreError> {
-        let page = self
-            .store
-            .lock()
-            .map_err(|_| CoreError::Bridge)?
-            .favorites(&local_scope(&profile), offset, limit)
-            .map_err(|_| CoreError::InvalidInput)?;
+        let (scope, mut page) = {
+            let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+            let scope = store
+                .profile(&local_scope(&profile))
+                .map_err(|_| CoreError::Bridge)?
+                .ok_or(CoreError::InvalidInput)?
+                .scope;
+            let page = store
+                .favorites(&scope, offset, limit)
+                .map_err(|_| CoreError::InvalidInput)?;
+            (scope, page)
+        };
+        self.merge_cached_presentation(&scope, &mut page.cards)?;
         serde_json::to_string(&page).map_err(|_| CoreError::Bridge)
     }
     pub fn save_favorite(
@@ -110,7 +118,7 @@ mod tests {
         let page: Value =
             serde_json::from_str(&engine.library("default".into(), 0, 40).unwrap()).unwrap();
         assert!(page["cards"][0]["added_at_millis"].as_u64().is_some());
-        card["added_at_millis"]=page["cards"][0]["added_at_millis"].clone();
+        card["added_at_millis"] = page["cards"][0]["added_at_millis"].clone();
         assert_eq!(page["cards"][0], card);
         let home: Value = serde_json::from_str(&engine.home("default".into()).unwrap()).unwrap();
         assert_eq!(home["rows"][0]["id"], "favorites");

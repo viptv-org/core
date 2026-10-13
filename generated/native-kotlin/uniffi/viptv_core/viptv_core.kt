@@ -970,6 +970,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1008,6 +1010,8 @@ fun uniffi_viptv_core_checksum_method_corebridge_view(
 fun uniffi_viptv_core_checksum_method_localengine_addons(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_bootstrap_profile(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_cached_detail(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_cancel_integration_sources(
 ): Short
@@ -1266,6 +1270,8 @@ fun uniffi_viptv_core_fn_constructor_localengine_new(`databasePath`: RustBuffer.
 fun uniffi_viptv_core_fn_method_localengine_addons(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_bootstrap_profile(`ptr`: Pointer,`profile`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_cached_detail(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`kind`: RustBuffer.ByValue,`id`: RustBuffer.ByValue,`offset`: Int,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_cancel_integration_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`jobId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
@@ -1649,6 +1655,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_bootstrap_profile() != 1484.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_cached_detail() != 33193.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_cancel_integration_sources() != 54225.toShort()) {
@@ -2651,6 +2660,8 @@ public interface LocalEngineInterface {
 
     fun `bootstrapProfile`(`profile`: kotlin.String): kotlin.String
 
+    fun `cachedDetail`(`profile`: kotlin.String, `kind`: kotlin.String, `id`: kotlin.String, `offset`: kotlin.UInt): kotlin.String?
+
     fun `cancelIntegrationSources`(`profile`: kotlin.String, `jobId`: kotlin.String)
 
     fun `checkAddonUrl`(`url`: kotlin.String): kotlin.String
@@ -2867,6 +2878,19 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_bootstrap_profile(
         it, FfiConverterString.lower(`profile`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CoreException::class)override fun `cachedDetail`(`profile`: kotlin.String, `kind`: kotlin.String, `id`: kotlin.String, `offset`: kotlin.UInt): kotlin.String? {
+            return FfiConverterOptionalString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_cached_detail(
+        it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`kind`),FfiConverterString.lower(`id`),FfiConverterUInt.lower(`offset`),_status)
 }
     }
     )

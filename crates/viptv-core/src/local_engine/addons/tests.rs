@@ -329,12 +329,16 @@ fn bounded_home_enrichment_deduplicates_and_caches_authoritative_details_without
  let profile:ProfileConfiguration=serde_json::from_str(&engine.profile("default".into()).unwrap()).unwrap();
  let card=viptv_engine::stremio::cards(r#"{"metas":[{"id":"tt123","type":"movie","name":"Film","background":"https://image.example/bg.jpg"}]}"#,"stremio").unwrap().remove(0);
  engine.record_progress("default".into(),profile.scope.revision,serde_json::to_string(&card).unwrap(),10000,100000).unwrap();
+ engine.save_favorite("default".into(),profile.scope.revision,serde_json::to_string(&card).unwrap()).unwrap();
  let plan:Value=serde_json::from_str(&engine.plan_home("default".into()).unwrap()).unwrap();
  let home=engine.project_home(plan["id"].as_str().unwrap().into(),json!([{"id":plan["requests"][0]["id"],"body":r#"{"metas":[{"id":"tt123","type":"movie","name":"Film","background":"https://image.example/bg.jpg"}]}"#}]).to_string()).unwrap();
  let hydration:Value=serde_json::from_str(&engine.plan_home_enrichment("default".into(),home).unwrap()).unwrap();assert_eq!(hydration["requests"].as_array().unwrap().len(),1);
  let final_home=engine.project_home_enrichment(hydration["operation"].as_str().unwrap().into(),json!([{"operation":hydration["requests"][0]["operation"],"body":r#"{"meta":{"id":"tt123","name":"Film","description":"Full description","logo":"https://image.example/logo.png","releaseInfo":"2026","runtime":"120 min","genres":["Drama"]}}"#}]).to_string()).unwrap();
  let final_value:Value=serde_json::from_str(&final_home).unwrap();assert_eq!(final_value["hero"]["description"],"Full description");
  let resume=&final_value["rows"][0]["cards"][0];assert_eq!(resume["progress"],0.1);assert_eq!(resume["subtitle"],"2m left");assert_eq!(resume["logo"],"https://image.example/logo.png");assert_eq!(resume["metadata"]["runtime_minutes"],120);
+ let library:Value=serde_json::from_str(&engine.library("default".into(),0,40).unwrap()).unwrap();assert_eq!(library["cards"][0]["logo"],"https://image.example/logo.png");assert_eq!(library["cards"][0]["description"],"Full description");assert!(library["cards"][0]["progress"].is_null());assert!(library["cards"][0]["added_at_millis"].as_u64().is_some());
+ assert!(engine.cached_detail("default".into(),"movie".into(),"tt123".into(),0).unwrap().is_some());assert!(engine.cached_detail("default".into(),"movie".into(),"tt123".into(),24).unwrap().is_none());
+ let cached_plan:Value=serde_json::from_str(&engine.plan_home("default".into()).unwrap()).unwrap();let prepared:Value=serde_json::from_str(&engine.prepared_home(cached_plan["id"].as_str().unwrap().into()).unwrap()).unwrap();for row in prepared["rows"].as_array().unwrap(){for c in row["cards"].as_array().unwrap(){assert_eq!(c["description"],"Full description");}}
  let warm:Value=serde_json::from_str(&engine.plan_home_enrichment("default".into(),final_home).unwrap()).unwrap();assert!(warm["requests"].as_array().unwrap().is_empty());
  assert_eq!(engine.project_home_enrichment(warm["operation"].as_str().unwrap().into(),"[]".into()).is_ok(),true);
  drop(engine);std::fs::remove_dir_all(dir).unwrap();

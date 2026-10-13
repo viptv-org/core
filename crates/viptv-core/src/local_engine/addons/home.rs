@@ -132,6 +132,7 @@ impl LocalEngine {
                     .then(|| "This addon is unavailable. Try again.".into()),
             }
         }));
+        for row in &mut rows {self.merge_cached_presentation(&plan.scope,&mut row.cards)?;}
         let hero = viptv_engine::home::select_hero(&rows);
         let complete = rows.iter().all(|row| row.state != RowState::Pending);
         serde_json::to_string(&HomeSnapshot {
@@ -206,6 +207,7 @@ impl LocalEngine {
             })
             .collect::<Vec<_>>();
         drop(store);
+        for row in &mut rows{self.merge_cached_presentation(&pending.scope,&mut row.cards)?;}
         let hero = viptv_engine::home::select_hero(&rows);
         if pending.cache_home {
             if let Some(favorites) = self.favorites_row(&pending.scope)? {
