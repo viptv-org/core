@@ -106,6 +106,7 @@ impl LocalEngine {
             .continue_row(&plan.scope)?
             .into_iter()
             .collect::<Vec<_>>();
+        rows.extend(self.favorites_row(&plan.scope)?);
         rows.extend(plan.rows.iter().map(|request| {
             HomeRow {
                 id: request.id.clone(),
@@ -139,7 +140,7 @@ impl LocalEngine {
         let complete = rows.iter().all(|row| row.state != RowState::Pending);
         serde_json::to_string(&HomeSnapshot {
             scope: plan.scope.clone(),
-            revision: plan.scope.revision,
+            revision: self.home_revision(&plan.scope)?,
             hero,
             rows,
             complete,
@@ -214,12 +215,15 @@ impl LocalEngine {
             .flat_map(|r| &r.cards)
             .find(|c| c.landscape.is_some())
             .cloned();
+        if let Some(favorites) = self.favorites_row(&pending.scope)? {
+            rows.insert(0, favorites);
+        }
         if let Some(queue) = self.continue_row(&pending.scope)? {
             rows.insert(0, queue);
         }
         serde_json::to_string(&HomeSnapshot {
             scope: pending.scope.clone(),
-            revision: pending.scope.revision,
+            revision: self.home_revision(&pending.scope)?,
             hero,
             rows,
             complete: true,

@@ -7,6 +7,7 @@ use std::{
 mod addons;
 mod detail;
 mod history;
+mod library;
 mod profiles;
 mod search;
 mod secrets;
@@ -55,7 +56,11 @@ impl LocalEngine {
             std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
                 .map_err(|_| CoreError::Bridge)?;
         }
-        if store.profiles("local", "local").map_err(|_| CoreError::Bridge)?.is_empty() {
+        if store
+            .profiles("local", "local")
+            .map_err(|_| CoreError::Bridge)?
+            .is_empty()
+        {
             let profile =
                 ProfileConfiguration::local("local".into(), "default".into(), "Default".into());
             store
@@ -96,9 +101,11 @@ impl LocalEngine {
     pub fn home(&self, id: String) -> Result<String, CoreError> {
         let profile: ProfileConfiguration =
             serde_json::from_str(&self.profile(id)?).map_err(|_| CoreError::Bridge)?;
-        let queue = self.continue_row(&profile.scope)?.into_iter().collect();
+        let mut queue: Vec<_> = self.continue_row(&profile.scope)?.into_iter().collect();
+        queue.extend(self.favorites_row(&profile.scope)?);
+        let revision = self.home_revision(&profile.scope)?;
         let snapshot = viptv_engine::presentation::HomeSnapshot {
-            revision: profile.scope.revision,
+            revision,
             scope: profile.scope,
             hero: None,
             rows: queue,
