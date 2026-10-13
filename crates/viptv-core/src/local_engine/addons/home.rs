@@ -132,12 +132,7 @@ impl LocalEngine {
                     .then(|| "This addon is unavailable. Try again.".into()),
             }
         }));
-        let hero = rows
-            .iter()
-            .filter(|row| row.provider_id != "library")
-            .flat_map(|row| &row.cards)
-            .find(|card| card.landscape.is_some())
-            .cloned();
+        let hero = viptv_engine::home::select_hero(&rows);
         let complete = rows.iter().all(|row| row.state != RowState::Pending);
         serde_json::to_string(&HomeSnapshot {
             scope: plan.scope.clone(),
@@ -211,11 +206,7 @@ impl LocalEngine {
             })
             .collect::<Vec<_>>();
         drop(store);
-        let hero = rows
-            .iter()
-            .flat_map(|r| &r.cards)
-            .find(|c| c.landscape.is_some())
-            .cloned();
+        let hero = viptv_engine::home::select_hero(&rows);
         if pending.cache_home {
             if let Some(favorites) = self.favorites_row(&pending.scope)? {
                 rows.insert(0, favorites);

@@ -320,3 +320,22 @@ fn addon_secret_stays_out_of_sqlite_and_home_uses_its_catalog() {
     drop(reopened);
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn bounded_home_enrichment_deduplicates_and_caches_authoritative_details_without_losing_resume(){
+ let dir=std::env::temp_dir().join(format!("viptv-enrich-{}",uuid::Uuid::new_v4()));
+ let engine=LocalEngine::new(dir.join("local.sqlite").to_string_lossy().into(),Arc::new(MemorySecrets::default())).unwrap();
+ engine.install_addon("default".into(),"https://addon.example/manifest.json".into(),r#"{"id":"test","name":"Trending","version":"1","resources":["catalog","meta"],"types":["movie"],"catalogs":[{"id":"top","type":"movie"}]}"#.into()).unwrap();
+ let profile:ProfileConfiguration=serde_json::from_str(&engine.profile("default".into()).unwrap()).unwrap();
+ let card=viptv_engine::stremio::cards(r#"{"metas":[{"id":"tt123","type":"movie","name":"Film","background":"https://image.example/bg.jpg"}]}"#,"stremio").unwrap().remove(0);
+ engine.record_progress("default".into(),profile.scope.revision,serde_json::to_string(&card).unwrap(),10000,100000).unwrap();
+ let plan:Value=serde_json::from_str(&engine.plan_home("default".into()).unwrap()).unwrap();
+ let home=engine.project_home(plan["id"].as_str().unwrap().into(),json!([{"id":plan["requests"][0]["id"],"body":r#"{"metas":[{"id":"tt123","type":"movie","name":"Film","background":"https://image.example/bg.jpg"}]}"#}]).to_string()).unwrap();
+ let hydration:Value=serde_json::from_str(&engine.plan_home_enrichment("default".into(),home).unwrap()).unwrap();assert_eq!(hydration["requests"].as_array().unwrap().len(),1);
+ let final_home=engine.project_home_enrichment(hydration["operation"].as_str().unwrap().into(),json!([{"operation":hydration["requests"][0]["operation"],"body":r#"{"meta":{"id":"tt123","name":"Film","description":"Full description","logo":"https://image.example/logo.png","releaseInfo":"2026","runtime":"120 min","genres":["Drama"]}}"#}]).to_string()).unwrap();
+ let final_value:Value=serde_json::from_str(&final_home).unwrap();assert_eq!(final_value["hero"]["description"],"Full description");
+ let resume=&final_value["rows"][0]["cards"][0];assert_eq!(resume["progress"],0.1);assert_eq!(resume["subtitle"],"2m left");assert_eq!(resume["logo"],"https://image.example/logo.png");assert_eq!(resume["metadata"]["runtime_minutes"],120);
+ let warm:Value=serde_json::from_str(&engine.plan_home_enrichment("default".into(),final_home).unwrap()).unwrap();assert!(warm["requests"].as_array().unwrap().is_empty());
+ assert_eq!(engine.project_home_enrichment(warm["operation"].as_str().unwrap().into(),"[]".into()).is_ok(),true);
+ drop(engine);std::fs::remove_dir_all(dir).unwrap();
+}

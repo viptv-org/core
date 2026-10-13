@@ -1,5 +1,5 @@
 use super::*;
-use serde_json::json;
+use serde_json::{Value, json};
 use viptv_engine::{capabilities::Capability, stremio};
 
 pub(super) struct PendingDetail {
@@ -43,7 +43,12 @@ impl LocalEngine {
             {
                 let operation = uuid::Uuid::new_v4().to_string();
                 let mut pending = self.details.lock().map_err(|_| CoreError::Bridge)?;
-                pending.retain(|_, p| p.scope.profile_id != profile);
+                pending.retain(|_, p| {
+                    p.scope.profile_id != profile || p.scope.revision == selected.scope.revision
+                });
+                if pending.len() >= 64 {
+                    return Err(CoreError::Bridge);
+                }
                 pending.insert(
                     operation.clone(),
                     PendingDetail {
@@ -89,10 +94,186 @@ impl LocalEngine {
             offset as usize,
         )
         .map_err(|_| CoreError::InvalidInput)?;
-        let mut verified=self.verified_cards.lock().map_err(|_|CoreError::Bridge)?;
-        verified.retain(|(profile,_,_),(scope,_)|profile!=&pending.scope.profile_id || scope.revision==pending.scope.revision);
-        if verified.len()>4096 {verified.clear();}
-        for card in std::iter::once(&detail.item).chain(detail.episodes.iter()){verified.insert((pending.scope.profile_id.clone(),card.identity.kind.clone(),card.identity.id.clone()),(pending.scope.clone(),card.clone()));}
+        let mut verified = self.verified_cards.lock().map_err(|_| CoreError::Bridge)?;
+        verified.retain(|(profile, _, _), (scope, _)| {
+            profile != &pending.scope.profile_id || scope.revision == pending.scope.revision
+        });
+        if verified.len() > 4096 {
+            verified.clear();
+        }
+        for card in std::iter::once(&detail.item).chain(detail.episodes.iter()) {
+            verified.insert(
+                (
+                    pending.scope.profile_id.clone(),
+                    card.identity.kind.clone(),
+                    card.identity.id.clone(),
+                ),
+                (pending.scope.clone(), card.clone()),
+            );
+        }
         serde_json::to_string(&detail).map_err(|_| CoreError::Bridge)
+    }
+}
+
+pub(super) struct PendingEnrichment {
+    scope: viptv_engine::profile::Scope,
+    snapshot: viptv_engine::presentation::HomeSnapshot,
+    requests: Vec<String>,
+}
+fn enrich_snapshot(
+    snapshot: &mut viptv_engine::presentation::HomeSnapshot,
+    cards: &[viptv_engine::presentation::Card],
+) {
+    for original in snapshot
+        .hero
+        .iter_mut()
+        .chain(snapshot.rows.iter_mut().flat_map(|r| r.cards.iter_mut()))
+    {
+        let identity = original
+            .parent_identity
+            .as_ref()
+            .unwrap_or(&original.identity);
+        if let Some(metadata) = cards
+            .iter()
+            .find(|c| c.identity.id == identity.id && c.identity.kind == identity.kind)
+        {
+            *original = viptv_engine::presentation::enrich_card(original, metadata);
+        }
+    }
+}
+#[uniffi::export]
+impl LocalEngine {
+    pub fn plan_home_enrichment(
+        &self,
+        profile: String,
+        home_json: String,
+    ) -> Result<String, CoreError> {
+        if home_json.len() > 2 * 1024 * 1024 {
+            return Err(CoreError::InvalidInput);
+        }
+        let mut snapshot: viptv_engine::presentation::HomeSnapshot =
+            serde_json::from_str(&home_json).map_err(|_| CoreError::InvalidInput)?;
+        let current: ProfileConfiguration =
+            serde_json::from_str(&self.profile(profile.clone())?).map_err(|_| CoreError::Bridge)?;
+        if snapshot.scope != current.scope
+            || snapshot.rows.len() > 14
+            || snapshot.rows.iter().any(|r| r.cards.len() > 24)
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        let candidates = snapshot
+            .hero
+            .iter()
+            .chain(
+                snapshot
+                    .rows
+                    .iter()
+                    .filter(|r| r.id == "continue")
+                    .flat_map(|r| r.cards.iter().take(12)),
+            )
+            .cloned()
+            .collect::<Vec<_>>();
+        let verified = self.verified_cards.lock().map_err(|_| CoreError::Bridge)?;
+        let mut cached = Vec::new();
+        let mut seen = std::collections::HashSet::new();
+        let mut needed = Vec::new();
+        for card in candidates {
+            let identity = card.parent_identity.as_ref().unwrap_or(&card.identity);
+            if !seen.insert((identity.kind.clone(), identity.id.clone())) {
+                continue;
+            }
+            if let Some((scope, metadata)) = verified
+                .get(&(profile.clone(), identity.kind.clone(), identity.id.clone()))
+                .filter(|(scope, _)| scope == &current.scope)
+            {
+                let _ = scope;
+                cached.push(metadata.clone());
+            } else {
+                needed.push((identity.clone(), card.provider_id));
+            }
+        }
+        drop(verified);
+        enrich_snapshot(&mut snapshot, &cached);
+        let mut requests = Vec::new();
+        let mut operations = Vec::new();
+        for (identity, provider) in needed.into_iter().take(13) {
+            if let Ok(plan) =
+                self.plan_detail(profile.clone(), identity.kind, identity.id, provider)
+            {
+                let request: Value = serde_json::from_str(&plan).map_err(|_| CoreError::Bridge)?;
+                if let Some(operation) = request["operation"].as_str() {
+                    operations.push(operation.to_owned());
+                    requests.push(request);
+                }
+            }
+        }
+        let operation = uuid::Uuid::new_v4().to_string();
+        let prepared = snapshot.clone();
+        let mut pending = self.enrichments.lock().map_err(|_| CoreError::Bridge)?;
+        pending.retain(|_, p| p.scope.profile_id != profile);
+        if pending.len() >= 12 {
+            return Err(CoreError::Bridge);
+        }
+        pending.insert(
+            operation.clone(),
+            PendingEnrichment {
+                scope: current.scope,
+                snapshot,
+                requests: operations,
+            },
+        );
+        Ok(json!({"operation":operation,"requests":requests,"prepared":prepared}).to_string())
+    }
+    pub fn project_home_enrichment(
+        &self,
+        operation: String,
+        raw_results: String,
+    ) -> Result<String, CoreError> {
+        if raw_results.len() > 26 * 1024 * 1024 {
+            return Err(CoreError::InvalidInput);
+        }
+        let values: Value =
+            serde_json::from_str(&raw_results).map_err(|_| CoreError::InvalidInput)?;
+        let results = values.as_array().ok_or(CoreError::InvalidInput)?;
+        let mut pending = self
+            .enrichments
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .remove(&operation)
+            .ok_or(CoreError::InvalidInput)?;
+        let current: ProfileConfiguration =
+            serde_json::from_str(&self.profile(pending.scope.profile_id.clone())?)
+                .map_err(|_| CoreError::Bridge)?;
+        if current.scope != pending.scope {
+            return Err(CoreError::Bridge);
+        }
+        let mut cards = Vec::new();
+        for request in &pending.requests {
+            if let Some(body) = results
+                .iter()
+                .find(|r| r["operation"].as_str() == Some(request))
+                .and_then(|r| r["body"].as_str())
+            {
+                if let Ok(detail) = self.project_detail(request.clone(), body.into(), 0) {
+                    if let Ok(detail) =
+                        serde_json::from_str::<viptv_engine::presentation::DetailSnapshot>(&detail)
+                    {
+                        cards.push(detail.item);
+                    }
+                }
+            }
+            self.details
+                .lock()
+                .map_err(|_| CoreError::Bridge)?
+                .remove(request);
+        }
+        enrich_snapshot(&mut pending.snapshot, &cards);
+        let current: ProfileConfiguration =
+            serde_json::from_str(&self.profile(pending.scope.profile_id.clone())?)
+                .map_err(|_| CoreError::Bridge)?;
+        if current.scope != pending.scope {
+            return Err(CoreError::Bridge);
+        }
+        serde_json::to_string(&pending.snapshot).map_err(|_| CoreError::Bridge)
     }
 }

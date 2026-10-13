@@ -36,6 +36,8 @@ data class CapabilityState(
 @Serializable
 data class Card(
     val identity: MediaIdentity,
+    val category: String? = null,
+    val metadata: CardMetadata? = null,
     val provider_id: String,
     val title: String,
     val subtitle: String? = null,
@@ -47,6 +49,17 @@ data class Card(
     val badges: List<String>,
     val parent_identity: MediaIdentity? = null,
     val added_at_millis: Long? = null,
+)
+
+@Serializable
+data class CardMetadata(
+    val year: Long? = null,
+    val runtime_minutes: Long? = null,
+    val genres: List<String> = emptyList(),
+    val rating: Double? = null,
+    val rating_votes: Long? = null,
+    val certification: String? = null,
+    val alternate_titles: List<String> = emptyList(),
 )
 
 @Serializable
@@ -75,6 +88,7 @@ enum class ControlKind {
 @Serializable
 data class DetailSnapshot(
     val item: Card,
+    val recommendations: List<Card> = emptyList(),
     val episodes: List<Card>,
     val next_cursor: String? = null,
 )
@@ -163,6 +177,7 @@ data class MediaIdentity(
 
 @Serializable
 data class PlaybackRecord(
+    val presentation: Card? = null,
     val identity: MediaIdentity,
     val provider_id: String,
     val title: String,
