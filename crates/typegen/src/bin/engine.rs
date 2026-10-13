@@ -50,6 +50,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 for f in fields {
                     let default = if matches!(f.value, F::Option(_)) {
                         " = null"
+                    } else if name.name=="SourceCandidate" && f.name=="audio_languages" {
+                        " = emptyList()"
                     } else {
                         ""
                     };
