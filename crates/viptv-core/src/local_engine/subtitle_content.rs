@@ -70,9 +70,9 @@ impl LocalEngine {
         let body = viptv_engine::stremio::subtitle_bytes_vtt(
             &response.body,
             response.headers.get("content-type").map(String::as_str),
-        )
-        .map_err(|_| CoreError::InvalidInput)?;
+        );
         self.validate_subtitle_scope(&selected.scope)?;
+        let body = body.map_err(|_| CoreError::SubtitleProjectionUnsupported)?;
         serde_json::to_string(&serde_json::json!({"id":id,"language":selected.file.language,"content_type":"text/vtt; charset=utf-8","body":body})).map_err(|_|CoreError::Bridge)
     }
     #[cfg(any(feature = "live-runtime", feature = "vsources-runtime"))]
@@ -155,6 +155,18 @@ mod tests {
         assert!(projected.contains("Café"));
         assert!(!projected.contains("credential"));
         assert!(!projected.contains("subtitles.example"));
+        let mut unsupported = response();
+        unsupported.body = b"[Script Info]\nTitle: Styled subtitle\n".to_vec();
+        assert!(matches!(
+            engine.project_subtitle_content("own", &selected, unsupported),
+            Err(CoreError::SubtitleProjectionUnsupported)
+        ));
+        assert!(
+            engine
+                .open_subtitle("own".into())
+                .unwrap()
+                .contains("raw.ass")
+        );
         let received = response();
         selected.created = std::time::Instant::now() - std::time::Duration::from_secs(601);
         assert!(

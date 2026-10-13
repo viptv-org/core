@@ -28,6 +28,8 @@ pub enum CoreError {
     InvalidInput,
     #[error("Could not process core request")]
     Bridge,
+    #[error("Subtitle format or encoding has no shared VTT projection")]
+    SubtitleProjectionUnsupported,
 }
 
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen::prelude::wasm_bindgen)]

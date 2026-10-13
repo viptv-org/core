@@ -5285,6 +5285,12 @@ sealed class CoreException: kotlin.Exception() {
             get() = ""
     }
 
+    class SubtitleProjectionUnsupported(
+        ) : CoreException() {
+        override val message
+            get() = ""
+    }
+
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<CoreException> {
         override fun lift(error_buf: RustBuffer.ByValue): CoreException = FfiConverterTypeCoreError.lift(error_buf)
@@ -5303,6 +5309,7 @@ public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> 
         return when(buf.getInt()) {
             1 -> CoreException.InvalidInput()
             2 -> CoreException.Bridge()
+            3 -> CoreException.SubtitleProjectionUnsupported()
             else -> throw RuntimeException("invalid error enum value, something is very wrong!!")
         }
     }
@@ -5317,6 +5324,10 @@ public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> 
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
             )
+            is CoreException.SubtitleProjectionUnsupported -> (
+                // Add the size for the Int that specifies the variant plus the size needed for all fields
+                4UL
+            )
         }
     }
 
@@ -5328,6 +5339,10 @@ public object FfiConverterTypeCoreError : FfiConverterRustBuffer<CoreException> 
             }
             is CoreException.Bridge -> {
                 buf.putInt(2)
+                Unit
+            }
+            is CoreException.SubtitleProjectionUnsupported -> {
+                buf.putInt(3)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }
