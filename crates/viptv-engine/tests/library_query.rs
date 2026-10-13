@@ -15,3 +15,9 @@ fn observed_native_completions_increment_once_per_rewatch_and_stay_profile_scope
  for (position,now) in [(10000,1),(95000,2),(99000,3),(10000,4),(96000,5)]{store.record_playback(&a.scope,&card,position,100000,now).unwrap();}
  let result=store.library_entries(&a.scope).unwrap();assert_eq!(result[0].statistics.times_watched,Some(2));assert!(result[0].statistics.watched);assert_eq!(result[0].statistics.last_watched_millis,Some(5));let other=store.library_entries(&b.scope).unwrap();assert_eq!(other[0].statistics.times_watched,Some(0));assert!(!other[0].statistics.watched);
 }
+#[test]
+fn empty_optional_filter_choices_mean_any_without_accepting_unknown_filters(){
+ let query:LibraryQuery=serde_json::from_value(json!({"status":"","genre":"","rated":"","added":""})).unwrap();query.validate().unwrap();assert!(query.status.is_none()&&query.genre.is_none()&&query.rated.is_none()&&query.added.is_none());
+ assert!(serde_json::from_value::<LibraryQuery>(json!({"invented_filter":true})).is_err());
+ assert!(serde_json::from_value::<LibraryQuery>(json!({"status":"invented"})).unwrap().validate().is_err());
+}

@@ -56,6 +56,7 @@ impl Store {
                     .collect::<Vec<_>>();
                 statistics.last_watched_millis = matched
                     .iter()
+                    .filter(|r| r.position_millis > 0 || r.completed_at_millis.is_some())
                     .map(|r| r.updated_at_millis)
                     .filter(|n| *n > 0)
                     .max();

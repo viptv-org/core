@@ -8,11 +8,18 @@ pub struct LibraryQuery {
     pub sort: String,
     pub show: String,
     pub r#type: String,
+    #[serde(default, deserialize_with = "optional_filter")]
     pub status: Option<String>,
+    #[serde(default, deserialize_with = "optional_filter")]
     pub genre: Option<String>,
+    #[serde(default, deserialize_with = "optional_filter")]
     pub rated: Option<String>,
+    #[serde(default, deserialize_with = "optional_filter")]
     pub added: Option<String>,
     pub episodes_left_max: Option<u64>,
+}
+fn optional_filter<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Option<String>, D::Error> {
+    Ok(Option::<String>::deserialize(deserializer)?.filter(|value| !value.is_empty()))
 }
 impl Default for LibraryQuery {
     fn default() -> Self {
