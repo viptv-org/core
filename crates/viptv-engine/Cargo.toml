@@ -6,7 +6,7 @@ license = "GPL-2.0-only"
 
 [features]
 default = []
-source-runtime = ["runtime", "dep:reqwest"]
+source-runtime = ["runtime", "dep:reqwest", "dep:flate2"]
 vsources-runtime = ["source-runtime", "dep:vsources", "dep:async-trait"]
 runtime = ["dep:tokio", "dep:rusqlite", "dep:futures", "dep:argon2"]
 
@@ -27,6 +27,7 @@ futures = { version = "0.3", optional = true }
 
 vsources = { git = "https://github.com/vynxc/vsources.git", rev = "81388c46685391f97d24ad06034e3d07002bc444", default-features = false, optional = true }
 async-trait = { version = "0.1", optional = true }
+flate2 = { version = "1", default-features = false, features = ["rust_backend"], optional = true }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream", "gzip", "brotli", "deflate"], optional = true }
 
 [dev-dependencies]

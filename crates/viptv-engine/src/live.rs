@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use url::Url;
 mod guide;
+#[cfg(feature="source-runtime")]mod xmltv_body;
+#[cfg(feature="source-runtime")]pub use xmltv_body::decode_xmltv_body;
 mod m3u;
 pub use guide::{parse_xmltv, parse_xtream_guide};
 pub use m3u::parse_m3u;

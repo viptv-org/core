@@ -34,7 +34,9 @@ pub struct LocalEngine {
     source_jobs: Mutex<std::collections::HashMap<String, sources::PendingSources>>,
     playable: Arc<Mutex<std::collections::HashMap<String, sources::Playable>>>,
     live_cache: Mutex<std::collections::HashMap<String,live::Cache>>,
-    live_fetch_lock: Mutex<()>,
+    live_fetch_locks: Mutex<std::collections::HashMap<String,Arc<Mutex<()>>>>,
+    #[cfg(all(test,feature="live-runtime"))]
+    live_fixture: Mutex<Option<live::Fixture>>,
     enrichments: Mutex<std::collections::HashMap<String, detail::PendingEnrichment>>,
     detail_documents: Mutex<std::collections::HashMap<(String,String,String), detail_cache::Document>>,
     detail_snapshots: Mutex<std::collections::HashMap<(String,String,String,u32),(Scope,std::time::Instant,viptv_engine::presentation::DetailSnapshot)>>,
@@ -96,7 +98,9 @@ impl LocalEngine {
             source_jobs: Mutex::new(std::collections::HashMap::new()),
             playable: Arc::new(Mutex::new(std::collections::HashMap::new())),
             live_cache: Mutex::new(std::collections::HashMap::new()),
-            live_fetch_lock: Mutex::new(()),
+            live_fetch_locks: Mutex::new(Default::default()),
+            #[cfg(all(test,feature="live-runtime"))]
+            live_fixture: Mutex::new(None),
             enrichments:Mutex::new(Default::default()),
             detail_snapshots:Mutex::new(Default::default()),
             detail_documents:Mutex::new(Default::default()),
