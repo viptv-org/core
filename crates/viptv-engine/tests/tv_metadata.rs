@@ -215,3 +215,8 @@ fn featured_titles_are_unique_never_live_or_episodes_and_old_home_payloads_defau
     let old:HomeSnapshot=serde_json::from_value(json!({"scope":{"connection_id":"local","account_id":"local","profile_id":"default","revision":0},"revision":0,"hero":null,"rows":[],"complete":true})).unwrap();
     assert!(old.featured.is_empty());
 }
+#[cfg(feature="runtime")]
+#[test]
+fn featured_shortlist_prefers_real_artwork_mapping_without_fetching_every_title(){
+ let unknown=simkl::card(&json!({"title":"Unmapped","ids":{"simkl":1},"fanart":"12/345"}),"anime").unwrap();let known=simkl::card(&json!({"title":"Mapped","ids":{"simkl":2,"imdb":"tt123"},"fanart":"12/345"}),"anime").unwrap();let row=HomeRow{id:"simkl:anime:trending".into(),title:"Trending Anime".into(),provider_id:"simkl".into(),state:RowState::Ready,cards:vec![unknown,known],next_cursor:None,message:None};let featured=viptv_engine::home::select_featured(&[row]);assert_eq!(featured[0].title,"Mapped");assert_eq!(featured.len(),2);
+}

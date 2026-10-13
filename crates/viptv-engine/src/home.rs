@@ -93,14 +93,20 @@ pub fn select_featured(rows: &[HomeRow]) -> Vec<Card> {
     let catalogs = selected
         .into_iter()
         .map(|row| {
-            row.cards
+            let mut cards = row
+                .cards
                 .iter()
                 .filter(|card| {
                     card.landscape.is_some()
                         && card.identity.episode.is_none()
                         && matches!(card.identity.kind.as_str(), "movie" | "series")
                 })
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>();
+            // Prefer actual logo evidence or explicit artwork mappings without fetching each row card.
+            cards.sort_by_key(|card| {
+                !(card.logo.is_some() || card.identity.ids.iter().any(|id| id.namespace == "imdb"))
+            });
+            cards
         })
         .collect::<Vec<_>>();
     let mut seen = std::collections::HashSet::new();
