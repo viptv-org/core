@@ -220,3 +220,8 @@ fn featured_titles_are_unique_never_live_or_episodes_and_old_home_payloads_defau
 fn featured_shortlist_prefers_real_artwork_mapping_without_fetching_every_title(){
  let unknown=simkl::card(&json!({"title":"Unmapped","ids":{"simkl":1},"fanart":"12/345"}),"anime").unwrap();let known=simkl::card(&json!({"title":"Mapped","ids":{"simkl":2,"imdb":"tt123"},"fanart":"12/345"}),"anime").unwrap();let row=HomeRow{id:"simkl:anime:trending".into(),title:"Trending Anime".into(),provider_id:"simkl".into(),state:RowState::Ready,cards:vec![unknown,known],next_cursor:None,message:None};let featured=viptv_engine::home::select_featured(&[row]);assert_eq!(featured[0].title,"Mapped");assert_eq!(featured.len(),2);
 }
+#[test]
+fn trending_structured_release_date_and_runtime_normalize_without_extra_detail_requests(){
+ let card=simkl::card(&json!({"title":"Movie","ids":{"simkl":1},"release_date":"07/29/2026","runtime":"2h 25m"}),"movie").unwrap();let metadata=card.metadata.unwrap();assert_eq!(metadata.year,Some(2026));assert_eq!(metadata.runtime_minutes,Some(145));assert_eq!(card.subtitle.as_deref(),Some("2026"));
+ let card=simkl::card(&json!({"title":"Unknown","ids":{"simkl":2},"release_date":"02/31/2026","runtime":"N/A"}),"movie").unwrap();assert!(card.metadata.unwrap().year.is_none());
+}
