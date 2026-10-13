@@ -251,6 +251,7 @@ fn year(value: &Value) -> Option<u32> {
         let Some(date) = value[key].as_str() else {
             continue;
         };
+        if !date.is_ascii(){continue;}
         let parts = if date.len() == 10 && date.as_bytes()[2] == b'/' && date.as_bytes()[5] == b'/'
         {
             Some((&date[6..10], &date[0..2], &date[3..5]))
