@@ -21,7 +21,7 @@ struct JobState {
     error: Option<String>,
 }
 impl LocalEngine {
-    fn source_key(&self, profile: &str, id: &str) -> String {
+    pub(super) fn source_key(&self, profile: &str, id: &str) -> String {
         format!("{}:source:{profile}:{id}", self.namespace)
     }
 }
@@ -47,8 +47,26 @@ impl LocalEngine {
                 .flatten()
                 .is_some()
         });
-        serde_json::to_string(&json!({"schemas":[vsources_schema(configured,connection.as_ref().map(|c|c.id.clone()))],"revision":selected.scope.revision,"connections":connection.into_iter().collect::<Vec<_>>()}))
-            .map_err(|_| CoreError::Bridge)
+        let connections = store
+            .connections("local")
+            .map_err(|_| CoreError::Bridge)?
+            .into_iter()
+            .filter(|c| c.private_profile_id.as_deref() == Some(&profile))
+            .collect::<Vec<_>>();
+        let mut schemas = vec![vsources_schema(
+            configured,
+            connection.as_ref().map(|c| c.id.clone()),
+        )];
+        for plugin in ["xtream", "m3u"] {
+            let connection = connections.iter().find(|c| c.plugin_id == plugin);
+            schemas.push(viptv_engine::source_integration::live_schema(
+                plugin,
+                connection.is_some(),
+                connection.map(|c| c.id.clone()),
+                cfg!(feature = "live-runtime"),
+            ));
+        }
+        serde_json::to_string(&json!({"schemas":schemas,"revision":selected.scope.revision,"connections":connections})).map_err(|_|CoreError::Bridge)
     }
     pub fn configure_source_integration(
         &self,
@@ -57,15 +75,48 @@ impl LocalEngine {
         plugin_id: String,
         configuration_json: String,
     ) -> Result<String, CoreError> {
-        if plugin_id != "vsources"
-            || !cfg!(feature = "vsources-runtime")
-            || configuration_json.len() > 4096
-        {
+        if configuration_json.len() > 32768 {
             return Err(CoreError::InvalidInput);
         }
-        let config: VsourcesConfiguration =
+        let value: serde_json::Value =
             serde_json::from_str(&configuration_json).map_err(|_| CoreError::InvalidInput)?;
-        config.validate().map_err(|_| CoreError::InvalidInput)?;
+        match plugin_id.as_str() {
+            "vsources" => {
+                if !cfg!(feature = "vsources-runtime") {
+                    return Err(CoreError::InvalidInput);
+                }
+                let config: VsourcesConfiguration =
+                    serde_json::from_value(value.clone()).map_err(|_| CoreError::InvalidInput)?;
+                config.validate().map_err(|_| CoreError::InvalidInput)?;
+                #[cfg(feature = "vsources-runtime")]
+                viptv_engine::vsources_runtime::engine(
+                    &config,
+                    Arc::new(viptv_engine::vsources_runtime::ScopedFetcher::new(
+                        Arc::new(|| false),
+                    )),
+                )
+                .map_err(|_| CoreError::InvalidInput)?;
+            }
+            "m3u" => {
+                if !cfg!(feature = "live-runtime") {
+                    return Err(CoreError::InvalidInput);
+                }
+                serde_json::from_value::<viptv_engine::live::M3uConfiguration>(value.clone())
+                    .map_err(|_| CoreError::InvalidInput)?
+                    .validate()
+                    .map_err(|_| CoreError::InvalidInput)?;
+            }
+            "xtream" => {
+                if !cfg!(feature = "live-runtime") {
+                    return Err(CoreError::InvalidInput);
+                }
+                serde_json::from_value::<viptv_engine::live::XtreamConfiguration>(value.clone())
+                    .map_err(|_| CoreError::InvalidInput)?
+                    .validate()
+                    .map_err(|_| CoreError::InvalidInput)?;
+            }
+            _ => return Err(CoreError::InvalidInput),
+        }
         let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
         let selected = store
             .profile(&local_scope(&profile))
@@ -74,14 +125,6 @@ impl LocalEngine {
         if selected.scope.revision != revision {
             return Err(CoreError::InvalidInput);
         }
-        #[cfg(feature = "vsources-runtime")]
-        viptv_engine::vsources_runtime::engine(
-            &config,
-            Arc::new(viptv_engine::vsources_runtime::ScopedFetcher::new(
-                Arc::new(|| false),
-            )),
-        )
-        .map_err(|_| CoreError::InvalidInput)?;
         let existing = store
             .connections("local")
             .map_err(|_| CoreError::Bridge)?
@@ -93,24 +136,33 @@ impl LocalEngine {
             id: existing
                 .as_ref()
                 .map(|c| c.id.clone())
-                .unwrap_or_else(|| format!("vsources:{}", uuid::Uuid::new_v4())),
-            plugin_id,
+                .unwrap_or_else(|| format!("{}:{}", plugin_id, uuid::Uuid::new_v4())),
+            plugin_id: plugin_id.clone(),
             account_id: "local".into(),
             private_profile_id: Some(profile.clone()),
-            name: "VIPTV Sources".into(),
+            name: match plugin_id.as_str() {
+                "m3u" => "M3U live TV",
+                "xtream" => "Xtream live TV",
+                _ => "VIPTV Sources",
+            }
+            .into(),
             enabled: true,
             revision: existing
                 .as_ref()
                 .map(|c| c.revision.checked_add(1).ok_or(CoreError::InvalidInput))
                 .transpose()?
                 .unwrap_or(0),
-            capabilities: vec![Capability::Sources],
+            capabilities: if plugin_id == "vsources" {
+                vec![Capability::Sources]
+            } else {
+                vec![Capability::Sources, Capability::LiveTv]
+            },
         };
         let key = self.source_key(&profile, &connection.id);
         let old = self.secrets.get(key.clone())?;
         self.secrets.put(
             key.clone(),
-            serde_json::to_string(&config).map_err(|_| CoreError::Bridge)?,
+            serde_json::to_string(&value).map_err(|_| CoreError::Bridge)?,
         )?;
         let saved = if existing.is_some() {
             store.replace_source_connection(&profile, revision, &connection)
@@ -145,7 +197,7 @@ impl LocalEngine {
                 .iter()
                 .any(|c| {
                     c.id == connection_id
-                        && c.plugin_id == "vsources"
+                        && ["vsources", "xtream", "m3u"].contains(&c.plugin_id.as_str())
                         && c.private_profile_id.as_deref() == Some(&profile)
                 })
         {
@@ -341,21 +393,30 @@ impl LocalEngine {
                             .into_iter()
                             .map(|stream| {
                                 let id = uuid::Uuid::new_v4().to_string();
-                                let label = stream.meta.source_label.clone().unwrap_or_else(||"VIPTV Sources".into());
+                                let label = stream
+                                    .meta
+                                    .source_label
+                                    .clone()
+                                    .unwrap_or_else(|| "VIPTV Sources".into());
                                 let detail = stream.meta.resolution.map(|r| format!("{r}p"));
-                                let candidate=viptv_engine::stremio::SourceCandidate {
-                                    id:id.clone(),
+                                let candidate = viptv_engine::stremio::SourceCandidate {
+                                    id: id.clone(),
                                     provider_id: connection.id.clone(),
                                     label,
                                     detail,
-                                    quality_height:stream.meta.resolution.map(u32::from),
-                                    audio_languages:stream.meta.audio_selection.as_ref().map(|a|vec![a.language.as_str().into()]).unwrap_or_default(),
+                                    quality_height: stream.meta.resolution.map(u32::from),
+                                    audio_languages: stream
+                                        .meta
+                                        .audio_selection
+                                        .as_ref()
+                                        .map(|a| vec![a.language.as_str().into()])
+                                        .unwrap_or_default(),
                                 };
                                 grants.insert(
                                     id.clone(),
                                     sources::Playable {
                                         scope: job.scope.clone(),
-                                        candidate:candidate.clone(),
+                                        candidate: candidate.clone(),
                                         kind: card.identity.kind.clone(),
                                         media_id: card.identity.id.clone(),
                                         url: stream.url.to_string(),
@@ -481,27 +542,111 @@ mod tests {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
-#[cfg(all(test,feature="vsources-runtime"))]
+#[cfg(all(test, feature = "vsources-runtime"))]
 mod real_native_qualification {
- use super::*;
- struct Memory(Mutex<std::collections::HashMap<String,String>>);
- impl SecretStore for Memory {
-  fn get(&self,k:String)->Result<Option<String>,CoreError>{Ok(self.0.lock().unwrap().get(&k).cloned())}
-  fn put(&self,k:String,v:String)->Result<(),CoreError>{self.0.lock().unwrap().insert(k,v);Ok(())}
-  fn remove(&self,k:String)->Result<(),CoreError>{self.0.lock().unwrap().remove(&k);Ok(())}
- }
- #[test]
- #[ignore="requires explicitly injected owned TMDB credential and real public provider access"]
- fn native_sdk_job_publishes_opaque_grants_and_early_cancel_preserves_selection(){
-  let dir=std::env::temp_dir().join(format!("viptv-native-sdk-{}",uuid::Uuid::new_v4()));let engine=LocalEngine::new(dir.join("native.sqlite").to_string_lossy().into(),Arc::new(Memory(Mutex::new(Default::default())))).unwrap();
-  let manifest=r#"{"id":"metadata","name":"Metadata","version":"1","resources":["meta"],"types":["movie"]}"#;
-  let addon:serde_json::Value=serde_json::from_str(&engine.install_addon("default".into(),"https://v3-cinemeta.strem.io/manifest.json".into(),manifest.into()).unwrap()).unwrap();
-  engine.configure_source_integration("default".into(),1,"vsources".into(),json!({"tmdb_api_key":std::env::var("VIPTV_QA_TMDB_KEY").unwrap()}).to_string()).unwrap();
-  let plan:serde_json::Value=serde_json::from_str(&engine.plan_detail("default".into(),"movie".into(),"tt1375666".into(),addon["id"].as_str().unwrap().into()).unwrap()).unwrap();
-  let detail:serde_json::Value=serde_json::from_str(&engine.project_detail(plan["operation"].as_str().unwrap().into(),json!({"meta":{"id":"tt1375666","name":"Inception","type":"movie"}}).to_string(),0).unwrap()).unwrap();
-  let mut hint=detail["item"].clone();hint["identity"]["ids"]=json!([{"namespace":"tmdb","value":"1"}]);
-  let job:serde_json::Value=serde_json::from_str(&engine.start_integration_sources("default".into(),hint.to_string()).unwrap()).unwrap();let job_id=job["id"].as_str().unwrap();let start=Instant::now();
-  let selected=loop{let poll=engine.poll_integration_sources("default".into(),job_id.into(),0).unwrap();assert!(!poll.contains("request_headers"));assert!(!poll.contains("https://"));let poll:serde_json::Value=serde_json::from_str(&poll).unwrap();if let Some(id)=poll["events"].as_array().and_then(|events|events.iter().find_map(|event|event["sources"][0]["id"].as_str())){break id.to_string();}assert!(start.elapsed().as_secs()<55 && poll["done"]!=true,"No native SDK candidate qualified");std::thread::sleep(std::time::Duration::from_millis(250));};
-  engine.cancel_integration_sources("default".into(),job_id.into()).unwrap();assert!(engine.open_source(selected).is_ok());println!("Native SDK opaque grant qualified; early cancel preserves selected source; elapsed_seconds={}",start.elapsed().as_secs());drop(engine);
- }
+    use super::*;
+    struct Memory(Mutex<std::collections::HashMap<String, String>>);
+    impl SecretStore for Memory {
+        fn get(&self, k: String) -> Result<Option<String>, CoreError> {
+            Ok(self.0.lock().unwrap().get(&k).cloned())
+        }
+        fn put(&self, k: String, v: String) -> Result<(), CoreError> {
+            self.0.lock().unwrap().insert(k, v);
+            Ok(())
+        }
+        fn remove(&self, k: String) -> Result<(), CoreError> {
+            self.0.lock().unwrap().remove(&k);
+            Ok(())
+        }
+    }
+    #[test]
+    #[ignore = "requires explicitly injected owned TMDB credential and real public provider access"]
+    fn native_sdk_job_publishes_opaque_grants_and_early_cancel_preserves_selection() {
+        let dir = std::env::temp_dir().join(format!("viptv-native-sdk-{}", uuid::Uuid::new_v4()));
+        let engine = LocalEngine::new(
+            dir.join("native.sqlite").to_string_lossy().into(),
+            Arc::new(Memory(Mutex::new(Default::default()))),
+        )
+        .unwrap();
+        let manifest = r#"{"id":"metadata","name":"Metadata","version":"1","resources":["meta"],"types":["movie"]}"#;
+        let addon: serde_json::Value = serde_json::from_str(
+            &engine
+                .install_addon(
+                    "default".into(),
+                    "https://v3-cinemeta.strem.io/manifest.json".into(),
+                    manifest.into(),
+                )
+                .unwrap(),
+        )
+        .unwrap();
+        engine
+            .configure_source_integration(
+                "default".into(),
+                1,
+                "vsources".into(),
+                json!({"tmdb_api_key":std::env::var("VIPTV_QA_TMDB_KEY").unwrap()}).to_string(),
+            )
+            .unwrap();
+        let plan: serde_json::Value = serde_json::from_str(
+            &engine
+                .plan_detail(
+                    "default".into(),
+                    "movie".into(),
+                    "tt1375666".into(),
+                    addon["id"].as_str().unwrap().into(),
+                )
+                .unwrap(),
+        )
+        .unwrap();
+        let detail: serde_json::Value = serde_json::from_str(
+            &engine
+                .project_detail(
+                    plan["operation"].as_str().unwrap().into(),
+                    json!({"meta":{"id":"tt1375666","name":"Inception","type":"movie"}})
+                        .to_string(),
+                    0,
+                )
+                .unwrap(),
+        )
+        .unwrap();
+        let mut hint = detail["item"].clone();
+        hint["identity"]["ids"] = json!([{"namespace":"tmdb","value":"1"}]);
+        let job: serde_json::Value = serde_json::from_str(
+            &engine
+                .start_integration_sources("default".into(), hint.to_string())
+                .unwrap(),
+        )
+        .unwrap();
+        let job_id = job["id"].as_str().unwrap();
+        let start = Instant::now();
+        let selected = loop {
+            let poll = engine
+                .poll_integration_sources("default".into(), job_id.into(), 0)
+                .unwrap();
+            assert!(!poll.contains("request_headers"));
+            assert!(!poll.contains("https://"));
+            let poll: serde_json::Value = serde_json::from_str(&poll).unwrap();
+            if let Some(id) = poll["events"].as_array().and_then(|events| {
+                events
+                    .iter()
+                    .find_map(|event| event["sources"][0]["id"].as_str())
+            }) {
+                break id.to_string();
+            }
+            assert!(
+                start.elapsed().as_secs() < 55 && poll["done"] != true,
+                "No native SDK candidate qualified"
+            );
+            std::thread::sleep(std::time::Duration::from_millis(250));
+        };
+        engine
+            .cancel_integration_sources("default".into(), job_id.into())
+            .unwrap();
+        assert!(engine.open_source(selected).is_ok());
+        println!(
+            "Native SDK opaque grant qualified; early cancel preserves selected source; elapsed_seconds={}",
+            start.elapsed().as_secs()
+        );
+        drop(engine);
+    }
 }

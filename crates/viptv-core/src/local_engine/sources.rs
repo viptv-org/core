@@ -167,7 +167,7 @@ impl LocalEngine {
             .filter(|record| record.can_resume())
             .map(|record| record.position_millis)
             .unwrap_or(0);
-        serde_json::to_string(&json!({"url":source.url,"headers":source.headers,"profile_id":source.scope.profile_id,"revision":source.scope.revision,"position_millis":resume}))
+        serde_json::to_string(&json!({"url":source.url,"headers":source.headers,"profile_id":source.scope.profile_id,"revision":source.scope.revision,"position_millis":if source.kind=="live"{0}else{resume},"live":source.kind=="live"}))
             .map_err(|_| CoreError::Bridge)
     }
 }

@@ -11,6 +11,7 @@ mod history;
 mod library;
 mod profiles;
 mod preferences;
+mod live;
 mod search;
 mod secrets;
 mod sources;
@@ -31,6 +32,8 @@ pub struct LocalEngine {
     details: Mutex<std::collections::HashMap<String, detail::PendingDetail>>,
     source_jobs: Mutex<std::collections::HashMap<String, sources::PendingSources>>,
     playable: Arc<Mutex<std::collections::HashMap<String, sources::Playable>>>,
+    live_cache: Mutex<std::collections::HashMap<String,live::Cache>>,
+    live_fetch_lock: Mutex<()>,
     verified_cards: Mutex<std::collections::HashMap<(String,String,String), (Scope,viptv_engine::presentation::Card)>>,
     integration_jobs: Mutex<std::collections::HashMap<String, Arc<source_integrations::Job>>>,
     subtitle_jobs: Mutex<std::collections::HashMap<String, subtitles::PendingSubtitles>>,
@@ -88,6 +91,8 @@ impl LocalEngine {
             details: Mutex::new(std::collections::HashMap::new()),
             source_jobs: Mutex::new(std::collections::HashMap::new()),
             playable: Arc::new(Mutex::new(std::collections::HashMap::new())),
+            live_cache: Mutex::new(std::collections::HashMap::new()),
+            live_fetch_lock: Mutex::new(()),
             verified_cards: Mutex::new(std::collections::HashMap::new()),
             integration_jobs: Mutex::new(std::collections::HashMap::new()),
             subtitle_jobs: Mutex::new(std::collections::HashMap::new()),
