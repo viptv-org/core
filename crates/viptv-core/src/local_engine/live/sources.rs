@@ -34,6 +34,7 @@ impl LocalEngine {
                         media_id: channel_id.clone(),
                         url: source.url,
                         headers: source.headers.into_iter().collect(),
+                        required_audio_index: None,
                         job_id: None,
                         expires: Some(
                             std::time::Instant::now() + std::time::Duration::from_secs(300),

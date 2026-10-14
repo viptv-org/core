@@ -1,3 +1,8 @@
+#[cfg(feature = "vsources-runtime")]
+#[path = "sources/sdk.rs"]
+mod sdk;
+#[cfg(feature = "vsources-runtime")]
+pub(super) use sdk::sdk_playable;
 use super::*;
 use serde_json::{Value, json};
 use viptv_engine::{
@@ -24,6 +29,8 @@ pub(super) struct Playable {
     pub(super) media_id: String,
     pub(super) url: String,
     pub(super) headers: Vec<(String, String)>,
+    /// Zero-based among audio streams; never an absolute demuxer stream ID.
+    pub(super) required_audio_index: Option<u32>,
     pub(super) job_id: Option<String>,
     pub(super) expires: Option<std::time::Instant>,
 }
@@ -143,6 +150,7 @@ impl LocalEngine {
                         media_id: pending.media_id.clone(),
                         url: source.url,
                         headers: source.headers,
+                        required_audio_index: None,
                         expires: None,
                         job_id: None,
                     },
@@ -171,7 +179,7 @@ impl LocalEngine {
             .filter(|record| record.can_resume())
             .map(|record| record.position_millis)
             .unwrap_or(0);
-        serde_json::to_string(&json!({"url":source.url,"headers":source.headers,"profile_id":source.scope.profile_id,"revision":source.scope.revision,"position_millis":if source.kind=="live"{0}else{resume},"live":source.kind=="live"}))
+        serde_json::to_string(&json!({"url":source.url,"headers":source.headers,"required_audio_index":source.required_audio_index,"profile_id":source.scope.profile_id,"revision":source.scope.revision,"position_millis":if source.kind=="live"{0}else{resume},"live":source.kind=="live"}))
             .map_err(|_| CoreError::Bridge)
     }
 }
