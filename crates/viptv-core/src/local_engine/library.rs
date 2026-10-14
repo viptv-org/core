@@ -21,7 +21,7 @@ impl LocalEngine {
         if page.cards.is_empty() {
             return Ok(None);
         }
-        Ok(Some(HomeRow {
+        Ok(Some(HomeRow {browse:Some(viptv_engine::home_browse::HomeBrowseAction::library()),
             id: "favorites".into(),
             title: "My List".into(),
             provider_id: "library".into(),

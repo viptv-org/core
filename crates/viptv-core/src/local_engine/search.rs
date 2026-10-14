@@ -42,7 +42,7 @@ impl LocalEngine {
                         if rows.len() >= 12 {
                             break;
                         }
-                        rows.push(CatalogRequest {
+                        rows.push(CatalogRequest {browse:None,
                             id: format!("search:{}:{kind}:{index}", connection.id),
                             title: connection.name.clone(),
                             provider_id: connection.id.clone(),

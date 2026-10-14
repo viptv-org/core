@@ -106,3 +106,11 @@ fn continuation_intents_are_typed_and_reject_unrecognized_control_fields() {
     bad.id = "wrong\nidentity".into();
     assert!(validate_identity(&bad).is_err());
 }
+
+#[test]
+fn home_browse_actions_are_explicit_and_old_rows_decode_without_them(){
+ use viptv_engine::{home_browse::*,presentation::HomeRow};
+ let old=serde_json::json!({"id":"opaque-row:do-not-parse","title":"Shelf","provider_id":"metadata","state":"Ready","cards":[],"next_cursor":null,"message":null});let row:HomeRow=serde_json::from_value(old).unwrap();assert!(row.browse.is_none());
+ let action=HomeBrowseAction::discover("series","catalog:with/opaque-id",Some(("connection_id","opaque connection".into())));assert_eq!(action.target,HomeBrowseTarget::Discover);assert_eq!(action.query[1].values[0],"catalog:with/opaque-id");assert_eq!(action.query[2].id,"connection_id");
+ let library=HomeBrowseAction::library();assert_eq!(library.target,HomeBrowseTarget::Library);assert!(library.query.iter().any(|value|value.id=="source"&&value.values==vec!["favorites"]));assert_eq!(HomeBrowseAction::continuation().target,HomeBrowseTarget::Continue);
+}

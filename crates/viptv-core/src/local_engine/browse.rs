@@ -210,7 +210,7 @@ impl LocalEngine {
             .map_err(|_| CoreError::InvalidInput)?;
             pageable = plan.pageable;
             for (index, url) in plan.endpoints.into_iter().enumerate().take(12 - rows.len()) {
-                rows.push(CatalogRequest {
+                rows.push(CatalogRequest {browse:None,
                     id: format!("discover:{}:{index}", connection.id),
                     title: connection.name.clone(),
                     provider_id: connection.id.clone(),

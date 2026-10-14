@@ -16,6 +16,7 @@ pub(super) struct StoredAddon {
 
 #[derive(Clone, Serialize)]
 pub(super) struct CatalogRequest {
+    pub(super) browse:Option<viptv_engine::home_browse::HomeBrowseAction>,
     pub(super) id: String,
     pub(super) title: String,
     pub(super) provider_id: String,

@@ -155,7 +155,21 @@ data class HistoryEntry(
 )
 
 @Serializable
+data class HomeBrowseAction(
+    val target: HomeBrowseTarget,
+    val query: List<QueryValue> = emptyList(),
+)
+
+@Serializable
+enum class HomeBrowseTarget {
+    @SerialName("Discover") DISCOVER,
+    @SerialName("Library") LIBRARY,
+    @SerialName("Continue") CONTINUE,
+}
+
+@Serializable
 data class HomeRow(
+    val browse: HomeBrowseAction? = null,
     val id: String,
     val title: String,
     val provider_id: String,

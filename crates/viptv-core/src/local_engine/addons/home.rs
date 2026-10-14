@@ -32,7 +32,7 @@ impl LocalEngine {
             let secret = match self.addon(&connection.id) {
                 Ok(s) => s,
                 Err(_) => {
-                    rows.push(CatalogRequest {
+                    rows.push(CatalogRequest {browse:None,
                         id: format!("{}:unavailable", connection.id),
                         title: connection.name.clone(),
                         provider_id: connection.id.clone(),
@@ -52,7 +52,7 @@ impl LocalEngine {
                 if rows.len() >= 12 {
                     break;
                 }
-                rows.push(CatalogRequest {
+                rows.push(CatalogRequest {browse:Some(viptv_engine::home_browse::HomeBrowseAction::discover(&catalog.kind,&catalog.id,Some(("connection_id",connection.id.clone())))),
                     id: format!("{}:{}:{}", connection.id, catalog.kind, catalog.id),
                     title: format!("{} · {}", connection.name, catalog.name),
                     provider_id: connection.id.clone(),
@@ -109,7 +109,7 @@ impl LocalEngine {
             rows.extend(self.favorites_row(&plan.scope)?);
         }
         rows.extend(plan.rows.iter().map(|request| {
-            HomeRow {
+            HomeRow {browse:request.browse.clone(),
                 id: request.id.clone(),
                 title: request.title.clone(),
                 provider_id: request.provider_id.clone(),
@@ -193,7 +193,7 @@ impl LocalEngine {
                 } else {
                     RowState::Ready
                 };
-                HomeRow {
+                HomeRow {browse:request.browse.clone(),
                     id: request.id.clone(),
                     title: request.title.clone(),
                     provider_id: request.provider_id.clone(),
