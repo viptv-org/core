@@ -991,7 +991,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2364,7 +2364,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2570,7 +2570,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2929,7 +2929,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -3048,7 +3048,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -3297,7 +3297,7 @@ checksum = "f2f6fb2847f6742cd76af783a2a2c49e9375d0a111c7bef6f71cd9e738c72d6e"
 dependencies = [
  "memoffset",
  "tempfile",
- "windows-sys 0.61.2",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -3573,7 +3573,7 @@ dependencies = [
 [[package]]
 name = "vsources"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
+source = "git+https://github.com/vynxc/vsources.git?rev=ca630245dd41f046f1cf06a78cf502eb626529b2#ca630245dd41f046f1cf06a78cf502eb626529b2"
 dependencies = [
  "async-trait",
  "futures",
@@ -3591,7 +3591,7 @@ dependencies = [
 [[package]]
 name = "vsources-cloudflare"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
+source = "git+https://github.com/vynxc/vsources.git?rev=ca630245dd41f046f1cf06a78cf502eb626529b2#ca630245dd41f046f1cf06a78cf502eb626529b2"
 dependencies = [
  "async-trait",
  "serde",
@@ -3606,7 +3606,7 @@ dependencies = [
 [[package]]
 name = "vsources-core"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
+source = "git+https://github.com/vynxc/vsources.git?rev=ca630245dd41f046f1cf06a78cf502eb626529b2#ca630245dd41f046f1cf06a78cf502eb626529b2"
 dependencies = [
  "async-trait",
  "fancy-regex",
@@ -3614,6 +3614,7 @@ dependencies = [
  "moka",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror",
  "tokio",
  "url",
@@ -3623,7 +3624,7 @@ dependencies = [
 [[package]]
 name = "vsources-extractors"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
+source = "git+https://github.com/vynxc/vsources.git?rev=ca630245dd41f046f1cf06a78cf502eb626529b2#ca630245dd41f046f1cf06a78cf502eb626529b2"
 dependencies = [
  "aes",
  "async-trait",
@@ -3645,7 +3646,7 @@ dependencies = [
 [[package]]
 name = "vsources-providers"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
+source = "git+https://github.com/vynxc/vsources.git?rev=ca630245dd41f046f1cf06a78cf502eb626529b2#ca630245dd41f046f1cf06a78cf502eb626529b2"
 dependencies = [
  "aes",
  "async-trait",
@@ -3670,7 +3671,7 @@ dependencies = [
 [[package]]
 name = "vsources-tt"
 version = "0.1.0"
-source = "git+https://github.com/vynxc/vsources.git?rev=81388c46685391f97d24ad06034e3d07002bc444#81388c46685391f97d24ad06034e3d07002bc444"
+source = "git+https://github.com/vynxc/vsources.git?rev=ca630245dd41f046f1cf06a78cf502eb626529b2#ca630245dd41f046f1cf06a78cf502eb626529b2"
 dependencies = [
  "fancy-regex",
  "serde",
