@@ -102,10 +102,14 @@ pub fn catalog_extras(catalog: &Value) -> Vec<CatalogExtra> {
         } else {
             (
                 extra_name(&value["name"]),
-                value["isRequired"].as_bool().unwrap_or(false),
+                value["isRequired"]
+                    .as_bool()
+                    .or_else(|| value["is_required"].as_bool())
+                    .unwrap_or(false),
                 bounded_options(&value["options"]),
                 value["optionsLimit"]
                     .as_u64()
+                    .or_else(|| value["options_limit"].as_u64())
                     .map(|number| number.min(1000) as usize),
             )
         };

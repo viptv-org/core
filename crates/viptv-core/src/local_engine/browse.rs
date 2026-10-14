@@ -20,6 +20,8 @@ struct Query {
     genre: Option<String>,
     #[serde(default)]
     extras: std::collections::HashMap<String, String>,
+    #[serde(default)]
+    values: Vec<viptv_engine::query::QueryValue>,
 }
 impl LocalEngine {
     fn browse_connections(
@@ -75,7 +77,7 @@ impl LocalEngine {
                     continue;
                 };
                 let controls = stremio::catalog_controls(catalog);
-                catalogs.push(json!({"id":id,"name":catalog["name"].as_str().unwrap_or(&connection.name),"type":kind,"connection_id":connection.id,"addon_id":null,"supports_search":controls.iter().any(|c|c.id=="search"),"supports_skip":stremio::catalog_pageable(catalog),"controls":controls}));
+                catalogs.push(json!({"id":id,"name":catalog["name"].as_str().unwrap_or(&connection.name),"type":kind,"connection_id":connection.id,"addon_id":null,"connection_name":connection.name,"supports_search":controls.iter().any(|c|c.id=="search"),"supports_skip":stremio::catalog_pageable(catalog),"controls":controls}));
             }
         }
         let controls = vec![QueryControl {
@@ -95,6 +97,7 @@ impl LocalEngine {
             ],
             minimum: None,
             maximum: None,
+            maximum_selections: None,
         }];
         let state = |enabled: bool| json!({"availability":if enabled{"Available"}else{"NeedsConfiguration"},"message":if enabled{None}else{Some("Enable this capability for the selected profile")}});
         serde_json::to_string(&json!({"provider_id":profile.browsing_plugin,"media_types":["movie","series"],"controls":controls,"catalogs":catalogs,"discovery":state(!discovery.is_empty()),"search":state(!search.is_empty()),"filters":state(!catalogs.is_empty()),"calendar":{"availability":"Unsupported","message":"Calendar is not available for Stremio addons"}})).map_err(|_|CoreError::Bridge)
@@ -171,6 +174,9 @@ impl LocalEngine {
         {
             return Err(CoreError::InvalidInput);
         }
+        if !query.values.is_empty() && (query.catalog.is_none() || query.connection_id.is_none()) {
+            return Err(CoreError::InvalidInput);
+        }
         let profile: ProfileConfiguration =
             serde_json::from_str(&self.profile(profile)?).map_err(|_| CoreError::Bridge)?;
         let cap = if query.search.as_ref().is_some_and(|s| !s.trim().is_empty()) {
@@ -205,6 +211,7 @@ impl LocalEngine {
                     search: query.search.clone(),
                     genre: query.genre.clone(),
                     extras: query.extras.clone(),
+                    values: query.values.iter().map(|v| stremio::ExtraValues {id:v.id.clone(),values:v.values.clone()}).collect(),
                 },
             )
             .map_err(|_| CoreError::InvalidInput)?;
@@ -353,3 +360,7 @@ mod tests {
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "browse_selection_tests.rs"]
+mod selection_tests;

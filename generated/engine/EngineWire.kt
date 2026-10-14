@@ -426,6 +426,7 @@ data class QueryControl(
     val choices: List<Choice>,
     val minimum: Double? = null,
     val maximum: Double? = null,
+    val maximum_selections: Long? = null,
 )
 
 @Serializable

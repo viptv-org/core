@@ -17,5 +17,7 @@ pub mod candidate;
 
 #[cfg(feature = "discovery")]
 pub mod discover;
+#[cfg(feature = "discovery")]
+pub mod discovery_values;
 
 pub use normalize::validate_url;
