@@ -76,6 +76,33 @@ data class Choice(
 )
 
 @Serializable
+data class ContinuationEntry(
+    val card: Card,
+    val record: PlaybackRecord,
+    val status: ContinuationStatus,
+    val previous_identity: MediaIdentity? = null,
+)
+
+@Serializable
+data class ContinuationPage(
+    val scope: Scope,
+    val revision: Long,
+    val entries: List<ContinuationEntry>,
+    val next_cursor: String? = null,
+    val complete: Boolean,
+)
+
+@Serializable
+enum class ContinuationStatus {
+    @SerialName("Resume") RESUME,
+    @SerialName("Next") NEXT,
+    @SerialName("Pending") PENDING,
+    @SerialName("CaughtUp") CAUGHTUP,
+    @SerialName("Upcoming") UPCOMING,
+    @SerialName("Unavailable") UNAVAILABLE,
+}
+
+@Serializable
 enum class ControlKind {
     @SerialName("Text") TEXT,
     @SerialName("SingleChoice") SINGLECHOICE,
@@ -324,6 +351,18 @@ data class MediaIdentity(
 )
 
 @Serializable
+data class NextEpisodeRequest(
+    val identity: MediaIdentity,
+    val parent_identity: MediaIdentity? = null,
+)
+
+@Serializable
+data class NextEpisodeResult(
+    val status: ContinuationStatus,
+    val item: Card? = null,
+)
+
+@Serializable
 data class PlaybackRecord(
     val times_watched: Long? = null,
     val presentation: Card? = null,
@@ -379,6 +418,21 @@ data class QueryControl(
 data class QueryValue(
     val id: String,
     val values: List<String>,
+)
+
+@Serializable
+data class QueueVisibilityReceipt(
+    val scope: Scope,
+    val revision: Long,
+    val identity: MediaIdentity,
+    val hidden: Boolean,
+)
+
+@Serializable
+data class QueueVisibilityRequest(
+    val identity: MediaIdentity,
+    val parent_identity: MediaIdentity? = null,
+    val hidden: Boolean,
 )
 
 @Serializable

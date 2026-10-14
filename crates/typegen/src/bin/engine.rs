@@ -35,6 +35,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<viptv_engine::library::LibraryImportStatus>()?
         .register_type::<viptv_engine::library::LibraryMembershipSnapshot>()?
         .register_type::<SourceCandidate>()?
+        .register_type::<viptv_engine::continuation::ContinuationPage>()?
+        .register_type::<viptv_engine::continuation::NextEpisodeRequest>()?
+        .register_type::<viptv_engine::continuation::NextEpisodeResult>()?
+        .register_type::<viptv_engine::continuation::QueueVisibilityRequest>()?
+        .register_type::<viptv_engine::continuation::QueueVisibilityReceipt>()?
         .register_type::<SubtitleSnapshot>()?
         .register_type::<PlaybackRecord>()?
         .register_type::<HistoryEntry>()?
