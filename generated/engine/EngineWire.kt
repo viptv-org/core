@@ -175,6 +175,13 @@ data class LibraryImportStatus(
 )
 
 @Serializable
+data class LibraryMembershipSnapshot(
+    val identities: List<MediaIdentity>,
+    val revision: Long,
+    val complete: Boolean,
+)
+
+@Serializable
 data class LibraryProvenance(
     val provider_id: String,
     val external_identity: MediaIdentity,

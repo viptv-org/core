@@ -104,3 +104,11 @@ pub struct LibraryImportStatus {
     pub availability: Availability,
     pub refresh_after_millis: Option<u64>,
 }
+
+/// Complete saved-title membership without card projection or provider requests.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+pub struct LibraryMembershipSnapshot {
+    pub identities: Vec<MediaIdentity>,
+    pub revision: u64,
+    pub complete: bool,
+}

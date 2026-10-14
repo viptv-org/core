@@ -564,9 +564,14 @@ mod real_native_qualification {
         use viptv_engine::egress::{ScopedHttp,HttpRequest};
         let Some(value)=opened["url"].as_str()else{return false;};let Ok(mut url)=url::Url::parse(value)else{return false;};let origin=url.origin();let mut headers=std::collections::BTreeMap::new();for pair in opened["headers"].as_array().into_iter().flatten(){if let(Some(name),Some(value))=(pair[0].as_str(),pair[1].as_str()){headers.insert(name.to_owned(),value.to_owned());}}
         let runtime=tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();runtime.block_on(async{
-          let http=ScopedHttp::new(Arc::new(||true));for _ in 0..3 {let mut request=HttpRequest::get(url.clone());request.timeout=Some(std::time::Duration::from_secs(8));if url.origin()==origin{request.headers=headers.clone();}let Ok(response)=http.probe(request,16384).await else{return false;};if !(200..300).contains(&response.status){return false;}let body=&response.body;
-            if body.starts_with(b"#EXTM3U"){let Ok(text)=std::str::from_utf8(body)else{return false;};let Some(next)=text.lines().map(str::trim).find(|line|!line.is_empty()&&!line.starts_with('#'))else{return false;};let Ok(next)=response.url.join(next)else{return false;};url=next;continue;}
-            return body.first()==Some(&0x47)||body.get(4..8).is_some_and(|bytes|matches!(bytes,b"ftyp"|b"styp"|b"moof"|b"moov"))||body.starts_with(&[0x1a,0x45,0xdf,0xa3]);
+          let http=ScopedHttp::new(Arc::new(||true));let mut encrypted=false;for _ in 0..3 {let mut request=HttpRequest::get(url.clone());request.timeout=Some(std::time::Duration::from_secs(8));if url.origin()==origin{request.headers=headers.clone();}let Ok(response)=http.probe(request,16384).await else{return false;};if !(200..300).contains(&response.status){return false;}let body=&response.body;
+            if body.starts_with(b"#EXTM3U"){let Ok(text)=std::str::from_utf8(body)else{return false;};if let Some(key)=text.lines().find(|line|line.starts_with("#EXT-X-KEY:")&&line.contains("METHOD=AES-128")){
+              let Some(uri)=key.split("URI=\"").nth(1).and_then(|tail|tail.split('"').next())else{return false;};
+              let Ok(key_url)=response.url.join(uri)else{return false;};let mut key_request=HttpRequest::get(key_url.clone());key_request.timeout=Some(std::time::Duration::from_secs(8));if key_url.origin()==origin{key_request.headers=headers.clone();}
+              let Ok(key)=http.probe(key_request,32).await else{return false;};if !(200..300).contains(&key.status)||key.body.len()!=16||key.truncated{return false;}encrypted=true;
+            }
+            let Some(next)=text.lines().map(str::trim).find(|line|!line.is_empty()&&!line.starts_with('#'))else{return false;};let Ok(next)=response.url.join(next)else{return false;};url=next;continue;}
+            return (encrypted&&body.len()>=188&&body.len()%16==0&&std::str::from_utf8(body).is_err())||body.first()==Some(&0x47)||body.get(4..8).is_some_and(|bytes|matches!(bytes,b"ftyp"|b"styp"|b"moof"|b"moov"))||body.starts_with(&[0x1a,0x45,0xdf,0xa3]);
           }false
         })
     }

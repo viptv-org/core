@@ -33,6 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .register_type::<CatalogPage>()?
         .register_type::<viptv_engine::library::LibrarySnapshot>()?
         .register_type::<viptv_engine::library::LibraryImportStatus>()?
+        .register_type::<viptv_engine::library::LibraryMembershipSnapshot>()?
         .register_type::<SourceCandidate>()?
         .register_type::<SubtitleSnapshot>()?
         .register_type::<PlaybackRecord>()?
