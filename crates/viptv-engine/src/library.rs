@@ -10,8 +10,18 @@ use crate::{
 use facet::Facet;
 use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+pub struct LibraryProvenance {
+    pub provider_id:String,
+    pub external_identity:MediaIdentity,
+    pub imported_at_millis:u64,
+    pub source_updated_at_millis:Option<u64>,
+    pub link_revision:Option<u64>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
 pub struct LibraryStatistics {
     pub identity: MediaIdentity,
+    #[serde(default)]
+    pub provenance:Vec<LibraryProvenance>,
     pub watched: bool,
     pub last_watched_millis: Option<u64>,
     pub times_watched: Option<u64>,
@@ -29,6 +39,7 @@ impl LibraryStatistics {
     pub fn empty(identity: MediaIdentity) -> Self {
         Self {
             identity,
+            provenance:vec![],
             watched: false,
             last_watched_millis: None,
             times_watched: None,

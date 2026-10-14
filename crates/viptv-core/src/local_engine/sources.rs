@@ -8,6 +8,7 @@ use viptv_engine::{
 
 pub(super) struct Request {
     provider: String,
+    provider_name: String,
     url: String,
 }
 pub(super) struct PendingSources {
@@ -63,6 +64,7 @@ impl LocalEngine {
             {
                 requests.push(Request {
                     provider: connection.id.clone(),
+                    provider_name: connection.name.clone(),
                     url,
                 });
             }
@@ -124,12 +126,14 @@ impl LocalEngine {
             let sources = raw
                 .and_then(|body| stremio::read_streams(body).ok())
                 .unwrap_or_default();
-            for source in sources {
+            for mut source in sources {
+                let display = source.presentation.get_or_insert_with(Default::default);
+                display.provider_name = Some(request.provider_name.clone());
                 if output.len() >= 80 {
                     break;
                 }
                 let id = uuid::Uuid::new_v4().to_string();
-                let candidate=SourceCandidate{id:id.clone(),provider_id:request.provider.clone(),label:source.label.clone(),detail:source.detail.clone(),quality_height:source.quality_height,audio_languages:source.audio_languages.clone()};
+                let candidate=SourceCandidate{id:id.clone(),provider_id:request.provider.clone(),label:source.label.clone(),detail:source.detail.clone(),quality_height:source.quality_height,audio_languages:source.audio_languages.clone(),presentation:source.presentation.clone()};
                 playable.insert(
                     id.clone(),
                     Playable {

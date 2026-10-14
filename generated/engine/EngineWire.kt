@@ -161,6 +161,15 @@ data class IntegrationConnection(
 )
 
 @Serializable
+data class LibraryProvenance(
+    val provider_id: String,
+    val external_identity: MediaIdentity,
+    val imported_at_millis: Long,
+    val source_updated_at_millis: Long? = null,
+    val link_revision: Long? = null,
+)
+
+@Serializable
 data class LibraryQuery(
     val source: String,
     val offset: Long,
@@ -202,6 +211,7 @@ data class LibrarySource(
 @Serializable
 data class LibraryStatistics(
     val identity: MediaIdentity,
+    val provenance: List<LibraryProvenance> = emptyList(),
     val watched: Boolean,
     val last_watched_millis: Long? = null,
     val times_watched: Long? = null,
@@ -374,6 +384,20 @@ data class SourceCandidate(
     val detail: String? = null,
     val quality_height: Long? = null,
     val audio_languages: List<String> = emptyList(),
+    val presentation: SourcePresentation? = null,
+)
+
+@Serializable
+data class SourcePresentation(
+    val provider_name: String? = null,
+    val source_id: String? = null,
+    val delivery_format: String? = null,
+    val container: String? = null,
+    val quality: String? = null,
+    val video_codec: String? = null,
+    val audio_codecs: List<String> = emptyList(),
+    val size_bytes: Long? = null,
+    val size_label: String? = null,
 )
 
 @Serializable

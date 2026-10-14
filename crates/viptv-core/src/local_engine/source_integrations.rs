@@ -400,6 +400,7 @@ impl LocalEngine {
                                     .unwrap_or_else(|| "VIPTV Sources".into());
                                 let detail = stream.meta.resolution.map(|r| format!("{r}p"));
                                 let candidate = viptv_engine::stremio::SourceCandidate {
+                                    presentation: Some(viptv_engine::vsources_runtime::presentation(&stream)),
                                     id: id.clone(),
                                     provider_id: connection.id.clone(),
                                     label,
@@ -559,6 +560,16 @@ mod real_native_qualification {
             Ok(())
         }
     }
+    fn read_real_media(opened:&serde_json::Value)->bool{
+        use viptv_engine::egress::{ScopedHttp,HttpRequest};
+        let Some(value)=opened["url"].as_str()else{return false;};let Ok(mut url)=url::Url::parse(value)else{return false;};let origin=url.origin();let mut headers=std::collections::BTreeMap::new();for pair in opened["headers"].as_array().into_iter().flatten(){if let(Some(name),Some(value))=(pair[0].as_str(),pair[1].as_str()){headers.insert(name.to_owned(),value.to_owned());}}
+        let runtime=tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();runtime.block_on(async{
+          let http=ScopedHttp::new(Arc::new(||true));for _ in 0..3 {let mut request=HttpRequest::get(url.clone());request.timeout=Some(std::time::Duration::from_secs(8));if url.origin()==origin{request.headers=headers.clone();}let Ok(response)=http.probe(request,16384).await else{return false;};if !(200..300).contains(&response.status){return false;}let body=&response.body;
+            if body.starts_with(b"#EXTM3U"){let Ok(text)=std::str::from_utf8(body)else{return false;};let Some(next)=text.lines().map(str::trim).find(|line|!line.is_empty()&&!line.starts_with('#'))else{return false;};let Ok(next)=response.url.join(next)else{return false;};url=next;continue;}
+            return body.first()==Some(&0x47)||body.get(4..8).is_some_and(|bytes|matches!(bytes,b"ftyp"|b"styp"|b"moof"|b"moov"))||body.starts_with(&[0x1a,0x45,0xdf,0xa3]);
+          }false
+        })
+    }
     #[test]
     #[ignore = "requires explicitly injected owned TMDB credential and real public provider access"]
     fn native_sdk_job_publishes_opaque_grants_and_early_cancel_preserves_selection() {
@@ -642,9 +653,10 @@ mod real_native_qualification {
         engine
             .cancel_integration_sources("default".into(), job_id.into())
             .unwrap();
-        assert!(engine.open_source(selected).is_ok());
+        let opened:serde_json::Value=serde_json::from_str(&engine.open_source(selected).unwrap()).unwrap();
+        assert!(read_real_media(&opened),"SDK candidate did not yield a bounded real media read");
         println!(
-            "Native SDK opaque grant qualified; early cancel preserves selected source; elapsed_seconds={}",
+            "Native SDK opaque grant and media bytes qualified; metadata-only Stremio manifest; early cancel preserves selected source; elapsed_seconds={}",
             start.elapsed().as_secs()
         );
         drop(engine);

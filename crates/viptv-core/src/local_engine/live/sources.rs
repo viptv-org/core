@@ -23,6 +23,7 @@ impl LocalEngine {
                     detail: None,
                     quality_height: None,
                     audio_languages: vec![],
+                    presentation: None,
                 };
                 grants.insert(
                     id,
