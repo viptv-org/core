@@ -7,3 +7,6 @@
 DEV.local.md
 *.log
 adapters/tauri/target/
+
+# Native ABI build output; consumers sync committed source and bindings.
+/generated/android/

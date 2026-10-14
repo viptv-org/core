@@ -3,7 +3,8 @@
 # wasm core must not use externref. wasm-bindgen 0.2.92 generates its JS
 # shim path for references when the feature is off; newer wasm-bindgen
 # versions require reference types unconditionally, which is why the
-# workspace pins the wasm-bindgen trio to the 0.2.92/0.3.69 generation.
+# browser-only manifest pins the bridge trio to 0.2.92/0.3.69; native
+# SDK dependency resolution remains independent and is not downgraded.
 # Scoped to the wasm target only: native builds must not see the flag.
 [target.wasm32-unknown-unknown]
 rustflags = ["-C", "target-feature=-reference-types"]

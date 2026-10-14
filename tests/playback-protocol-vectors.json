@@ -645,5 +645,77 @@
     "kind": "request",
     "input": "{\"operation\":\"playbackV2DecodedStart\",\"playback\":{}}",
     "error": "Invalid server response or input"
+  },
+  {
+    "name": "HLS cut offset survives actual WASM legacy playback projection",
+    "kind": "playbackV2",
+    "input": "{\"id\":\"clock_fixture\",\"status\":\"ready\",\"expires_at\":1800000060,\"renew_after_seconds\":20,\"delivery\":{\"kind\":\"gateway\",\"url\":\"https://gateway.example/media/viewer/token/index.m3u8\",\"format\":\"hls\",\"mode\":\"remux\",\"video_mode\":\"copy\",\"audio_mode\":\"copy\",\"position\":0.0,\"timeline_offset_seconds\":48.6,\"duration\":600.0,\"live\":false,\"audio_tracks\":[],\"subtitle_tracks\":[],\"selected_audio\":null,\"selected_subtitle\":null,\"subtitles_supported\":false}}",
+    "output": {
+      "id": "clock_fixture",
+      "status": "ready",
+      "expiresAt": 1800000060000,
+      "renewAfterSeconds": 20,
+      "session": {
+        "headers": {},
+        "id": "clock_fixture",
+        "url": "https://gateway.example/media/viewer/token/index.m3u8",
+        "format": "hls",
+        "mode": "remux",
+        "videoMode": "copy",
+        "audioMode": "copy",
+        "position": 0.0,
+        "timelineOffsetSeconds": 48.6,
+        "duration": 600.0,
+        "live": false,
+        "audioTracks": [],
+        "subtitleTracks": [],
+        "subtitlesSupported": false,
+        "deliveryKind": "gateway"
+      },
+      "errorCode": null,
+      "error": null
+    }
+  },
+  {
+    "name": "HLS cut cannot also seek the player",
+    "kind": "playbackV2",
+    "input": "{\"id\":\"clock_fixture\",\"status\":\"ready\",\"expires_at\":1800000060,\"renew_after_seconds\":20,\"delivery\":{\"kind\":\"gateway\",\"url\":\"https://gateway.example/media/viewer/token/index.m3u8\",\"format\":\"hls\",\"mode\":\"remux\",\"video_mode\":\"copy\",\"audio_mode\":\"copy\",\"position\":48.6,\"timeline_offset_seconds\":48.6,\"duration\":600.0,\"live\":false,\"audio_tracks\":[],\"subtitle_tracks\":[],\"selected_audio\":null,\"selected_subtitle\":null,\"subtitles_supported\":false}}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "Negative HLS source clock rejected in WASM",
+    "kind": "playbackV2",
+    "input": "{\"id\":\"clock_fixture\",\"status\":\"ready\",\"expires_at\":1800000060,\"renew_after_seconds\":20,\"delivery\":{\"kind\":\"gateway\",\"url\":\"https://gateway.example/media/viewer/token/index.m3u8\",\"format\":\"hls\",\"mode\":\"remux\",\"video_mode\":\"copy\",\"audio_mode\":\"copy\",\"position\":0.0,\"timeline_offset_seconds\":-1,\"duration\":600.0,\"live\":false,\"audio_tracks\":[],\"subtitle_tracks\":[],\"selected_audio\":null,\"selected_subtitle\":null,\"subtitles_supported\":false}}",
+    "error": "Invalid server response or input"
+  },
+  {
+    "name": "Original MP4 seeks once with zero cut offset in WASM",
+    "kind": "playbackV2",
+    "input": "{\"id\":\"clock_fixture\",\"status\":\"ready\",\"expires_at\":1800000060,\"renew_after_seconds\":20,\"delivery\":{\"kind\":\"gateway\",\"url\":\"https://gateway.example/media/viewer/token/source.mp4\",\"format\":\"mp4\",\"mode\":\"direct\",\"video_mode\":\"copy\",\"audio_mode\":\"copy\",\"position\":48.6,\"timeline_offset_seconds\":0.0,\"duration\":600.0,\"live\":false,\"audio_tracks\":[],\"subtitle_tracks\":[],\"selected_audio\":null,\"selected_subtitle\":null,\"subtitles_supported\":false}}",
+    "output": {
+      "id": "clock_fixture",
+      "status": "ready",
+      "expiresAt": 1800000060000,
+      "renewAfterSeconds": 20,
+      "session": {
+        "headers": {},
+        "id": "clock_fixture",
+        "url": "https://gateway.example/media/viewer/token/source.mp4",
+        "format": "mp4",
+        "mode": "direct",
+        "videoMode": "copy",
+        "audioMode": "copy",
+        "position": 48.6,
+        "timelineOffsetSeconds": 0.0,
+        "duration": 600.0,
+        "live": false,
+        "audioTracks": [],
+        "subtitleTracks": [],
+        "subtitlesSupported": false,
+        "deliveryKind": "gateway"
+      },
+      "errorCode": null,
+      "error": null
+    }
   }
 ]

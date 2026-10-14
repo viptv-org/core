@@ -43,7 +43,7 @@ lifecycle('foregroundAuthority',{expected:identity,current:{...identity,account:
 lifecycle('homeRevision',{scopeValid:true,observedRevision:'r2',renderedRevision:'r1',refreshSucceeded:null},equal('Refresh'));
 lifecycle('homeRevision',{scopeValid:true,observedRevision:'r2',renderedRevision:'r1',refreshSucceeded:false},equal('RetryLater'));
 lifecycle('previewScope',{profileId:'p',mediaType:'movie',mediaId:'m',hasEpisode:false,route:'Details',activeKey:null,releasing:false},value => assert.ok(value.key?.includes('m')));
-lifecycle('preview',{action:'Adopt',requestedKey:'p\u0000movie\u0000m',activeKey:'p\u0000movie\u0000m',running:false,hasSources:true,done:true,failed:true,ownerMatches:true},equal('Retain'));
+lifecycle('preview',{action:'Adopt',requestedKey:'p\u0000movie\u0000m',activeKey:'p\u0000movie\u0000m',running:false,hasSources:true,done:true,failed:true,ownerMatches:true},equal('BeginImmediate'));
 lifecycle('preview',{action:'Update',requestedKey:'same',activeKey:'same',running:false,hasSources:false,done:false,failed:false,ownerMatches:false},equal('Reject'));
 playback('timeline',{deliveryMode:'managed',launchPositionMillis:42000,segmentPositionMillis:3000,titleOffsetMillis:42000,titlePositionMillis:47000,nativeDurationMillis:78000,titleDurationMillis:120000,pauseAnchorMillis:null,playerError:false,trustedPositionMillis:44000},value => {assert.equal(value.positionMillis,45000);assert.equal(value.durationMillis,120000);});
 playback('seekPreview',{currentMillis:12000,deltaMillis:-15000,durationMillis:null,rangeStartMillis:10000,rangeEndMillis:20000},equal(10000));

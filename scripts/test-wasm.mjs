@@ -63,7 +63,10 @@ const v2Poll=JSON.parse(core.normalize('sourcesPollStep',JSON.stringify({poll:{d
 assert.equal(v2Poll.state.errors[0].code,'provider_connection_limit');
 assert.ok(v2Poll.state.errors[0].message.includes('Stop another stream'));
 assert.ok(!JSON.stringify(v2Poll).includes('private-token'));
-const domain = (kind, value) => JSON.parse(core.normalize(kind, JSON.stringify(value), 'https://example.test'));
+const domain = (kind, value) => {
+  try { return JSON.parse(core.normalize(kind, JSON.stringify(value), 'https://example.test')); }
+  catch (error) { throw new Error(`WASM ${kind} failed: ${error}`); }
+};
 const playbackErrors = JSON.parse(await readFile(new URL('tests/playback-error-vectors.json', root), 'utf8'));
 const failedPlayback = code => ({id:'pb2_error_fixture',status:'failed',expires_at:1800000060,renew_after_seconds:20,error_code:code,error:'https://provider.invalid/private-token Authorization: Bearer private-token',delivery:{url:'https://provider.invalid/private-token',headers:{Cookie:'private-token'}}});
 for (const {code,status,message} of playbackErrors) {
@@ -142,13 +145,14 @@ assert.equal(domain('initialEpisode',{episodes:[{id:'e1',season:1,episode:1,watc
 console.log('WASM: imported watched facts, undated completion and active rewatch policy passed');
 assert.equal(domain('androidPreferences',{}).autoplay,true);
 assert.equal(domain('guide',{items:[{start_time:10,end_time:20,display_time:'Now'}]}).programs[0].start,10);
-assert.equal(domain('live',{items:[{id:'c',name:'Channel',logo:'logo.png'}]}).channels[0].poster,'logo.png');
-assert.equal(domain('request',{operation:'playback',profileId:'must-not-send',playback:{streamId:'opaque',capabilities:{directPlay:true}}}).body.profile_id,undefined);
-// directUrls rides the same generic snake_case wire path as directFiles.
-assert.equal(domain('request',{operation:'playback',playback:{streamId:'opaque',capabilities:{directPlay:true,directUrls:true}}}).body.capabilities.direct_urls,true);
-const direct = domain('playback',{id:'s',url:'https://provider.example/stream.mkv',mode:'direct',authorization:{cookie:'session=1',user_agent:'VIPTV Desktop'}});
+assert.throws(()=>domain('live',{items:[{id:'c',name:'Channel',logo:'logo.png'}]}));
+assert.throws(()=>domain('request',{operation:'playback',profileId:'must-not-send',playback:{streamId:'opaque',capabilities:{directPlay:true}}}));
+// Retired legacy admission cannot bypass the closed v2 capability contract.
+assert.throws(()=>domain('request',{operation:'playback',playback:{streamId:'opaque',capabilities:{directPlay:true,directUrls:true}}}));
+const direct = domain('playbackV2',{...leaseV2,delivery:{...leaseV2.delivery,url:'https://provider.example/stream.mkv',headers:{Cookie:'session=1','User-Agent':'VIPTV Desktop'}}}).session;
 assert.equal(direct.url,'https://provider.example/stream.mkv');
-assert.deepEqual(direct.authorization,{cookie:'session=1',userAgent:'VIPTV Desktop'});
+assert.equal(direct.authorization.cookie,'session=1');
+assert.equal(direct.authorization.userAgent,'VIPTV Desktop');
 console.log('WASM: presentation, enrichment, Android compatibility and playback request policy passed');
 // Every remote http(s) image routes through the shared wsrv cache so one
 // resize pipeline serves all artwork; data:, relative sources, and wsrv
