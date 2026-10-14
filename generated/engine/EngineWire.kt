@@ -161,6 +161,20 @@ data class IntegrationConnection(
 )
 
 @Serializable
+data class LibraryImportStatus(
+    val provider_id: String,
+    val running: Boolean,
+    val checked_at_millis: Long? = null,
+    val library_revision: Long? = null,
+    val added_titles: Long,
+    val imported_history: Long,
+    val preserved_local: Long,
+    val unresolved: Long,
+    val availability: Availability,
+    val refresh_after_millis: Long? = null,
+)
+
+@Serializable
 data class LibraryProvenance(
     val provider_id: String,
     val external_identity: MediaIdentity,

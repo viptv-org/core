@@ -89,3 +89,18 @@ mod query;
 pub use controls::controls;
 pub use project::project;
 pub use query::{LibraryQuery, added_lower_bound};
+
+/// A bounded remote import's refresh receipt, never a request to export local history.
+#[derive(Clone, Debug, Serialize, Deserialize, Facet)]
+pub struct LibraryImportStatus {
+    pub provider_id: String,
+    pub running: bool,
+    pub checked_at_millis: Option<u64>,
+    pub library_revision: Option<u64>,
+    pub added_titles: u64,
+    pub imported_history: u64,
+    pub preserved_local: u64,
+    pub unresolved: u64,
+    pub availability: Availability,
+    pub refresh_after_millis: Option<u64>,
+}
