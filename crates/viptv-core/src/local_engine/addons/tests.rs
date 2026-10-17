@@ -357,17 +357,17 @@ fn native_cached_detail_pages_new_seasons_from_one_scoped_body_and_validates_aut
  let provider=serde_json::from_str::<Value>(&engine.addons().unwrap()).unwrap()[0]["id"].as_str().unwrap().to_owned();let plan:Value=serde_json::from_str(&engine.plan_detail("default".into(),"series".into(),"tt123".into(),provider.clone()).unwrap()).unwrap();
  let videos=(1..=2).flat_map(|season|(1..=30).map(move |episode|json!({"id":format!("episode-{season}-{episode}"),"name":"Episode","season":season,"episode":episode}))).collect::<Vec<_>>();let body=json!({"meta":{"id":"tt123","name":"Series","type":"series","videos":videos}}).to_string();engine.project_detail(plan["operation"].as_str().unwrap().into(),body,0).unwrap();
  let page:Value=serde_json::from_str(&engine.cached_detail("default".into(),"series".into(),"tt123".into(),30).unwrap().unwrap()).unwrap();assert_eq!(page["episodes"][0]["identity"]["episode"]["season"],2);assert_eq!(page["episodes"][0]["identity"]["episode"]["episode"],1);assert_eq!(page["seasons"][1]["offset"],30);assert_eq!(page["episodes"].as_array().unwrap().len(),24);
- assert!(engine.verified_cards.lock().unwrap().contains_key(&("default".into(),"series".into(),"episode-2-1".into())));
+ assert!(engine.verified_cards.lock().unwrap().contains_key(&("default".into(),provider.clone(),"series".into(),"episode-2-1".into())));
  engine.remove_addon(provider).unwrap();assert!(engine.cached_detail("default".into(),"series".into(),"tt123".into(),30).unwrap().is_none());drop(engine);std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]
 fn native_detail_page_limit_is_part_of_cache_identity_and_old_calls_keep_24(){
  let dir=std::env::temp_dir().join(format!("viptv-limit-cache-{}",uuid::Uuid::new_v4()));let engine=LocalEngine::new(dir.join("local.sqlite").to_string_lossy().into(),Arc::new(MemorySecrets::default())).unwrap();engine.create_profile("other".into(),"Other".into()).unwrap();
- engine.install_addon("default".into(),"https://addon.example/manifest.json".into(),r#"{"id":"test","name":"Provider","version":"1","resources":["meta"],"types":["series"]}"#.into()).unwrap();let provider=serde_json::from_str::<Value>(&engine.addons().unwrap()).unwrap()[0]["id"].as_str().unwrap().to_owned();let plan:Value=serde_json::from_str(&engine.plan_detail("default".into(),"series".into(),"large-parent".into(),provider.clone()).unwrap()).unwrap();let videos=(1..=1500).map(|episode|json!({"id":format!("opaque-{episode}"),"season":1,"episode":episode,"title":"Episode"})).collect::<Vec<_>>();let body=json!({"meta":{"id":"large-parent","name":"Series","type":"series","videos":videos}}).to_string();
+ engine.install_addon("default".into(),"https://addon.example/manifest.json".into(),r#"{"id":"test","name":"Provider","version":"1","resources":["meta"],"types":["series"]}"#.into()).unwrap();let provider=serde_json::from_str::<Value>(&engine.addons().unwrap()).unwrap()[0]["id"].as_str().unwrap().to_owned();let plan:Value=serde_json::from_str(&engine.plan_detail("default".into(),"series".into(),"tt9999999".into(),provider.clone()).unwrap()).unwrap();let videos=(1..=1500).map(|episode|json!({"id":format!("opaque-{episode}"),"season":1,"episode":episode,"title":"Episode"})).collect::<Vec<_>>();let body=json!({"meta":{"id":"tt9999999","name":"Series","type":"series","videos":videos}}).to_string();
  let operation=plan["operation"].as_str().unwrap().to_string();assert!(engine.project_detail_page(operation.clone(),body.clone(),0,129).is_err());let wide:Value=serde_json::from_str(&engine.project_detail_page(operation,body,0,96).unwrap()).unwrap();assert_eq!(wide["episodes"].as_array().unwrap().len(),96);
- let old:Value=serde_json::from_str(&engine.cached_detail("default".into(),"series".into(),"large-parent".into(),0).unwrap().unwrap()).unwrap();assert_eq!(old["episodes"].as_array().unwrap().len(),24);assert_eq!(old["next_cursor"],"24");let page:Value=serde_json::from_str(&engine.detail_page("default".into(),"series".into(),"large-parent".into(),96,128).unwrap().unwrap()).unwrap();assert_eq!(page["episodes"].as_array().unwrap().len(),128);assert_eq!(page["next_cursor"],"224");assert!(engine.verified_cards.lock().unwrap().contains_key(&("default".into(),"series".into(),"opaque-224".into())));
- assert!(engine.detail_page("other".into(),"series".into(),"large-parent".into(),96,128).unwrap().is_none());assert!(engine.detail_page("default".into(),"series".into(),"large-parent".into(),0,0).is_err());engine.remove_addon(provider).unwrap();assert!(engine.detail_page("default".into(),"series".into(),"large-parent".into(),96,128).unwrap().is_none());drop(engine);std::fs::remove_dir_all(dir).unwrap();
+ let old:Value=serde_json::from_str(&engine.cached_detail("default".into(),"series".into(),"tt9999999".into(),0).unwrap().unwrap()).unwrap();assert_eq!(old["episodes"].as_array().unwrap().len(),24);assert_eq!(old["next_cursor"],"24");let page:Value=serde_json::from_str(&engine.detail_page("default".into(),"series".into(),"tt9999999".into(),96,128).unwrap().unwrap()).unwrap();assert_eq!(page["episodes"].as_array().unwrap().len(),128);assert_eq!(page["next_cursor"],"224");assert!(engine.verified_cards.lock().unwrap().contains_key(&("default".into(),provider.clone(),"series".into(),"opaque-224".into())));
+ assert!(engine.detail_page("other".into(),"series".into(),"tt9999999".into(),96,128).unwrap().is_none());assert!(engine.detail_page("default".into(),"series".into(),"tt9999999".into(),0,0).is_err());engine.remove_addon(provider).unwrap();assert!(engine.detail_page("default".into(),"series".into(),"tt9999999".into(),96,128).unwrap().is_none());drop(engine);std::fs::remove_dir_all(dir).unwrap();
 }
 #[test]
 #[ignore="reads a private local capture of public One Piece metadata, not user state"]
@@ -385,4 +385,35 @@ fn home_row_browse_actions_preserve_opaque_catalog_ids_across_prepared_and_proje
  let prepared:Value=serde_json::from_str(&engine.prepared_home(plan["id"].as_str().unwrap().into()).unwrap()).unwrap();assert_eq!(prepared["rows"][0]["browse"],action);
  let projected:Value=serde_json::from_str(&engine.project_home(plan["id"].as_str().unwrap().into(),json!([{"id":plan["requests"][0]["id"],"body":json!({"metas":[{"id":"opaque-card","type":"movie","name":"Movie"}]}).to_string()}]).to_string()).unwrap()).unwrap();assert_eq!(projected["rows"][0]["browse"],action);
  drop(engine);std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn native_search_retains_each_addon_group_and_profile_enablement() {
+    let dir = std::env::temp_dir().join(format!("viptv-search-groups-{}",uuid::Uuid::new_v4()));
+    let engine = LocalEngine::new(dir.join("local.sqlite").to_string_lossy().into(),Arc::new(MemorySecrets::default())).unwrap();
+    let manifest = r#"{"id":"search-fixture","name":"Same provider name","version":"1","resources":["catalog","meta"],"types":["movie"],"catalogs":[{"id":"search","type":"movie","extra":[{"name":"search","isRequired":true}]}]}"#;
+    let mut providers=Vec::new();
+    for host in ["first.example","second.example"] {
+        let installed:Value=serde_json::from_str(&engine.install_addon("default".into(),format!("https://{host}/manifest.json"),manifest.into()).unwrap()).unwrap();
+        providers.push(installed["id"].as_str().unwrap().to_owned());
+    }
+    let plan:Value=serde_json::from_str(&engine.plan_search("default".into(),"Shared title".into()).unwrap()).unwrap();
+    let requests=plan["requests"].as_array().unwrap();assert_eq!(requests.len(),2);
+    let results=requests.iter().map(|r|json!({"id":r["id"],"body":r#"{"metas":[{"id":"same-media-id","type":"movie","name":"Shared title"}]}"#})).collect::<Vec<_>>();
+    let projected:Value=serde_json::from_str(&engine.project_home(plan["id"].as_str().unwrap().into(),json!(results).to_string()).unwrap()).unwrap();
+    let rows=projected["rows"].as_array().unwrap();assert_eq!(rows.len(),2);
+    for provider in &providers {
+        let row=rows.iter().find(|r|r["provider_id"]==provider.as_str()).unwrap();
+        assert_eq!(row["title"],"Same provider name");assert_eq!(row["state"],"Ready");
+        assert_eq!(row["cards"][0]["provider_id"],provider.as_str());
+        assert_eq!(row["cards"][0]["identity"]["id"],"same-media-id");
+    }
+    engine.set_addon_enabled("default".into(),providers[1].clone(),false).unwrap();
+    let plan:Value=serde_json::from_str(&engine.plan_search("default".into(),"Shared title".into()).unwrap()).unwrap();
+    assert_eq!(plan["requests"].as_array().unwrap().len(),1);
+    assert_eq!(plan["requests"][0]["provider_id"],providers[0]);
+    engine.create_profile("other".into(),"Other".into()).unwrap();
+    let other:Value=serde_json::from_str(&engine.plan_search("other".into(),"Shared title".into()).unwrap()).unwrap();
+    assert!(other["requests"].as_array().unwrap().is_empty());
+    drop(engine);std::fs::remove_dir_all(dir).unwrap();
 }

@@ -30,6 +30,12 @@ pub(in crate::local_engine) fn sdk_playable(
     };
     let playable = Playable {
         scope,
+        metadata_origin: card.metadata_origin.clone(),
+        provider_origin: None,
+        metadata_card: card
+            .metadata_origin
+            .as_ref()
+            .map(|_| Arc::new(card.clone())),
         candidate,
         kind: card.identity.kind.clone(),
         media_id: card.identity.id.clone(),

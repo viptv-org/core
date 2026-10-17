@@ -19,17 +19,11 @@ impl LocalEngine {
         let connections = store.connections("local").map_err(|_| CoreError::Bridge)?;
         let mut rows = Vec::new();
         if !term.is_empty() {
-            for connection in connections
-                .iter()
-                .filter(|c| {
-                    c.enabled
-                        && c.plugin_id == profile.browsing_plugin
-                        && profile.assignments.iter().any(|a| {
-                            a.connection_id == c.id && a.enabled.contains(&Capability::Search)
-                        })
-                })
-                .take(8)
-            {
+            let registry = viptv_engine::registry::Registry::builtin();
+            let eligible = registry
+                .connections_for(&profile, &connections, Capability::Search)
+                .map_err(|_| CoreError::InvalidInput)?;
+            for connection in eligible.into_iter().take(8) {
                 let stored = match self.addon(&connection.id) {
                     Ok(v) => v,
                     Err(_) => continue,
@@ -42,7 +36,11 @@ impl LocalEngine {
                         if rows.len() >= 12 {
                             break;
                         }
-                        rows.push(CatalogRequest {browse:None,
+                        rows.push(CatalogRequest {
+                            origin: store
+                                .metadata_origin(&profile.scope, &connection.id)
+                                .map_err(|_| CoreError::InvalidInput)?,
+                            browse: None,
                             id: format!("search:{}:{kind}:{index}", connection.id),
                             title: connection.name.clone(),
                             provider_id: connection.id.clone(),

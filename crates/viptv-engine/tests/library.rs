@@ -15,7 +15,7 @@ fn favorites_reopen_page_and_preserve_provider_identity_with_revision_and_profil
             .as_nanos()
     ));
     let mut store = Store::open(&path).unwrap();
-    let a = ProfileConfiguration::local("local".into(), "alice".into(), "Alice".into());
+    let mut a = ProfileConfiguration::local("local".into(), "alice".into(), "Alice".into());
     let b = ProfileConfiguration::local("local".into(), "bob".into(), "Bob".into());
     store.save_profile(&a, None).unwrap();
     store.save_profile(&b, None).unwrap();
@@ -96,6 +96,7 @@ fn favorites_reopen_page_and_preserve_provider_identity_with_revision_and_profil
         "Bob title"
     );
     store.delete_profile(&a.scope, "").unwrap();
+    a.scope.revision=store.new_profile_revision(&a.scope).unwrap();
     store.save_profile(&a, None).unwrap();
     assert!(store.favorites(&a.scope, 0, 40).unwrap().cards.is_empty());
     assert_eq!(store.library_revision(&a.scope).unwrap(), 0);

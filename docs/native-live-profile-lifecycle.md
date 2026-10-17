@@ -1,0 +1,13 @@
+# Native Live favorites and profile lifecycle
+
+The experimental local host exports `live_favorites(profile)` and `set_live_favorite(profile, channel, saved)`, returning a JSON object containing only `channel_ids`. The channel ID is resolved against the host-owned current Live directory. A caller cannot supply a media URI or authorize another profile's channel. Reads do not fetch providers and use known directory membership after the host has loaded channels; the directory TTL does not erase saved preferences.
+
+Preferences are stored separately from VOD My List. Each row belongs to the exact local connection/account/profile, source connection and source revision. Reads exclude disabled, unassigned, missing or reconfigured sources and missing channels. Saving is idempotent and bounded to10,000 entries per profile. An existing saved row may be removed while its channel is absent. Removing a source cascades its local preferences. Public responses contain no provider credentials or URI fields.
+
+Profile deletion validates PIN/last-profile rules and removes the profile's exact private connection records atomically with its database state. Account-shared installs and other profiles' resources remain. The host then cancels scoped SDK work and removes source/subtitle grants, pending metadata/home work, verified cards and private Live caches. Vault removal is best effort after database commit; a vault outage does not restore access or falsely report the committed deletion as failed. Storage remains locked during in-memory teardown so a new incarnation cannot overlap cleanup.
+
+The database retains only connection/account/profile IDs and the last deleted revision as an authority tombstone. Recreating the same profile ID starts above the deleted revision; new IDs still start at0. Overflow beyond SQLite's signed revision capacity is rejected. This prevents old metadata/source/subtitle operations from becoming valid again when the same ID is recreated.
+
+Qualification uses in-process real Store/LocalEngine operations, fixture-backed host M3U parsing and opaque grant lookup, without a public provider request. Tests cover persistence/reopen, no-fetch reads, secret redaction, scope/revision/capacity, wrong-PIN rollback, vault failure, other-profile preservation, scoped SDK cancellation and late projection after same-ID recreation. Kotlin tests additionally cover remote favorite response ordering, duplicate intents, empty/sparse automatic pagination, guide retry/cache/route fences and a real JNI local-profile teardown.
+
+Native snapshot adoption and release artifact hashes are recorded in the app's `docs/evidence/native-live-profile-build-2026-10-15.json`. No physical-device or production-service qualification is implied.

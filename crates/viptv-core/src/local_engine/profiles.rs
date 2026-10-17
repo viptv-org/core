@@ -53,11 +53,43 @@ impl LocalEngine {
     }
 
     pub fn delete_profile(&self, id: String, pin: String) -> Result<(), CoreError> {
-        self.store
+        // Keep storage before each job/cache lock until in-memory teardown has
+        // finished, so a new incarnation cannot be created during cleanup.
+        let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let private = store
+            .delete_profile_with_private_connections(&local_scope(&id), &pin)
+            .map_err(|_| CoreError::InvalidInput)?;
+        self.forget_integration_profile(&id)?;
+        self.forget_source_profile(&id)?;
+        self.forget_subtitle_profile(&id)?;
+        self.forget_metadata_profile(&id)?;
+        self.pending
             .lock()
             .map_err(|_| CoreError::Bridge)?
-            .delete_profile(&local_scope(&id), &pin)
-            .map_err(|_| CoreError::InvalidInput)
+            .retain(|_, pending| pending.scope.profile_id != id);
+        let ids: std::collections::HashSet<_> = private
+            .iter()
+            .map(|connection| connection.id.as_str())
+            .collect();
+        self.live_cache
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .retain(|key, _| !ids.contains(key.as_str()));
+        self.live_fetch_locks
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .retain(|key, _| !ids.contains(key.as_str()));
+        for connection in private {
+            // Database deletion is committed. A vault outage must not present an
+            // already deleted profile as a failed operation or restore its access.
+            let key = if connection.plugin_id == "stremio" {
+                format!("{}:{}", self.namespace, connection.id)
+            } else {
+                self.source_key(&id, &connection.id)
+            };
+            let _ = self.secrets.remove(key);
+        }
+        Ok(())
     }
 
     pub fn set_profile_pin(
@@ -81,3 +113,7 @@ impl LocalEngine {
             .map_err(|_| CoreError::Bridge)
     }
 }
+
+#[cfg(test)]
+#[path = "profiles/tests.rs"]
+mod tests;

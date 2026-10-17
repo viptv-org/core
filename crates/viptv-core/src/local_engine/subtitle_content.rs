@@ -20,15 +20,26 @@ impl LocalEngine {
             if selected.created.elapsed() >= std::time::Duration::from_secs(600) {
                 return Err(CoreError::InvalidInput);
             }
-            self.validate_subtitle_scope(&selected.scope)?;
+            self.validate_subtitle_selection(&selected)?;
             let scope = selected.scope.clone();
+            let origins = selected
+                .metadata_origin
+                .iter()
+                .chain(selected.provider_origin.iter())
+                .cloned()
+                .collect::<Vec<_>>();
             let store = self.store.clone();
             let guard: Arc<dyn Fn() -> bool + Send + Sync> = Arc::new(move || {
-                store
-                    .lock()
-                    .ok()
-                    .and_then(|store| store.profile(&scope).ok().flatten())
-                    .is_some_and(|profile| profile.scope == scope)
+                store.lock().ok().is_some_and(|store| {
+                    store
+                        .profile(&scope)
+                        .ok()
+                        .flatten()
+                        .is_some_and(|profile| profile.scope == scope)
+                        && origins
+                            .iter()
+                            .all(|origin| store.validate_metadata_origin(&scope, origin).is_ok())
+                })
             });
             let url = url::Url::parse(&selected.file.url).map_err(|_| CoreError::InvalidInput)?;
             let runtime = tokio::runtime::Builder::new_current_thread()
@@ -63,7 +74,7 @@ impl LocalEngine {
         if selected.created.elapsed() >= std::time::Duration::from_secs(600) {
             return Err(CoreError::InvalidInput);
         }
-        self.validate_subtitle_scope(&selected.scope)?;
+        self.validate_subtitle_selection(&selected)?;
         if !(200..300).contains(&response.status) || response.truncated {
             return Err(CoreError::Bridge);
         }
@@ -71,24 +82,50 @@ impl LocalEngine {
             &response.body,
             response.headers.get("content-type").map(String::as_str),
         );
-        self.validate_subtitle_scope(&selected.scope)?;
+        self.validate_subtitle_selection(&selected)?;
         let body = body.map_err(|_| CoreError::SubtitleProjectionUnsupported)?;
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        if !store
+            .profile(&selected.scope)
+            .map_err(|_| CoreError::Bridge)?
+            .is_some_and(|profile| profile.scope == selected.scope)
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        for origin in selected
+            .metadata_origin
+            .iter()
+            .chain(selected.provider_origin.iter())
+        {
+            store
+                .validate_metadata_origin(&selected.scope, origin)
+                .map_err(|_| CoreError::InvalidInput)?;
+        }
         serde_json::to_string(&serde_json::json!({"id":id,"language":selected.file.language,"content_type":"text/vtt; charset=utf-8","body":body})).map_err(|_|CoreError::Bridge)
     }
     #[cfg(any(feature = "live-runtime", feature = "vsources-runtime"))]
-    fn validate_subtitle_scope(&self, scope: &Scope) -> Result<(), CoreError> {
-        if self
-            .store
-            .lock()
+    fn validate_subtitle_selection(
+        &self,
+        selected: &subtitles::SelectedSubtitle,
+    ) -> Result<(), CoreError> {
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        if !store
+            .profile(&selected.scope)
             .map_err(|_| CoreError::Bridge)?
-            .profile(scope)
-            .map_err(|_| CoreError::Bridge)?
-            .is_some_and(|profile| profile.scope == *scope)
+            .is_some_and(|profile| profile.scope == selected.scope)
         {
-            Ok(())
-        } else {
-            Err(CoreError::InvalidInput)
+            return Err(CoreError::InvalidInput);
         }
+        for origin in selected
+            .metadata_origin
+            .iter()
+            .chain(selected.provider_origin.iter())
+        {
+            store
+                .validate_metadata_origin(&selected.scope, origin)
+                .map_err(|_| CoreError::InvalidInput)?;
+        }
+        Ok(())
     }
 }
 
@@ -124,6 +161,9 @@ mod tests {
             .unwrap()
             .scope;
         let mut selected = subtitles::SelectedSubtitle {
+            metadata_origin: None,
+            media_context: origins::playback_media_context("movie", "tt1234567", None),
+            provider_origin: None,
             scope,
             file: viptv_engine::stremio::SubtitleFile {
                 language: "fr".into(),

@@ -21,7 +21,8 @@ impl LocalEngine {
         if page.cards.is_empty() {
             return Ok(None);
         }
-        Ok(Some(HomeRow {browse:Some(viptv_engine::home_browse::HomeBrowseAction::library()),
+        Ok(Some(HomeRow {
+            browse: Some(viptv_engine::home_browse::HomeBrowseAction::library()),
             id: "favorites".into(),
             title: "My List".into(),
             provider_id: "library".into(),
@@ -34,6 +35,52 @@ impl LocalEngine {
 }
 #[uniffi::export]
 impl LocalEngine {
+    pub fn library_membership(&self, profile: String) -> Result<String, CoreError> {
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let scope = store
+            .profile(&local_scope(&profile))
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?
+            .scope;
+        serde_json::to_string(
+            &store
+                .library_membership(&scope)
+                .map_err(|_| CoreError::Bridge)?,
+        )
+        .map_err(|_| CoreError::Bridge)
+    }
+    pub fn remove_favorite_for_origin(
+        &self,
+        profile: String,
+        revision: u64,
+        card_json: String,
+    ) -> Result<(), CoreError> {
+        let expected = origins::expected_card(&card_json)?;
+        let mut scope = local_scope(&profile);
+        scope.revision = revision;
+        let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        if let Some(card) = store
+            .favorite_for_origin(&scope, &expected)
+            .map_err(|_| CoreError::InvalidInput)?
+        {
+            origins::consistent_card(&expected, &card)?;
+            store
+                .remove_favorite_stored(&scope, &card)
+                .map_err(|_| CoreError::InvalidInput)
+        } else {
+            store
+                .remove_favorite_for_origin(
+                    &scope,
+                    &expected.identity.kind,
+                    &expected.identity.id,
+                    expected
+                        .metadata_origin
+                        .as_ref()
+                        .ok_or(CoreError::InvalidInput)?,
+                )
+                .map_err(|_| CoreError::InvalidInput)
+        }
+    }
     pub fn library_page(&self, profile: String, query_json: String) -> Result<String, CoreError> {
         use viptv_engine::{capabilities::Availability, library::*};
         if query_json.len() > 8192 {
@@ -85,8 +132,17 @@ impl LocalEngine {
         )
         .map_err(|_| CoreError::InvalidInput)?;
         let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
-        let current = store.profile(&snapshot.scope).map_err(|_| CoreError::Bridge)?.ok_or(CoreError::InvalidInput)?;
-        if current.scope != snapshot.scope || current.scope.revision.saturating_add(store.library_revision(&snapshot.scope).map_err(|_| CoreError::Bridge)?) != snapshot.revision {
+        let current = store
+            .profile(&snapshot.scope)
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
+        if current.scope != snapshot.scope
+            || current.scope.revision.saturating_add(
+                store
+                    .library_revision(&snapshot.scope)
+                    .map_err(|_| CoreError::Bridge)?,
+            ) != snapshot.revision
+        {
             return Err(CoreError::InvalidInput);
         }
         serde_json::to_string(&snapshot).map_err(|_| CoreError::Bridge)
@@ -116,12 +172,46 @@ impl LocalEngine {
         if card_json.len() > 64 * 1024 {
             return Err(CoreError::InvalidInput);
         }
-        let card: Card = serde_json::from_str(&card_json).map_err(|_| CoreError::InvalidInput)?;
+        let mut card: Card =
+            serde_json::from_str(&card_json).map_err(|_| CoreError::InvalidInput)?;
+        if !origins::stremio_card_allowed(&card) {
+            return Err(CoreError::InvalidInput);
+        }
+        origins::strip_reserved_claims(&mut card);
         let mut scope = local_scope(&profile);
         scope.revision = revision;
-        self.store
-            .lock()
+        let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        if !store
+            .profile(&scope)
             .map_err(|_| CoreError::Bridge)?
+            .is_some_and(|profile| profile.scope == scope)
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        if let Some(origin) = card.metadata_origin.as_ref() {
+            if origin.connection_id.as_deref() != Some(card.provider_id.as_str()) {
+                return Err(CoreError::InvalidInput);
+            }
+            match self.fresh_metadata_card(&store, &scope, &card) {
+                Ok(Some(proof)) => {
+                    return store
+                        .save_favorite_verified(&scope, &proof)
+                        .map_err(|_| CoreError::InvalidInput);
+                }
+                Ok(None) => {}
+                Err(error) => {
+                    let trusted = store
+                        .favorite_for_origin(&scope, &card)
+                        .map_err(|_| CoreError::InvalidInput)?
+                        .ok_or(error)?;
+                    origins::consistent_card(&card, &trusted)?;
+                    return store
+                        .save_favorite(&scope, &trusted)
+                        .map_err(|_| CoreError::InvalidInput);
+                }
+            }
+        }
+        store
             .save_favorite(&scope, &card)
             .map_err(|_| CoreError::InvalidInput)
     }

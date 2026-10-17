@@ -11,7 +11,7 @@ pub trait SecretStore: Send + Sync {
 #[cfg(not(target_os = "android"))]
 struct SystemSecrets;
 
-#[cfg(not(target_os = "android"))]
+#[cfg(not(any(target_os = "android", target_os = "linux")))]
 impl SecretStore for SystemSecrets {
     fn get(&self, key: String) -> Result<Option<String>, CoreError> {
         let entry =
@@ -38,6 +38,9 @@ impl SecretStore for SystemSecrets {
         }
     }
 }
+
+#[cfg(target_os = "linux")]
+mod linux;
 
 #[cfg(target_os = "android")]
 struct UnavailableSecrets;

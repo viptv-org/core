@@ -16,6 +16,7 @@ pub(super) struct Cache {
 }
 
 mod channels;
+mod favorites;
 #[cfg(feature = "live-runtime")]
 mod connections;
 #[cfg(feature = "live-runtime")]
@@ -41,3 +42,6 @@ fn deadline() -> std::time::Instant {
 
 #[cfg(feature = "live-runtime")]
 mod xmltv_cache;
+
+#[cfg(all(test, feature="live-runtime"))]
+mod favorites_tests;

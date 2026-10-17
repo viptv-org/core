@@ -29,6 +29,9 @@ impl LocalEngine {
                     id,
                     crate::local_engine::sources::Playable {
                         scope: scope.clone(),
+                        metadata_origin: None,
+                        provider_origin: None,
+                        metadata_card: None,
                         candidate: candidate.clone(),
                         kind: "live".into(),
                         media_id: channel_id.clone(),

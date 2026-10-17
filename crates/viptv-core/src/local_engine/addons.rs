@@ -16,7 +16,9 @@ pub(super) struct StoredAddon {
 
 #[derive(Clone, Serialize)]
 pub(super) struct CatalogRequest {
-    pub(super) browse:Option<viptv_engine::home_browse::HomeBrowseAction>,
+    #[serde(skip)]
+    pub(super) origin: MetadataOrigin,
+    pub(super) browse: Option<viptv_engine::home_browse::HomeBrowseAction>,
     pub(super) id: String,
     pub(super) title: String,
     pub(super) provider_id: String,
@@ -29,7 +31,7 @@ pub(super) struct PendingHome {
     pub(super) rows: Vec<CatalogRequest>,
     pub(super) cached: std::collections::HashMap<String, Vec<viptv_engine::presentation::Card>>,
     pub(super) cache_home: bool,
-    pub(super) discover: Option<(u32,bool)>,
+    pub(super) discover: Option<(u32, bool)>,
 }
 
 impl LocalEngine {

@@ -76,7 +76,8 @@ impl LocalEngine {
             }
             channels
         };
-        self.live_validate(scope)?;
+        let store = self.store.lock().map_err(|_|CoreError::Bridge)?;
+        if !store.profile(scope).map_err(|_|CoreError::Bridge)?.is_some_and(|profile|profile.scope==*scope) {return Err(CoreError::InvalidInput);}
         let cache = Cache {
             revision: connection.revision,
             expires: std::time::Instant::now() + std::time::Duration::from_secs(300),

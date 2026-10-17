@@ -120,9 +120,11 @@ impl LocalEngine {
             .remove(&operation)
             .ok_or(CoreError::InvalidInput)?;
         let (skip, pageable) = pending.discover.ok_or(CoreError::InvalidInput)?;
-        let current: ProfileConfiguration =
-            serde_json::from_str(&self.profile(pending.scope.profile_id.clone())?)
-                .map_err(|_| CoreError::Bridge)?;
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let current = store
+            .profile(&pending.scope)
+            .map_err(|_| CoreError::Bridge)?
+            .ok_or(CoreError::InvalidInput)?;
         if current.scope.revision != pending.scope.revision {
             return Err(CoreError::Bridge);
         }
@@ -141,8 +143,16 @@ impl LocalEngine {
             else {
                 continue;
             };
-            let page = stremio::catalog_page(raw, &request.provider_id, skip, pageable)
+            let mut page = stremio::catalog_page(raw, &request.provider_id, skip, pageable)
                 .map_err(|_| CoreError::InvalidInput)?;
+            store
+                .validate_metadata_origin(&pending.scope, &request.origin)
+                .map_err(|_| CoreError::InvalidInput)?;
+            let origin = request.origin.clone();
+            page.cards.retain(origins::stremio_card_allowed);
+            for card in &mut page.cards {
+                origins::stamp_card(card, &origin);
+            }
             success = true;
             result.next_cursor = page.next_cursor;
             result.complete &= page.complete;
@@ -211,13 +221,27 @@ impl LocalEngine {
                     search: query.search.clone(),
                     genre: query.genre.clone(),
                     extras: query.extras.clone(),
-                    values: query.values.iter().map(|v| stremio::ExtraValues {id:v.id.clone(),values:v.values.clone()}).collect(),
+                    values: query
+                        .values
+                        .iter()
+                        .map(|v| stremio::ExtraValues {
+                            id: v.id.clone(),
+                            values: v.values.clone(),
+                        })
+                        .collect(),
                 },
             )
             .map_err(|_| CoreError::InvalidInput)?;
             pageable = plan.pageable;
             for (index, url) in plan.endpoints.into_iter().enumerate().take(12 - rows.len()) {
-                rows.push(CatalogRequest {browse:None,
+                rows.push(CatalogRequest {
+                    origin: self
+                        .store
+                        .lock()
+                        .map_err(|_| CoreError::Bridge)?
+                        .metadata_origin(&profile.scope, &connection.id)
+                        .map_err(|_| CoreError::InvalidInput)?,
+                    browse: None,
                     id: format!("discover:{}:{index}", connection.id),
                     title: connection.name.clone(),
                     provider_id: connection.id.clone(),
@@ -229,6 +253,14 @@ impl LocalEngine {
             return Err(CoreError::InvalidInput);
         }
         let id = uuid::Uuid::new_v4().to_string();
+        let store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        if !store
+            .profile(&profile.scope)
+            .map_err(|_| CoreError::Bridge)?
+            .is_some_and(|current| current.scope == profile.scope)
+        {
+            return Err(CoreError::InvalidInput);
+        }
         let mut pending = self.pending.lock().map_err(|_| CoreError::Bridge)?;
         pending.retain(|_, p| p.scope.profile_id != profile.scope.profile_id);
         pending.insert(

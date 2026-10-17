@@ -24,7 +24,8 @@ impl LocalEngine {
         if cards.is_empty() {
             return Ok(None);
         }
-        Ok(Some(HomeRow {browse:Some(viptv_engine::home_browse::HomeBrowseAction::continuation()),
+        Ok(Some(HomeRow {
+            browse: Some(viptv_engine::home_browse::HomeBrowseAction::continuation()),
             id: "continue".into(),
             title: "Continue Watching".into(),
             provider_id: "library".into(),
@@ -49,7 +50,12 @@ impl LocalEngine {
         if card_json.len() > 32 * 1024 {
             return Err(CoreError::InvalidInput);
         }
-        let card: Card = serde_json::from_str(&card_json).map_err(|_| CoreError::InvalidInput)?;
+        let mut card: Card =
+            serde_json::from_str(&card_json).map_err(|_| CoreError::InvalidInput)?;
+        if !origins::stremio_card_allowed(&card) {
+            return Err(CoreError::InvalidInput);
+        }
+        origins::strip_reserved_claims(&mut card);
         let scope = Scope {
             connection_id: "local".into(),
             account_id: "local".into(),
@@ -60,9 +66,47 @@ impl LocalEngine {
             .duration_since(UNIX_EPOCH)
             .map_err(|_| CoreError::Bridge)?
             .as_millis() as u64;
-        self.store
-            .lock()
+        let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        if !store
+            .profile(&scope)
             .map_err(|_| CoreError::Bridge)?
+            .is_some_and(|profile| profile.scope == scope)
+        {
+            return Err(CoreError::InvalidInput);
+        }
+        if let Some(origin) = card.metadata_origin.as_ref() {
+            if origin.connection_id.as_deref() != Some(card.provider_id.as_str()) {
+                return Err(CoreError::InvalidInput);
+            }
+            match self.fresh_metadata_card(&store, &scope, &card) {
+                Ok(Some(proof)) => {
+                    return store
+                        .record_playback_verified(
+                            &scope,
+                            &proof,
+                            position_millis,
+                            duration_millis,
+                            now,
+                        )
+                        .map_err(|_| CoreError::Bridge);
+                }
+                Ok(None) => {}
+                Err(error) => {
+                    // A player already issued the old title may continue updating
+                    // its exact owned stored record after a provider remaps lookup.
+                    let record = store
+                        .playback_for_origin(&scope, &card)
+                        .map_err(|_| CoreError::InvalidInput)?
+                        .ok_or(error)?;
+                    let trusted = record.card();
+                    origins::consistent_card(&card, &trusted)?;
+                    return store
+                        .record_playback(&scope, &trusted, position_millis, duration_millis, now)
+                        .map_err(|_| CoreError::Bridge);
+                }
+            }
+        }
+        store
             .record_playback(&scope, &card, position_millis, duration_millis, now)
             .map_err(|_| CoreError::Bridge)
     }

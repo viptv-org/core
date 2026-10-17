@@ -49,6 +49,7 @@ data class Card(
     val badges: List<String>,
     val parent_identity: MediaIdentity? = null,
     val added_at_millis: Long? = null,
+    val metadata_origin: MetadataOrigin? = null,
 )
 
 @Serializable
@@ -220,6 +221,8 @@ data class LibraryMembershipSnapshot(
     val identities: List<MediaIdentity>,
     val revision: Long,
     val complete: Boolean,
+    val scoped_identities: List<ScopedMediaIdentity> = emptyList(),
+    val legacy_identities: List<MediaIdentity> = emptyList(),
 )
 
 @Serializable
@@ -285,6 +288,7 @@ data class LibraryStatistics(
     val status: String? = null,
     val next_episode: EpisodeCoordinates? = null,
     val next_air_millis: Long? = null,
+    val metadata_origin: MetadataOrigin? = null,
 )
 
 @Serializable
@@ -365,6 +369,13 @@ data class MediaIdentity(
 )
 
 @Serializable
+data class MetadataOrigin(
+    val provider_id: String,
+    val connection_id: String? = null,
+    val incarnation: String? = null,
+)
+
+@Serializable
 data class NextEpisodeRequest(
     val identity: MediaIdentity,
     val parent_identity: MediaIdentity? = null,
@@ -390,6 +401,7 @@ data class PlaybackRecord(
     val updated_at_millis: Long,
     val completed_at_millis: Long? = null,
     val parent_identity: MediaIdentity? = null,
+    val metadata_origin: MetadataOrigin? = null,
 )
 
 @Serializable
@@ -464,6 +476,12 @@ data class Scope(
     val account_id: String,
     val profile_id: String,
     val revision: Long,
+)
+
+@Serializable
+data class ScopedMediaIdentity(
+    val identity: MediaIdentity,
+    val metadata_origin: MetadataOrigin,
 )
 
 @Serializable

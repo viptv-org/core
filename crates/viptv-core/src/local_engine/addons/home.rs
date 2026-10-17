@@ -32,7 +32,11 @@ impl LocalEngine {
             let secret = match self.addon(&connection.id) {
                 Ok(s) => s,
                 Err(_) => {
-                    rows.push(CatalogRequest {browse:None,
+                    rows.push(CatalogRequest {
+                        origin: store
+                            .metadata_origin(&profile.scope, &connection.id)
+                            .map_err(|_| CoreError::InvalidInput)?,
+                        browse: None,
                         id: format!("{}:unavailable", connection.id),
                         title: connection.name.clone(),
                         provider_id: connection.id.clone(),
@@ -52,7 +56,15 @@ impl LocalEngine {
                 if rows.len() >= 12 {
                     break;
                 }
-                rows.push(CatalogRequest {browse:Some(viptv_engine::home_browse::HomeBrowseAction::discover(&catalog.kind,&catalog.id,Some(("connection_id",connection.id.clone())))),
+                rows.push(CatalogRequest {
+                    origin: store
+                        .metadata_origin(&profile.scope, &connection.id)
+                        .map_err(|_| CoreError::InvalidInput)?,
+                    browse: Some(viptv_engine::home_browse::HomeBrowseAction::discover(
+                        &catalog.kind,
+                        &catalog.id,
+                        Some(("connection_id", connection.id.clone())),
+                    )),
                     id: format!("{}:{}:{}", connection.id, catalog.kind, catalog.id),
                     title: format!("{} · {}", connection.name, catalog.name),
                     provider_id: connection.id.clone(),
@@ -68,6 +80,15 @@ impl LocalEngine {
                     .cached_catalog(&profile.scope, &row.id, now())
                     .ok()
                     .flatten()
+                    .filter(|cards| {
+                        cards.iter().all(|card| {
+                            card.metadata_origin.as_ref().is_none_or(|origin| {
+                                store
+                                    .validate_metadata_origin(&profile.scope, origin)
+                                    .is_ok()
+                            })
+                        })
+                    })
                     .map(|cards| (row.id.clone(), cards))
             })
             .collect::<std::collections::HashMap<_, _>>();
@@ -109,7 +130,8 @@ impl LocalEngine {
             rows.extend(self.favorites_row(&plan.scope)?);
         }
         rows.extend(plan.rows.iter().map(|request| {
-            HomeRow {browse:request.browse.clone(),
+            HomeRow {
+                browse: request.browse.clone(),
                 id: request.id.clone(),
                 title: request.title.clone(),
                 provider_id: request.provider_id.clone(),
@@ -132,9 +154,11 @@ impl LocalEngine {
                     .then(|| "This addon is unavailable. Try again.".into()),
             }
         }));
-        for row in &mut rows {self.merge_cached_presentation(&plan.scope,&mut row.cards)?;}
+        for row in &mut rows {
+            self.merge_cached_presentation(&plan.scope, &mut row.cards)?;
+        }
         let featured = viptv_engine::home::select_featured(&rows);
-        let hero=featured.first().cloned();
+        let hero = featured.first().cloned();
         let complete = rows.iter().all(|row| row.state != RowState::Pending);
         serde_json::to_string(&HomeSnapshot {
             scope: plan.scope.clone(),
@@ -175,11 +199,34 @@ impl LocalEngine {
                 let result = responses
                     .iter()
                     .find(|v| v["id"].as_str() == Some(&request.id));
-                let cards = pending.cached.get(&request.id).cloned().or_else(|| {
+                let mut cards = pending.cached.get(&request.id).cloned().or_else(|| {
                     result
                         .and_then(|v| v["body"].as_str())
                         .and_then(|body| stremio::cards(body, &request.provider_id).ok())
                 });
+                if !pending.cached.contains_key(&request.id) {
+                    if store
+                        .validate_metadata_origin(&pending.scope, &request.origin)
+                        .is_err()
+                    {
+                        cards = None;
+                    } else if let Some(cards) = cards.as_mut() {
+                        cards.retain(origins::stremio_card_allowed);
+                        for card in cards {
+                            origins::stamp_card(card, &request.origin);
+                        }
+                    }
+                } else if cards.as_ref().is_some_and(|cards| {
+                    cards.iter().any(|card| {
+                        card.metadata_origin.as_ref().is_some_and(|origin| {
+                            store
+                                .validate_metadata_origin(&pending.scope, origin)
+                                .is_err()
+                        })
+                    })
+                }) {
+                    cards = None;
+                }
                 if pending.cache_home && !pending.cached.contains_key(&request.id) {
                     if let Some(cards) = &cards {
                         // Caching is optional: a full/read-only disk must not discard a live result.
@@ -193,7 +240,8 @@ impl LocalEngine {
                 } else {
                     RowState::Ready
                 };
-                HomeRow {browse:request.browse.clone(),
+                HomeRow {
+                    browse: request.browse.clone(),
                     id: request.id.clone(),
                     title: request.title.clone(),
                     provider_id: request.provider_id.clone(),
@@ -209,9 +257,11 @@ impl LocalEngine {
             })
             .collect::<Vec<_>>();
         drop(store);
-        for row in &mut rows{self.merge_cached_presentation(&pending.scope,&mut row.cards)?;}
+        for row in &mut rows {
+            self.merge_cached_presentation(&pending.scope, &mut row.cards)?;
+        }
         let featured = viptv_engine::home::select_featured(&rows);
-        let hero=featured.first().cloned();
+        let hero = featured.first().cloned();
         if pending.cache_home {
             if let Some(favorites) = self.favorites_row(&pending.scope)? {
                 rows.insert(0, favorites);
