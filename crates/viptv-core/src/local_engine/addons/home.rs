@@ -8,6 +8,14 @@ fn now() -> i64 {
 }
 
 #[uniffi::export]
+/// A catalog row can page: the row maps to a browsable catalog and the first page
+/// was full enough that another page may exist. Rows that are already complete
+/// locally (Continue Watching, favourites) have no browse action and stay `None`.
+fn row_cursor(request: &CatalogRequest, cards: &[viptv_engine::presentation::Card]) -> Option<String> {
+    request.browse.as_ref()?;
+    (!cards.is_empty()).then(|| cards.len().to_string())
+}
+
 impl LocalEngine {
     pub fn plan_home(&self, profile_id: String) -> Result<String, CoreError> {
         let scope = local_scope(&profile_id);
@@ -146,8 +154,8 @@ impl LocalEngine {
                 } else {
                     RowState::Failed
                 },
+                next_cursor: row_cursor(request, plan.cached.get(&request.id).map(Vec::as_slice).unwrap_or(&[])),
                 cards: plan.cached.get(&request.id).cloned().unwrap_or_default(),
-                next_cursor: None,
                 message: request
                     .url
                     .is_none()
@@ -240,6 +248,7 @@ impl LocalEngine {
                 } else {
                     RowState::Ready
                 };
+                let cursor = row_cursor(request, cards.as_deref().unwrap_or(&[]));
                 HomeRow {
                     browse: request.browse.clone(),
                     id: request.id.clone(),
@@ -247,7 +256,7 @@ impl LocalEngine {
                     provider_id: request.provider_id.clone(),
                     state: state.clone(),
                     cards: cards.unwrap_or_default(),
-                    next_cursor: None,
+                    next_cursor: cursor,
                     message: if state == RowState::Failed {
                         Some("This addon is unavailable. Try again.".into())
                     } else {
