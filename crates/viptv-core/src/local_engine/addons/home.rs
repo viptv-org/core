@@ -7,7 +7,6 @@ fn now() -> i64 {
         .map_or(0, |time| time.as_secs() as i64)
 }
 
-#[uniffi::export]
 /// A catalog row can page: the row maps to a browsable catalog and the first page
 /// was full enough that another page may exist. Rows that are already complete
 /// locally (Continue Watching, favourites) have no browse action and stay `None`.
@@ -16,6 +15,7 @@ fn row_cursor(request: &CatalogRequest, cards: &[viptv_engine::presentation::Car
     (!cards.is_empty()).then(|| cards.len().to_string())
 }
 
+#[uniffi::export]
 impl LocalEngine {
     pub fn plan_home(&self, profile_id: String) -> Result<String, CoreError> {
         let scope = local_scope(&profile_id);
