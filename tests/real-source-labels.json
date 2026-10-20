@@ -1,0 +1,484 @@
+{
+  "provenance": "Unmodified public source objects from fresh real703-source batch. Human expectations; zero synthetic cases; audio means reported release hints, never probed tracks.",
+  "capture_file": "sanitized.json",
+  "case_count": 24,
+  "cases": [
+    {
+      "capture_index": 0,
+      "title": "Dark Matter",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n4k DV | HDR10+",
+        "title": "Темная материя / Dark Matter / Сезон: 1 / Серии: 1-9 из 9 [2024 HEVC HDR10+ Dolby Vision WEB-DL 2160p 4k] [Hybrid] + 6x MVO (Jaskier HDRezka LostFilm TVShows RHS NewComers) + 2x MVO (Ukr) + Original + Sub (Rus Ukr Eng)\nDark.Matter.S01E01.2160p.AMZN.WEB-DL.DDP5.1.Atmos.DV.HDR-DVT.mkv\n👤 110 💾 9.63 GB ⚙️ Rutracker\n🇬🇧 / 🇷🇺 / 🇺🇦",
+        "description": "",
+        "filename": "Dark.Matter.S01E01.2160p.AMZN.WEB-DL.DDP5.1.Atmos.DV.HDR-DVT.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 2160,
+      "expectation_basis": "Multiline Cyrillic release; reported4k with HDR10+/DV and exact2160p filename.",
+      "expected_video_codec": "HEVC",
+      "expected_container": "mkv",
+      "expected_detail_contains": [
+        "Темная материя",
+        "HDR10+",
+        "Dolby Vision"
+      ]
+    },
+    {
+      "capture_index": 5,
+      "title": "Dark Matter",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n4k DV | HDR",
+        "title": "Dark.Matter.2024.S01.Eng.Fre.Ger.Ita.Por.Spa.2160p.WEBMux.DV.HDR.HEVC.Atmos-SGF\nDark.Matter.2024.S01E01.Eng.Fre.Ger.Ita.Por.Spa.2160p.WEBMux.DV.HDR.HEVC.Atmos-SGF.mkv\n👤 5 💾 9.6 GB ⚙️ TorrentGalaxy\n🇬🇧 / 🇮🇹 / 🇵🇹 / 🇪🇸 / 🇫🇷 / 🇩🇪",
+        "description": "",
+        "filename": "Dark.Matter.2024.S01E01.Eng.Fre.Ger.Ita.Por.Spa.2160p.WEBMux.DV.HDR.HEVC.Atmos-SGF.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 2160,
+      "expectation_basis": "4k label with explicit multilingual release filename; retain distinct languages.",
+      "expected_audio_languages_set": [
+        "en",
+        "fr",
+        "de",
+        "it",
+        "pt",
+        "es"
+      ]
+    },
+    {
+      "capture_index": 9,
+      "title": "Dark Matter",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n1080p DV",
+        "title": "Dark.Matter.S01E01-09.1080p.ATVP.WEB-DL.ITA.ENG.DDP5.1.Atmos.DV.…\nDark.Matter.S01E01.Are.You.Happy.in.Your.Life.1080p.ATVP.WEB-DL.ITA.ENG.DDP5.1.Atmos.DV.HDR.H.265-G66.mkv\n👤 11 💾 2.44 GB ⚙️ TorrentGalaxy\n🇬🇧 / 🇮🇹",
+        "description": "",
+        "filename": "Dark.Matter.S01E01.Are.You.Happy.in.Your.Life.1080p.ATVP.WEB-DL.ITA.ENG.DDP5.1.Atmos.DV.HDR.H.265-G66.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 1080,
+      "expectation_basis": "Reported1080p DV is1080; DolbyVision does not imply4K."
+    },
+    {
+      "capture_index": 41,
+      "title": "Dark Matter",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n720p",
+        "title": "Dark.Matter.2024.S01.COMPLETE.720p.ATVP.WEBRip.x264-GalaxyTV\nDark.Matter.2024.S01E01.720p.ATVP.WEBRip.x264-GalaxyTV.mkv\n👤 255 💾 231.09 MB ⚙️ ThePirateBay",
+        "description": "",
+        "filename": "Dark.Matter.2024.S01E01.720p.ATVP.WEBRip.x264-GalaxyTV.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 720,
+      "expectation_basis": "Reported720p filename confirms720p."
+    },
+    {
+      "capture_index": 87,
+      "title": "Dark Matter",
+      "provider": "Torrentio TB",
+      "source": {
+        "name": "[TB+] Torrentio\n480p",
+        "title": "Dark.Matter.2024.S01.480p.x264-RUBiK\nDark.Matter.2024.S01E01.480p.x264-RUBiK.mkv\n👤 0 💾 315.63 MB ⚙️ 1337x",
+        "description": "",
+        "filename": "Dark.Matter.2024.S01E01.480p.x264-RUBiK.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio TB"
+        },
+        "source_name": "Torrentio TB"
+      },
+      "expected_quality_height": 480,
+      "expectation_basis": "Reported480p; do not infer a larger resolution."
+    },
+    {
+      "capture_index": 102,
+      "title": "Dark Matter",
+      "provider": "Torrentio TB",
+      "source": {
+        "name": "[TB+] Torrentio\n1440p",
+        "title": "Dark Matter 2024 S01E01 Are You Happy in Your Life ATVP WEBRip SDR 10Bit 1440p DDP5.1 Atmos HEVC-3Li.mkv\n👤 0 💾 2.98 GB ⚙️ TorrentGalaxy",
+        "description": "",
+        "filename": "Dark Matter 2024 S01E01 Are You Happy in Your Life ATVP WEBRip SDR 10Bit 1440p DDP5.1 Atmos HEVC-3Li.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio TB"
+        },
+        "source_name": "Torrentio TB"
+      },
+      "expected_quality_height": 1440,
+      "expectation_basis": "Real uncommon1440p label and filename agree."
+    },
+    {
+      "capture_index": 130,
+      "title": "Dark Matter",
+      "provider": "PenguPlay",
+      "source": {
+        "name": "🐧 PenguPlay 🐧 720p • VAPlayer",
+        "title": "📡 Dark Matter (2024) 2024 • S01E01\n🎞️ 720p • H.264 • MKV • ~4.7 Mbps\n🛰️ Source: VAPlayer\n💾 1.76 GB\n📝 Subtitles: Arabic, Bulgarian, Chinese-Simplified, Chinese-Traditional, Chinese-Yue, Czech, Danish, Dutch, English-SDH, English, Estonian, European-Spanish, Finnish, French-Canadian, French, German, Greek, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Latin-America-Spanish, Latvian, Lithuanian, Malay, Norwegian, Polish, Portuguese-Brazilian, Portuguese, Russian, Slovak, Slovenian, Swedish, Tamil, Telugu, Thai, Turkish, Ukrainian, Vietnamese",
+        "description": "📡 Dark Matter (2024) 2024 • S01E01\n🎞️ 720p • H.264 • MKV • ~4.7 Mbps\n🛰️ Source: VAPlayer\n💾 1.76 GB\n📝 Subtitles: Arabic, Bulgarian, Chinese-Simplified, Chinese-Traditional, Chinese-Yue, Czech, Danish, Dutch, English-SDH, English, Estonian, European-Spanish, Finnish, French-Canadian, French, German, Greek, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Latin-America-Spanish, Latvian, Lithuanian, Malay, Norwegian, Polish, Portuguese-Brazilian, Portuguese, Russian, Slovak, Slovenian, Swedish, Tamil, Telugu, Thai, Turkish, Ukrainian, Vietnamese",
+        "filename": "dark.matter.2024.s01e01.1080p.web.h264-successfulcrab.mkv|^|720pH.264MKV~4.7Mbps720ph.264mkv~4.7mbps.pad-VAPlayer",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "PenguPlay",
+          "size_bytes": 1887292305
+        },
+        "source_name": "PenguPlay",
+        "size_bytes": 1887292305
+      },
+      "expected_quality_height": 720,
+      "expectation_basis": "Reported delivered720p outranks original1080p filename; long subtitles list is not audio.",
+      "expected_audio_languages_set": []
+    },
+    {
+      "capture_index": 135,
+      "title": "Dark Matter",
+      "provider": "PenguPlay",
+      "source": {
+        "name": "🐧 PenguPlay 🐧 480p • VAPlayer",
+        "title": "📡 Dark Matter (2024) 2024 • S01E01\n🎞️ 480p • H.264 • MKV • ~2.4 Mbps\n🛰️ Source: VAPlayer\n💾 942 MB\n📝 Subtitles: Arabic, Bulgarian, Chinese-Simplified, Chinese-Traditional, Chinese-Yue, Czech, Danish, Dutch, English-SDH, English, Estonian, European-Spanish, Finnish, French-Canadian, French, German, Greek, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Latin-America-Spanish, Latvian, Lithuanian, Malay, Norwegian, Polish, Portuguese-Brazilian, Portuguese, Russian, Slovak, Slovenian, Swedish, Tamil, Telugu, Thai, Turkish, Ukrainian, Vietnamese",
+        "description": "📡 Dark Matter (2024) 2024 • S01E01\n🎞️ 480p • H.264 • MKV • ~2.4 Mbps\n🛰️ Source: VAPlayer\n💾 942 MB\n📝 Subtitles: Arabic, Bulgarian, Chinese-Simplified, Chinese-Traditional, Chinese-Yue, Czech, Danish, Dutch, English-SDH, English, Estonian, European-Spanish, Finnish, French-Canadian, French, German, Greek, Hebrew, Hindi, Hungarian, Indonesian, Italian, Japanese, Korean, Latin-America-Spanish, Latvian, Lithuanian, Malay, Norwegian, Polish, Portuguese-Brazilian, Portuguese, Russian, Slovak, Slovenian, Swedish, Tamil, Telugu, Thai, Turkish, Ukrainian, Vietnamese",
+        "filename": "dark.matter.2024.s01e01.1080p.web.h264-successfulcrab.mkv|^|480pH.264MKV~2.4Mbps480ph.264mkv~2.4mbps.pad-VAPlayer",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "PenguPlay",
+          "size_bytes": 987331275
+        },
+        "source_name": "PenguPlay",
+        "size_bytes": 987331275
+      },
+      "expected_quality_height": 480,
+      "expectation_basis": "Reported delivered480p outranks original1080p filename."
+    },
+    {
+      "capture_index": 138,
+      "title": "Dark Matter",
+      "provider": "PenguPlay",
+      "source": {
+        "name": "🐧 PenguPlay 🐧 360p • MovieBox",
+        "title": "📡 Dark Matter • S01E01\n🎞️ 360p • H.264 • MP4 • ~0.2 Mbps\n🛰️ Source: MovieBox\n💾 68 MB",
+        "description": "📡 Dark Matter • S01E01\n🎞️ 360p • H.264 • MP4 • ~0.2 Mbps\n🛰️ Source: MovieBox\n💾 68 MB",
+        "filename": "Dark.Matter.2017.S01.E01.360p.mp4|^|360pH.264MP4~0.2Mbps360ph.264mp4~0.2mbps.pad-MovieBox",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "PenguPlay",
+          "size_bytes": 71383344
+        },
+        "source_name": "PenguPlay",
+        "size_bytes": 71383344
+      },
+      "expected_quality_height": 360,
+      "expectation_basis": "Reported360p is360; source filename year mismatch is separate provider evidence, not resolution."
+    },
+    {
+      "capture_index": 194,
+      "title": "Marshals",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\nHDTV",
+        "title": "The Drop Una historia de Snowfall [HDTV][Cap.101]\n👤 20 💾 613.91 MB ⚙️ Wolfmax4k\n🇪🇸",
+        "description": "",
+        "filename": "The Drop Una historia de Snowfall [HDTV][Cap.101].avi",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "HDTV describes release source, not pixel height; indexerWolfmax4k cannot supply quality."
+    },
+    {
+      "capture_index": 282,
+      "title": "Marshals",
+      "provider": "PenguPlay",
+      "source": {
+        "name": "🐧 PenguPlay 🐧 360p • VAPlayer",
+        "title": "📡 Marshals 2026 • S01E01\n🎞️ 360p • WEB-DL • H.264 • DD+ 5.1 • MKV • ~0.8 Mbps\n🛰️ Source: VAPlayer\n💾 259 MB\n📝 Subtitles: English - SDH, Bulgarian - bul, Czech - cze, Danish - dan, Dutch - dut, English - eng, Finnish - fin, Croatian - hrv, Hungarian - hun, Macedonian - mac, Norwegian - nor, Polish - pol, Portuguese - por, Romanian - rum, Slovak - slo, Slovenian - slv, Spanish - spa, Serbian - srp, Swedish - swe",
+        "description": "📡 Marshals 2026 • S01E01\n🎞️ 360p • WEB-DL • H.264 • DD+ 5.1 • MKV • ~0.8 Mbps\n🛰️ Source: VAPlayer\n💾 259 MB\n📝 Subtitles: English - SDH, Bulgarian - bul, Czech - cze, Danish - dan, Dutch - dut, English - eng, Finnish - fin, Croatian - hrv, Hungarian - hun, Macedonian - mac, Norwegian - nor, Polish - pol, Portuguese - por, Romanian - rum, Slovak - slo, Slovenian - slv, Spanish - spa, Serbian - srp, Swedish - swe",
+        "filename": "Marshals S01E01 Piya Wiconi 1080p SKST WEB-DL DD 5 1 H 264-playWEB.mkv|^|360pWEB-DLH.264DD+5.1MKV~0.8Mbps360pweb-dlh.264dd+5.1mkv~0.8mbps.pad-VAPlayer",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "PenguPlay",
+          "size_bytes": 271269263
+        },
+        "source_name": "PenguPlay",
+        "size_bytes": 271269263
+      },
+      "expected_quality_height": 360,
+      "expectation_basis": "Reported delivered360p outranks original1080p filename; subtitles are not audio.",
+      "expected_audio_languages_set": []
+    },
+    {
+      "capture_index": 286,
+      "title": "Marshals",
+      "provider": "PenguPlay",
+      "source": {
+        "name": "🐧 PenguPlay 🐧 Auto • Cinejoy · Solara",
+        "title": "📡 Marshals S01E01 • S01E01\n🎞️ Auto • HLS\n🛰️ Source: Cinejoy · Solara",
+        "description": "📡 Marshals S01E01 • S01E01\n🎞️ Auto • HLS\n🛰️ Source: Cinejoy · Solara",
+        "filename": "AutoHLSautohls.pad-Cinejoy",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "PenguPlay"
+        },
+        "source_name": "PenguPlay"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "AutoHLS gives no fixed pixel height."
+    },
+    {
+      "capture_index": 331,
+      "title": "Ted Lasso",
+      "provider": "Torrentio TB",
+      "source": {
+        "name": "[TB+] Torrentio",
+        "title": "Ted Lasso Season 1. revittony\nS01E01 Pilot.mkv\n👤 0 💾 499.9 MB ⚙️ 1337x",
+        "description": "",
+        "filename": "S01E01 Pilot.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio TB"
+        },
+        "source_name": "Torrentio TB"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "ShortS01E01Pilot filename has no resolution.",
+      "expected_audio_languages_set": [],
+      "expected_container": "mkv"
+    },
+    {
+      "capture_index": 343,
+      "title": "Ted Lasso",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n4k DV | HDR10+ | HDR",
+        "title": "Тед Лассо / Ted Lasso / Сезон: 1 / Серии: 1-10 из 10 [2020 HEVC HDR10 HDR10+ Dolby Vision WEB-DL 2160p 4k] [Hybrid] Dub (Пифагор) + Ukr + Original (Eng) + Sub (Rus Ukr Eng)\nТед Лассо.S01E01.WEB-DL.2160p.mkv\n👤 62 💾 5.67 GB ⚙️ Rutracker\n🇬🇧 / 🇷🇺 / 🇺🇦",
+        "description": "",
+        "filename": "Тед Лассо.S01E01.WEB-DL.2160p.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 2160,
+      "expectation_basis": "Cyrillic episode filename and4k/HDR10/DV release retain2160p.",
+      "expected_detail_contains": [
+        "Тед Лассо",
+        "HDR10+"
+      ],
+      "expected_audio_languages_contains": [
+        "uk",
+        "en",
+        "ru"
+      ]
+    },
+    {
+      "capture_index": 391,
+      "title": "Ted Lasso",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\nWEBRip",
+        "title": "Ted Lasso - Stagioni 01-03 (2020-2023) [COMPLETA] SD x264 AAC ITA SUB ITA - mkeagle3\nTed.Lasso.01x01.Pilota.ITA.WEBRIP.x264-mkeagle3.mkv\n👤 3 💾 279.73 MB ⚙️ ilCorSaRoNeRo\n🇬🇧 / 🇮🇹",
+        "description": "",
+        "filename": "Ted.Lasso.01x01.Pilota.ITA.WEBRIP.x264-mkeagle3.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 480,
+      "expectation_basis": "WEBRip alone unknown; actual release title explicitly reportsSD."
+    },
+    {
+      "capture_index": 452,
+      "title": "One Piece",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n576p",
+        "title": "[ZOIO] One Piece Seasons 1-6 (DVD 576p x264 Hi10P AC3)\n[ZOIO] One Piece - Season 05 (DVDRip 768x576 x264 10bit AC3)/[ZOIO] One Piece - 0133 (DVDRip 768x576 x264 10bit AC3).mkv\n👤 5 💾 260.94 MB ⚙️ NyaaSi",
+        "description": "",
+        "filename": "[ZOIO] One Piece - 0133 (DVDRip 768x576 x264 10bit AC3).mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 576,
+      "expectation_basis": "576p label and768x576 filename agree; DVD does not replace explicitheight."
+    },
+    {
+      "capture_index": 453,
+      "title": "One Piece",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n540p",
+        "title": "[F-R] One Piece 0001-0782 (Batch)\nOne Piece - 0133 (DVD 540p) [F-R][ac80f4d2].mkv\n👤 13 💾 260.04 MB ⚙️ NyaaSi",
+        "description": "",
+        "filename": "One Piece - 0133 (DVD 540p) [F-R][ac80f4d2].mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 540,
+      "expectation_basis": "540p reportedlabel/filename; no rounding to480/720."
+    },
+    {
+      "capture_index": 464,
+      "title": "One Piece",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\nDVDRip",
+        "title": "[A&C] One Piece - [0131-0206] [R2J DVDrip] [Multi-Audio-Subs] [VFR]\n[A&C] One Piece - 0133 [DVDrip] [Multi-Audio-Subs] [A659E88C].mkv\n👤 9 💾 1.55 GB ⚙️ NyaaSi\nDubbed / Multi Audio",
+        "description": "",
+        "filename": "[A&C] One Piece - 0133 [DVDrip] [Multi-Audio-Subs] [A659E88C].mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "DVDRip andMulti-Audio-Subs without resolution stay unknown; unspecified multilingual audio stays unknown."
+    },
+    {
+      "capture_index": 471,
+      "title": "One Piece",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio",
+        "title": "One Piece English Dubbed episodes 1 - 1000\nOne Piece English Dub 133.mp4\n👤 1 💾 196.78 MB ⚙️ TorrentGalaxy\nDubbed / 🇬🇧",
+        "description": "",
+        "filename": "One Piece English Dub 133.mp4",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "EnglishDub declaresEnglish audio but no resolution.",
+      "expected_audio_languages_set": [
+        "en"
+      ]
+    },
+    {
+      "capture_index": 512,
+      "title": "One Piece",
+      "provider": "Torrentio TB",
+      "source": {
+        "name": "[TB+] Torrentio",
+        "title": "One Piece Season 4 5 6 {EnG SubbeD} [Episode 93-195] [email protected]\nSeason_5 [131-143] L@mBerT/OP-133 L@mBerT.mkv\n👤 0 💾 39.97 MB ⚙️ ThePirateBay",
+        "description": "",
+        "filename": "OP-133 L@mBerT.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio TB"
+        },
+        "source_name": "Torrentio TB"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "ActualEngSubbeD identifies subtitles, not English audio; short filename supplies no audio.",
+      "expected_audio_languages_set": []
+    },
+    {
+      "capture_index": 537,
+      "title": "Inception",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n4k",
+        "title": "Inception - Directors Cut 2010 Eng Ita Multi-Subs 4K 1080p\n👤 17 💾 5 GB ⚙️ ThePirateBay\nMulti Subs / 🇬🇧 / 🇮🇹",
+        "description": "",
+        "filename": "Inception - Directors Cut 2010 Eng Ita Multi-Subs 4K 1080p [H264-mp4].mp4",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": 2160,
+      "expectation_basis": "Reported4k outranks ambiguous filename containingboth4K and1080p."
+    },
+    {
+      "capture_index": 588,
+      "title": "Inception",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\n3D",
+        "title": "75.3D.Movies\nInception.mp4\n👤 44 💾 2.19 GB ⚙️ MagnetDL",
+        "description": "",
+        "filename": "Inception.mp4",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "3D isnot a pixelresolution."
+    },
+    {
+      "capture_index": 595,
+      "title": "Inception",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\nBDRip",
+        "title": "Начало / Inception (2010) BDRip-AVC от HQCLUB | Лицензия\n👤 9 💾 2.9 GB ⚙️ Rutor\n🇬🇧 / 🇷🇺 / 🇺🇦",
+        "description": "",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "CyrillicBDRip title doesnot declare resolution; provider flags reportEnglish/Russian/Ukrainian.",
+      "expected_audio_languages_set": [
+        "en",
+        "ru",
+        "uk"
+      ]
+    },
+    {
+      "capture_index": 700,
+      "title": "The Crack: Inception",
+      "provider": "Torrentio",
+      "source": {
+        "name": "Torrentio\nBDRip",
+        "title": "Взлом. Начало / El crack cero (2019) BDRip-AVC от msltel | A\n👤 0 💾 2.32 GB ⚙️ Rutor\n🇷🇺 / 🇪🇸",
+        "description": "",
+        "filename": "Взлом. Начало.2019.BDRip-AVC msltel.mkv",
+        "audio_language_status": "unknown",
+        "presentation": {
+          "provider_name": "Torrentio"
+        },
+        "source_name": "Torrentio"
+      },
+      "expected_quality_height": null,
+      "expectation_basis": "CyrillicBDRip-AVC reportsAVC codec without resolution.",
+      "expected_video_codec": "AVC"
+    }
+  ]
+}
