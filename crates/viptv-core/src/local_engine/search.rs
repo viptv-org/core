@@ -42,7 +42,9 @@ impl LocalEngine {
                                 .map_err(|_| CoreError::InvalidInput)?,
                             browse: None,
                             id: format!("search:{}:{kind}:{index}", connection.id),
-                            title: connection.name.clone(),
+                            // One carousel per add-on catalog: the title names the
+                            // kind so the movie and series rows read distinctly.
+                            title: format!("{} · {}", connection.name, if kind == "movie" { "Movies" } else { "Series" }),
                             provider_id: connection.id.clone(),
                             url: Some(url),
                         });
