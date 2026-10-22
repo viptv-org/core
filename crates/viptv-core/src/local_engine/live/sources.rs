@@ -24,6 +24,7 @@ impl LocalEngine {
                     quality_height: None,
                     audio_languages: vec![],
                     presentation: None,
+                    ..Default::default()
                 };
                 grants.insert(
                     id,

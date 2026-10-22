@@ -19,13 +19,19 @@ impl LocalEngine {
         if preferences_json.len() > 4096 {
             return Err(CoreError::InvalidInput);
         }
-        let preferences =
+        let value: serde_json::Value =
             serde_json::from_str(&preferences_json).map_err(|_| CoreError::InvalidInput)?;
-        let value = self
-            .store
-            .lock()
-            .map_err(|_| CoreError::Bridge)?
-            .update_preferences(&local_scope(&profile), revision, preferences)
+        let mut store = self.store.lock().map_err(|_| CoreError::Bridge)?;
+        let scope = local_scope(&profile);
+        let previous = store
+            .preferences(&scope)
+            .map_err(|_| CoreError::InvalidInput)?
+            .preferences;
+        let preferences =
+            viptv_engine::preferences::ProfilePreferences::from_update(value, &previous)
+                .map_err(|_| CoreError::InvalidInput)?;
+        let value = store
+            .update_preferences(&scope, revision, preferences)
             .map_err(|_| CoreError::InvalidInput)?;
         serde_json::to_string(&value).map_err(|_| CoreError::Bridge)
     }
@@ -34,6 +40,19 @@ impl LocalEngine {
 impl LocalEngine {
     /// Supplied metadata is ignored; only IDs address current profile-owned private grants.
     pub fn rank_sources(&self, profile: String, sources_json: String) -> Result<String, CoreError> {
+        self.rank_sources_for_device(profile, sources_json, None)
+    }
+    /// `device_max_height` (144..=4320) caps quality at what the device shows,
+    /// together with the profile cap (the lower one wins); None = unknown.
+    pub fn rank_sources_for_device(
+        &self,
+        profile: String,
+        sources_json: String,
+        device_max_height: Option<u32>,
+    ) -> Result<String, CoreError> {
+        if device_max_height.is_some_and(|height| !(144..=4320).contains(&height)) {
+            return Err(CoreError::InvalidInput);
+        }
         if sources_json.len() > 128 * 1024 {
             return Err(CoreError::InvalidInput);
         }
@@ -74,7 +93,13 @@ impl LocalEngine {
             }
             candidates.push(grant.candidate.clone());
         }
-        viptv_engine::preferences::rank_sources(&mut candidates, &preferences);
+        // Title original-language metadata is not plumbed to ranking yet.
+        viptv_engine::preferences::rank_sources(
+            &mut candidates,
+            &preferences,
+            None,
+            device_max_height,
+        );
         serde_json::to_string(&candidates).map_err(|_| CoreError::Bridge)
     }
 }
@@ -143,9 +168,61 @@ mod tests {
         assert_eq!(ranked[0]["label"], "Compatible");
         assert_eq!(ranked[1]["label"], "Unknown");
         assert_eq!(ranked[2]["quality_height"], 2160);
+        assert_eq!(ranked[0]["delivery"], "direct");
+        // The device's own height lowers the profile cap; the lower one wins.
+        let device: Value = serde_json::from_str(
+            &engine
+                .rank_sources_for_device("default".into(), sources.to_string(), Some(720))
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(device[0]["label"], "Unknown");
+        assert_eq!(device[1]["label"], "Compatible");
+        assert_eq!(device[2]["quality_height"], 2160);
+        for invalid in [100, 4321] {
+            assert!(
+                engine
+                    .rank_sources_for_device("default".into(), sources.to_string(), Some(invalid))
+                    .is_err()
+            );
+        }
         assert!(
             engine
                 .rank_sources("other".into(), sources.to_string())
+                .is_err()
+        );
+        // Subtitle mode and HDR preference cross the native bridge.
+        let mut current: Value =
+            serde_json::from_str(&engine.profile_preferences("default".into()).unwrap()).unwrap();
+        assert_eq!(current["preferences"]["subtitle_mode"], "always");
+        assert_eq!(current["preferences"]["hdr_preference"], "any");
+        current["preferences"]["subtitle_mode"] = json!("foreign");
+        current["preferences"]["subtitles_enabled"] = json!(false);
+        current["preferences"]["hdr_preference"] = json!("prefer");
+        let saved: Value = serde_json::from_str(
+            &engine
+                .update_profile_preferences("default".into(), 1, current["preferences"].to_string())
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(saved["preferences"]["subtitle_mode"], "foreign");
+        assert_eq!(saved["preferences"]["subtitles_enabled"], true);
+        assert_eq!(saved["preferences"]["hdr_preference"], "prefer");
+        // An on/off-only client keeps foreign while subtitles stay on.
+        let mut legacy = saved["preferences"].clone();
+        legacy.as_object_mut().unwrap().remove("subtitle_mode");
+        let kept: Value = serde_json::from_str(
+            &engine
+                .update_profile_preferences("default".into(), 2, legacy.to_string())
+                .unwrap(),
+        )
+        .unwrap();
+        assert_eq!(kept["preferences"]["subtitle_mode"], "foreign");
+        let mut invalid = kept["preferences"].clone();
+        invalid["subtitle_mode"] = json!("sometimes");
+        assert!(
+            engine
+                .update_profile_preferences("default".into(), 3, invalid.to_string())
                 .is_err()
         );
         drop(engine);
