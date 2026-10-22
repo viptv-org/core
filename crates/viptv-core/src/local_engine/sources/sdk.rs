@@ -27,6 +27,7 @@ pub(in crate::local_engine) fn sdk_playable(
             .as_ref()
             .map(|audio| vec![audio.language.as_str().into()])
             .unwrap_or_default(),
+        ..Default::default()
     };
     let playable = Playable {
         scope,

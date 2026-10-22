@@ -493,6 +493,12 @@ data class SourceCandidate(
     val quality_height: Long? = null,
     val audio_languages: List<String> = emptyList(),
     val presentation: SourcePresentation? = null,
+    val release_type: String? = null,
+    val three_d: Boolean = false,
+    val dynamic_range: List<String> = emptyList(),
+    val audio_flags: List<String> = emptyList(),
+    val seeders: Long? = null,
+    val delivery: String? = null,
 )
 
 @Serializable

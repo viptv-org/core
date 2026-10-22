@@ -1002,6 +1002,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1138,6 +1140,8 @@ fun uniffi_viptv_core_checksum_method_localengine_project_sources_partial(
 fun uniffi_viptv_core_checksum_method_localengine_project_subtitles(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_rank_sources(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_rank_sources_for_device(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_record_progress(
 ): Short
@@ -1428,6 +1432,8 @@ fun uniffi_viptv_core_fn_method_localengine_project_sources_partial(`ptr`: Point
 fun uniffi_viptv_core_fn_method_localengine_project_subtitles(`ptr`: Pointer,`operation`: RustBuffer.ByValue,`responsesJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_rank_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`sourcesJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_rank_sources_for_device(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`sourcesJson`: RustBuffer.ByValue,`deviceMaxHeight`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_record_progress(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`revision`: Long,`cardJson`: RustBuffer.ByValue,`positionMillis`: Long,`durationMillis`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
@@ -1892,6 +1898,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources() != 47395.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources_for_device() != 9705.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_record_progress() != 19446.toShort()) {
@@ -2914,6 +2923,12 @@ public interface LocalEngineInterface {
      */
     fun `rankSources`(`profile`: kotlin.String, `sourcesJson`: kotlin.String): kotlin.String
 
+    /**
+     * `device_max_height` (144..=4320) caps quality at what the device shows,
+     * together with the profile cap (the lower one wins); None = unknown.
+     */
+    fun `rankSourcesForDevice`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `deviceMaxHeight`: kotlin.UInt?): kotlin.String
+
     fun `recordProgress`(`profile`: kotlin.String, `revision`: kotlin.ULong, `cardJson`: kotlin.String, `positionMillis`: kotlin.ULong, `durationMillis`: kotlin.ULong)
 
     fun `removeAddon`(`id`: kotlin.String)
@@ -3715,6 +3730,23 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_rank_sources(
         it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`sourcesJson`),_status)
+}
+    }
+    )
+    }
+
+
+
+    /**
+     * `device_max_height` (144..=4320) caps quality at what the device shows,
+     * together with the profile cap (the lower one wins); None = unknown.
+     */
+    @Throws(CoreException::class)override fun `rankSourcesForDevice`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `deviceMaxHeight`: kotlin.UInt?): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_rank_sources_for_device(
+        it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`sourcesJson`),FfiConverterOptionalUInt.lower(`deviceMaxHeight`),_status)
 }
     }
     )

@@ -174,7 +174,10 @@ impl LocalEngine {
                     quality_height: source.quality_height,
                     audio_languages: source.audio_languages,
                     presentation: source.presentation,
-                };
+                    delivery: Some(source.delivery.into()),
+                    ..Default::default()
+                }
+                .with_release_facts(source.release_facts);
                 playable.insert(
                     id,
                     Playable {

@@ -164,6 +164,7 @@ fn sdk_job_replacement_preserves_issued_choice_and_cancels_only_pending_work() {
         quality_height: None,
         audio_languages: vec![],
         presentation: None,
+        ..Default::default()
     };
     engine.playable.lock().unwrap().insert(
         "issued".into(),

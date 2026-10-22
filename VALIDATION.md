@@ -1,3 +1,30 @@
+# Best match release facts and ranking (SRC-BEST-MATCH-001 phase 1) — 2026-10-22
+
+`stremio::source_release_facts` derives `release_type`, `three_d`,
+`dynamic_range`, `audio_flags` and `seeders` from declared fields first, then
+PTT-equivalent release-name rules (filename, title, name, description lines;
+Torrentio's seeders/size line only supplies `👤 N`). `stream_delivery` reads
+the transport only. `SourceCandidate` carries the facts plus `delivery`; each
+is omitted when unknown, so earlier payloads parse unchanged. Dual/multi/dub
+markers are flags, never audio languages; `Multi Subs` no longer hides the flags
+on Torrentio's language line, and VOSTFR/SUBFRENCH French is not audio.
+
+`rank_sources(candidates, preferences, original_language, device_max_height)`
+orders: excluded (camera, 3D, torrent with fewer than 5 known seeders), language
+tier, cap class with cap = min(profile cap, device height), resolution (highest
+first within the cap, closest first over it), release type, `hdr_preference`,
+delivery and seeders, then input order. Original-language metadata is not
+plumbed yet; hosts pass None. `ProfilePreferences` adds `hdr_preference`
+(`any`/`prefer`/`avoid`) and `subtitle_mode` (`always`/`foreign`/`never`; rows
+without it derive it from `subtitles_enabled`, a sent mode decides
+`subtitles_enabled`). The native bridge adds
+`rankSourcesForDevice(profile, sourcesJson, deviceMaxHeight: UInt?)`;
+`rankSources` is unchanged. Engine Kotlin/TypeScript contracts and UniFFI Kotlin
+bindings were regenerated; the browser WASM was not rebuilt (no client uses
+ranking through it, and wasm-bindgen 0.2.92 is not installed here).
+
+`cargo test --workspace --all-features` (Rust 1.98.0): 319 passed, 0 failed.
+
 # Stremio subtitle execution — 2026-10-12
 
 Shared subtitle planning negotiates declared resource types and ID prefixes,
