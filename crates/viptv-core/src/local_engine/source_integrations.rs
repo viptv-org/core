@@ -419,6 +419,7 @@ impl LocalEngine {
                     config,
                     media,
                     authorize.clone(),
+                    None,
                     |streams| {
                         if !authorize() {
                             return;
