@@ -154,6 +154,19 @@ fn installation_is_account_scoped_and_enables_only_the_selected_profile() {
 
 #[cfg(feature = "runtime")]
 #[tokio::test(start_paused = true)]
+async fn home_keeps_the_servers_sixteen_row_bound_when_adopting_canonical_source() {
+    use std::time::Duration;
+    use viptv_engine::home::*;
+    let scope=ProfileConfiguration::local("device".into(),"alice".into(),"Alice".into()).scope;
+    let requests=(0..20).map(|index|RowRequest{id:format!("row-{index}"),title:format!("Row {index}"),provider_id:"stremio".into(),load:Box::pin(async{Ok(vec![])})}).collect();
+    let result=assemble(scope,requests,Duration::from_secs(1)).await;
+    assert_eq!(result.rows.len(),16);
+    assert_eq!(result.rows.last().unwrap().id,"row-15");
+    assert!(result.complete);
+}
+
+#[cfg(feature = "runtime")]
+#[tokio::test(start_paused = true)]
 async fn home_deadline_does_not_wait_for_slow_rows_or_leak_provider_errors() {
     use std::time::Duration;
     use viptv_engine::{home::*, presentation::RowState};

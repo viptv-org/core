@@ -1,3 +1,24 @@
+# Certification projection and canonical server snapshot — 2026-10-23
+
+Stremio title and episode Cards now preserve bounded declared certification
+text (`contentRating`, then `certification`, `ageRating`, `mpaaRating`). Missing
+or malformed values do not become inferred age labels. The existing optional
+CardMetadata field and binding ABI are unchanged; no generated schema change or
+WASM distribution build is needed for this server-engine adoption.
+
+The canonical Home request cap is 16, preserving the behavior already present
+in the backend export. Its dedicated regression covers the boundary with 20
+requested rows. The server's stale nested source copies and manifest drift are
+handled by its immutable export/check workflow, not manual vendor edits.
+
+`cargo test -p viptv-engine --all-features -j 2 -- --test-threads=1`:
+114 passed, zero failed, one existing ignored network test. The two certification
+regressions failed before the change. Host parental policy remains a separate
+consumer of verified provider evidence; these presentation strings are not
+permission grants.
+
+---
+
 # Best match release facts and ranking (SRC-BEST-MATCH-001 phase 1) — 2026-10-22
 
 `stremio::source_release_facts` derives `release_type`, `three_d`,
