@@ -18,4 +18,9 @@ fn directory_offsets_do_not_truncate_catalogs_but_pages_remain_bounded() {
     }
     assert!(serde_json::from_str::<LiveQuery>(r#"{"offset":4294967296}"#).is_err());
     assert!(LiveQuery{search:Some("x".repeat(201)),..Default::default()}.validate().is_err());
+    for page_size in [0,201] {
+        assert!(LiveQuery{page_size:Some(page_size),..Default::default()}.validate().is_err());
+    }
+    assert!(LiveQuery{offset:0,limit:Some(2),page_size:Some(40),..Default::default()}.validate().is_ok());
+    assert!(serde_json::to_value(LiveQuery::default()).unwrap().get("page_size").is_none());
 }
