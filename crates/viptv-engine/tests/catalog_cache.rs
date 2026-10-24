@@ -75,7 +75,9 @@ fn cache_expires_is_bounded_and_cannot_cross_profile_or_revision() {
         Err(Error::Conflict)
     );
     store.delete_profile(&alice.scope, "").unwrap();
-    alice.scope.revision = store.new_profile_revision(&alice.scope).unwrap();
+    // The deletion tombstone fences recreation past the deleted revision so a
+    // recreated profile can never re-associate the deleted one's scoped data.
+    alice.scope.revision = 2;
     store.save_profile(&alice, None).unwrap();
     assert!(
         store
@@ -86,56 +88,11 @@ fn cache_expires_is_bounded_and_cannot_cross_profile_or_revision() {
 }
 
 #[test]
-fn related_catalog_fallback_is_scoped_revision_checked_genre_ranked_and_expiring() {
-    use serde_json::json;
-    use viptv_engine::{Error, profile::ProfileConfiguration, simkl, store::Store};
-    let mut store = Store::memory().unwrap();
-    let a = ProfileConfiguration::local("local".into(), "a".into(), "A".into());
-    let b = ProfileConfiguration::local("local".into(), "b".into(), "B".into());
-    store.save_profile(&a, None).unwrap();
-    store.save_profile(&b, None).unwrap();
-    let card = |id, genres: Vec<&str>| {
-        simkl::card(
-            &json!({"title":"Title","ids":{"simkl":id},"genres":genres}),
-            "movie",
-        )
-        .unwrap()
-    };
-    let item = card(1, vec!["Action", "Drama"]);
-    store
-        .cache_catalog(
-            &a.scope,
-            "row",
-            &[
-                item.clone(),
-                card(2, vec!["Action"]),
-                card(3, vec!["Drama", "Action"]),
-                card(4, vec!["Comedy"]),
-            ],
-            100,
-        )
-        .unwrap();
-    store
-        .cache_catalog(&b.scope, "row", &[card(99, vec!["Action", "Drama"])], 100)
-        .unwrap();
-    let result = store.related_catalog_cards(&a.scope, &item, 101).unwrap();
-    assert_eq!(
-        result
-            .iter()
-            .map(|c| c.identity.id.as_str())
-            .collect::<Vec<_>>(),
-        vec!["simkl:movie:3", "simkl:movie:2"]
-    );
-    assert!(
-        store
-            .related_catalog_cards(&a.scope, &item, 401)
-            .unwrap()
-            .is_empty()
-    );
-    let mut stale = a.scope.clone();
-    stale.revision = 1;
-    assert!(matches!(
-        store.related_catalog_cards(&stale, &item, 101),
-        Err(Error::Conflict)
-    ));
+fn related_catalog_fallback_is_scoped_revision_checked_genre_ranked_and_expiring(){
+ use serde_json::json;
+ use viptv_engine::{simkl,profile::ProfileConfiguration,store::Store,Error};
+ let mut store=Store::memory().unwrap();let a=ProfileConfiguration::local("local".into(),"a".into(),"A".into());let b=ProfileConfiguration::local("local".into(),"b".into(),"B".into());store.save_profile(&a,None).unwrap();store.save_profile(&b,None).unwrap();
+ let card=|id,genres:Vec<&str>|simkl::card(&json!({"title":"Title","ids":{"simkl":id},"genres":genres}),"movie").unwrap();
+ let item=card(1,vec!["Action","Drama"]);store.cache_catalog(&a.scope,"row",&[item.clone(),card(2,vec!["Action"]),card(3,vec!["Drama","Action"]),card(4,vec!["Comedy"])],100).unwrap();store.cache_catalog(&b.scope,"row",&[card(99,vec!["Action","Drama"])],100).unwrap();
+ let result=store.related_catalog_cards(&a.scope,&item,101).unwrap();assert_eq!(result.iter().map(|c|c.identity.id.as_str()).collect::<Vec<_>>(),vec!["simkl:movie:3","simkl:movie:2"]);assert!(store.related_catalog_cards(&a.scope,&item,401).unwrap().is_empty());let mut stale=a.scope.clone();stale.revision=1;assert!(matches!(store.related_catalog_cards(&stale,&item,101),Err(Error::Conflict)));
 }
