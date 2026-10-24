@@ -72,11 +72,12 @@ impl LocalEngine {
                 })
                 .collect::<Vec<_>>();
             let limit = query.limit.unwrap_or(100) as usize;
-            let end = (query.offset as usize + limit).min(filtered.len());
+            let start = (query.offset as usize).min(filtered.len());
+            let end = start.saturating_add(limit).min(filtered.len());
             let page = LivePage {
                 channels: filtered
                     .iter()
-                    .skip(query.offset as usize)
+                    .skip(start)
                     .take(limit)
                     .map(|c| c.channel.clone())
                     .collect(),

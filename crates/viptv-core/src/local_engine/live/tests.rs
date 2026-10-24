@@ -44,6 +44,10 @@ fn live_directory_and_grants_preserve_scope_and_never_export_private_uris() {
     let page = engine.live_channels("default".into(), "{}".into()).unwrap();
     assert!(!page.contains("token=private"));
     assert!(!page.contains("media.example"));
+    let end: LivePage = serde_json::from_str(&engine.live_channels(
+        "default".into(), r#"{"offset":4294967295,"limit":200}"#.into(),
+    ).unwrap()).unwrap();
+    assert!(end.channels.is_empty() && end.complete && end.next_cursor.is_none());
     let sources: serde_json::Value = serde_json::from_str(
         &engine
             .live_sources("default".into(), channel_id.clone())

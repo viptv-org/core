@@ -7,3 +7,15 @@ fn m3u_channels_are_typed_and_private_uris_do_not_cross_public_contract(){
 fn xmltv_preserves_timezone_entities_and_rejects_external_entity_documents(){
  let xml=r#"<tv><programme channel="news" start="20261013000000 +0200" stop="20261013013000 +0200"><title>News &amp; weather</title><desc><![CDATA[Actual <guide>]]></desc></programme><programme channel="other" start="20261013000000 +0000" stop="20261013010000 +0000"><title>Other</title></programme></tv>"#;let programs=parse_xmltv(xml,"news","opaque-channel").unwrap();assert_eq!(programs.len(),1);assert_eq!(programs[0].title,"News & weather");assert_eq!(programs[0].end_millis-programs[0].start_millis,90*60*1000);assert_eq!(programs[0].description.as_deref(),Some("Actual <guide>"));assert!(parse_xmltv(r#"<!DOCTYPE tv SYSTEM "file:///private"><tv/>"#,"news","opaque").is_err());assert!(parse_xmltv("<tv><programme>","news","opaque").is_err());
 }
+
+#[test]
+fn directory_offsets_do_not_truncate_catalogs_but_pages_remain_bounded() {
+    for offset in [10_000,10_040,1_000_000,u32::MAX] {
+        assert!(LiveQuery{offset,limit:Some(200),..Default::default()}.validate().is_ok());
+    }
+    for limit in [0,201,u32::MAX] {
+        assert!(LiveQuery{offset:10_040,limit:Some(limit),..Default::default()}.validate().is_err());
+    }
+    assert!(serde_json::from_str::<LiveQuery>(r#"{"offset":4294967296}"#).is_err());
+    assert!(LiveQuery{search:Some("x".repeat(201)),..Default::default()}.validate().is_err());
+}
