@@ -516,3 +516,101 @@ fn raw_json_deserialization_preserves_all_value_kinds() {
     assert_eq!(JsonValue::deserialize(&value).unwrap(), expected);
     assert_eq!(JsonValue::deserialize(value).unwrap(), expected);
 }
+/// Local engine profiles (native shells only) carry the design avatar catalog.
+#[cfg(feature = "native")]
+mod local_engine_avatars {
+    use super::*;
+    #[derive(Default)]
+    struct MemorySecrets(std::sync::Mutex<std::collections::HashMap<String, String>>);
+    impl viptv_core::SecretStore for MemorySecrets {
+        fn get(&self, key: String) -> Result<Option<String>, viptv_core::CoreError> {
+            Ok(self.0.lock().unwrap().get(&key).cloned())
+        }
+        fn put(&self, key: String, value: String) -> Result<(), viptv_core::CoreError> {
+            self.0.lock().unwrap().insert(key, value);
+            Ok(())
+        }
+        fn remove(&self, key: String) -> Result<(), viptv_core::CoreError> {
+            self.0.lock().unwrap().remove(&key);
+            Ok(())
+        }
+    }
+    #[test]
+    fn local_engine_profiles_carry_catalog_avatars_and_legacy_ids() {
+        let dir =
+            std::env::temp_dir().join(format!("viptv-avatar-contract-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        let engine = viptv_core::LocalEngine::new(
+            dir.join("local.sqlite").to_string_lossy().into(),
+            std::sync::Arc::new(MemorySecrets::default()),
+        )
+        .unwrap();
+        let card = |id: &str| -> Value {
+            let cards: Value = serde_json::from_str(&engine.profile_cards().unwrap()).unwrap();
+            cards
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|card| card["id"] == id)
+                .unwrap()
+                .clone()
+        };
+        let created: Value =
+            serde_json::from_str(&engine.create_profile("kid".into(), "Kid".into()).unwrap())
+                .unwrap();
+        assert_eq!(created["avatar_style"], "critters");
+        assert_eq!(created["avatar_choice"], Value::Null);
+        assert_eq!(card("kid")["avatar_style"], "critters");
+        assert_eq!(card("kid")["avatar_choice"], Value::Null);
+        assert_eq!(card("kid")["avatar_id"], Value::Null);
+
+        engine
+            .set_profile_avatar_choice("kid".into(), "villains".into(), 12, "".into())
+            .unwrap();
+        assert!(
+            engine
+                .set_profile_avatar_choice("kid".into(), "villains".into(), 13, "".into())
+                .is_err()
+        );
+        assert!(
+            engine
+                .set_profile_avatar_choice("kid".into(), "dicebear".into(), 1, "".into())
+                .is_err()
+        );
+        let profile: Value = serde_json::from_str(&engine.profile("kid".into()).unwrap()).unwrap();
+        assert_eq!(
+            (&profile["avatar_style"], &profile["avatar_choice"]),
+            (&json!("villains"), &json!(12))
+        );
+
+        engine
+            .set_profile_avatar("default".into(), "zayne".into(), "".into())
+            .unwrap();
+        assert!(
+            engine
+                .set_profile_avatar("default".into(), "critters-1".into(), "".into())
+                .is_err()
+        );
+        let legacy = card("default");
+        assert_eq!(legacy["avatar_id"], "zayne");
+        assert_eq!(legacy["avatar_style"], "critters");
+        assert_eq!(legacy["avatar_choice"], Value::Null);
+
+        // A catalog choice wins over a legacy id written after it, as on the
+        // backend engine profile route.
+        engine
+            .set_profile_avatar_choice("kid".into(), "moods".into(), 3, "".into())
+            .unwrap();
+        engine
+            .set_profile_avatar("kid".into(), "vynxc".into(), "".into())
+            .unwrap();
+        let kid = card("kid");
+        assert_eq!(kid["avatar_id"], Value::Null);
+        assert_eq!(
+            (&kid["avatar_style"], &kid["avatar_choice"]),
+            (&json!("moods"), &json!(3))
+        );
+        drop(engine);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+}
