@@ -1,3 +1,27 @@
+# Local engine avatar catalog (ADM-004) — 2026-10-26
+
+Local engine profiles store the design avatar catalog: `ProfileConfiguration`
+gains `avatar_style` (absent means `critters`) and a 1-based `avatar_choice`
+(`None` until a catalog pick, as the backend projects `null`). Both are
+serde-defaulted and optional on the wire, so stored rows and older payloads
+still decode. `set_profile_avatar_choice` validates against `AVATAR_WORLDS`
+(16 worlds, 624 avatars), which a test checks against the vendored
+`tests/avatar-catalog.json` (design `3884fb3`). Legacy ids stay accepted; a
+catalog pick retires them and, as on backend `5b22518`, wins over a later
+legacy write in `profile_cards`.
+
+Rust 1.98.0: `cargo run -p viptv-typegen --bin viptv-typegen`, `--bin engine`
+(also picks up the earlier `LiveQuery.page_size`) and
+`scripts/build-native-bindings.sh` regenerated the committed outputs.
+`scripts/build-wasm.sh` (stable 1.97.1, the toolchain with the wasm32 target,
+wasm-bindgen 0.2.92) succeeds, but its output is not committed: the browser
+graph excludes `viptv-engine` and the local engine is `native`-only.
+`cargo test --workspace --all-features --no-fail-fast`: 328 passed, 1 failed,
+4 ignored. The failure is the existing search-title assertion (core#10),
+unrelated to avatars; the seven avatar/profile tests pass.
+
+---
+
 # Certification projection and canonical server snapshot — 2026-10-23
 
 Stremio title and episode Cards now preserve bounded declared certification

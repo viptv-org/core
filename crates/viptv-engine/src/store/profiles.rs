@@ -45,7 +45,7 @@ impl Store {
         }
         self.update_avatar(scope, pin, |profile| {
             profile.avatar_id = None;
-            profile.avatar_style = avatar_style.into();
+            profile.avatar_style = Some(avatar_style.into());
             profile.avatar_choice = Some(avatar_choice);
         })
     }

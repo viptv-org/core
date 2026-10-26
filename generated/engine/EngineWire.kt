@@ -426,7 +426,7 @@ data class ProfileConfiguration(
     val mode: ExecutionMode,
     val name: String,
     val avatar_id: String? = null,
-    val avatar_style: String,
+    val avatar_style: String? = null,
     val avatar_choice: Int? = null,
     val browsing_plugin: String,
     val assignments: List<ProfileAssignment>,

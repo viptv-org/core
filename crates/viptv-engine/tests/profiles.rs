@@ -62,11 +62,8 @@ fn avatar(
     scope: &viptv_engine::profile::Scope,
 ) -> (Option<String>, String, Option<u16>) {
     let profile = store.profile(scope).unwrap().unwrap();
-    (
-        profile.avatar_id,
-        profile.avatar_style,
-        profile.avatar_choice,
-    )
+    let style = profile.avatar_style().to_owned();
+    (profile.avatar_id, style, profile.avatar_choice)
 }
 
 #[test]
@@ -171,8 +168,9 @@ fn legacy_avatar_ids_still_load_and_a_catalog_choice_takes_precedence() {
     )
     .unwrap();
     assert_eq!(legacy.shown_avatar_id(), Some("zayne"));
+    assert_eq!(legacy.avatar_style, None);
     assert_eq!(
-        (legacy.avatar_style.as_str(), legacy.avatar_choice),
+        (legacy.avatar_style(), legacy.avatar_choice),
         ("critters", None)
     );
 }

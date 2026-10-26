@@ -21,6 +21,7 @@ impl LocalEngine {
             .into_iter()
             .map(|profile| {
                 let avatar_id = profile.shown_avatar_id().map(Into::into);
+                let avatar_style = profile.avatar_style().into();
                 Ok(ProfileCard {
                     locked: store
                         .has_profile_pin(&profile.scope)
@@ -28,7 +29,7 @@ impl LocalEngine {
                     id: profile.scope.profile_id,
                     name: profile.name,
                     avatar_id,
-                    avatar_style: profile.avatar_style,
+                    avatar_style,
                     avatar_choice: profile.avatar_choice,
                 })
             })

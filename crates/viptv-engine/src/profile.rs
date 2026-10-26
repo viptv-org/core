@@ -57,9 +57,6 @@ pub const DEFAULT_AVATAR_STYLE: &str = "critters";
 /// Legacy ids the local engine stored before the catalog.
 pub const LEGACY_AVATAR_IDS: &[&str] = &["vynxc", "zayne", "initial-pink", "initial-blue"];
 
-fn default_avatar_style() -> String {
-    DEFAULT_AVATAR_STYLE.into()
-}
 
 /// Whether `choice` is a position of the catalog world `style`.
 pub fn is_catalog_avatar(style: &str, choice: u16) -> bool {
@@ -78,9 +75,11 @@ pub struct ProfileConfiguration {
     #[serde(default)]
     pub avatar_id: Option<String>,
     /// Catalog world, one of [`AVATAR_WORLDS`]. Same field as the backend
-    /// account profile; rows saved before the catalog read as `critters`.
-    #[serde(default = "default_avatar_style")]
-    pub avatar_style: String,
+    /// account profile. `None` (configurations saved before the catalog)
+    /// means [`DEFAULT_AVATAR_STYLE`]; read it through [`Self::avatar_style`].
+    /// Optional so generated Kotlin/TypeScript decoders accept older payloads.
+    #[serde(default)]
+    pub avatar_style: Option<String>,
     /// 1-based position inside `avatar_style`, or `None` when no catalog
     /// avatar was chosen (the backend projects `null` the same way; clients
     /// then show the default, choice 1 of `critters`). A choice takes
@@ -103,11 +102,16 @@ impl ProfileConfiguration {
             mode: ExecutionMode::Local,
             name,
             avatar_id: None,
-            avatar_style: default_avatar_style(),
+            avatar_style: Some(DEFAULT_AVATAR_STYLE.into()),
             avatar_choice: None,
             browsing_plugin: "stremio".into(),
             assignments: vec![],
         }
+    }
+
+    /// The catalog world, falling back to the backend default.
+    pub fn avatar_style(&self) -> &str {
+        self.avatar_style.as_deref().unwrap_or(DEFAULT_AVATAR_STYLE)
     }
 
     /// The legacy id to show: hidden once a catalog choice exists, matching
