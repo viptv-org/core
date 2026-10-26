@@ -3,7 +3,7 @@ pub mod app;
 #[cfg(feature = "native")]
 mod local_engine;
 #[cfg(feature = "native")]
-pub use local_engine::LocalEngine;
+pub use local_engine::{LocalEngine, SecretStore};
 pub mod domain;
 pub mod dto;
 mod native_metainfo;

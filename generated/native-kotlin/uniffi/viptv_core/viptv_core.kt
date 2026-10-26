@@ -1004,6 +1004,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1162,6 +1164,8 @@ fun uniffi_viptv_core_checksum_method_localengine_set_addon_enabled(
 fun uniffi_viptv_core_checksum_method_localengine_set_live_favorite(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_set_profile_avatar(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_set_profile_avatar_choice(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_set_profile_pin(
 ): Short
@@ -1454,6 +1458,8 @@ fun uniffi_viptv_core_fn_method_localengine_set_addon_enabled(`ptr`: Pointer,`pr
 fun uniffi_viptv_core_fn_method_localengine_set_live_favorite(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`channel`: RustBuffer.ByValue,`saved`: Byte,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_set_profile_avatar(`ptr`: Pointer,`id`: RustBuffer.ByValue,`avatarId`: RustBuffer.ByValue,`pin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): Unit
+fun uniffi_viptv_core_fn_method_localengine_set_profile_avatar_choice(`ptr`: Pointer,`id`: RustBuffer.ByValue,`avatarStyle`: RustBuffer.ByValue,`avatarChoice`: Short,`pin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
 fun uniffi_viptv_core_fn_method_localengine_set_profile_pin(`ptr`: Pointer,`id`: RustBuffer.ByValue,`oldPin`: RustBuffer.ByValue,`newPin`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
@@ -1931,6 +1937,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_set_profile_avatar() != 34126.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_set_profile_avatar_choice() != 29570.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_set_profile_pin() != 48421.toShort()) {
@@ -2949,6 +2958,8 @@ public interface LocalEngineInterface {
 
     fun `setProfileAvatar`(`id`: kotlin.String, `avatarId`: kotlin.String, `pin`: kotlin.String)
 
+    fun `setProfileAvatarChoice`(`id`: kotlin.String, `avatarStyle`: kotlin.String, `avatarChoice`: kotlin.UShort, `pin`: kotlin.String)
+
     fun `setProfilePin`(`id`: kotlin.String, `oldPin`: kotlin.String, `newPin`: kotlin.String)
 
     fun `sourceIntegrationSchemas`(`profile`: kotlin.String): kotlin.String
@@ -3869,6 +3880,18 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_set_profile_avatar(
         it, FfiConverterString.lower(`id`),FfiConverterString.lower(`avatarId`),FfiConverterString.lower(`pin`),_status)
+}
+    }
+
+
+
+
+    @Throws(CoreException::class)override fun `setProfileAvatarChoice`(`id`: kotlin.String, `avatarStyle`: kotlin.String, `avatarChoice`: kotlin.UShort, `pin`: kotlin.String)
+        =
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_set_profile_avatar_choice(
+        it, FfiConverterString.lower(`id`),FfiConverterString.lower(`avatarStyle`),FfiConverterUShort.lower(`avatarChoice`),FfiConverterString.lower(`pin`),_status)
 }
     }
 

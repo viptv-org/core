@@ -7,6 +7,8 @@ struct ProfileCard {
     name: String,
     locked: bool,
     avatar_id: Option<String>,
+    avatar_style: String,
+    avatar_choice: Option<u16>,
 }
 
 #[uniffi::export]
@@ -18,13 +20,17 @@ impl LocalEngine {
             .map_err(|_| CoreError::Bridge)?
             .into_iter()
             .map(|profile| {
+                let avatar_id = profile.shown_avatar_id().map(Into::into);
+                let avatar_style = profile.avatar_style().into();
                 Ok(ProfileCard {
                     locked: store
                         .has_profile_pin(&profile.scope)
                         .map_err(|_| CoreError::Bridge)?,
                     id: profile.scope.profile_id,
                     name: profile.name,
-                    avatar_id: profile.avatar_id,
+                    avatar_id,
+                    avatar_style,
+                    avatar_choice: profile.avatar_choice,
                 })
             })
             .collect::<Result<Vec<_>, CoreError>>()?;
@@ -41,6 +47,20 @@ impl LocalEngine {
             .lock()
             .map_err(|_| CoreError::Bridge)?
             .set_profile_avatar(&local_scope(&id), &avatar_id, &pin)
+            .map_err(|_| CoreError::InvalidInput)
+    }
+
+    pub fn set_profile_avatar_choice(
+        &self,
+        id: String,
+        avatar_style: String,
+        avatar_choice: u16,
+        pin: String,
+    ) -> Result<(), CoreError> {
+        self.store
+            .lock()
+            .map_err(|_| CoreError::Bridge)?
+            .set_profile_avatar_choice(&local_scope(&id), &avatar_style, avatar_choice, &pin)
             .map_err(|_| CoreError::InvalidInput)
     }
 
