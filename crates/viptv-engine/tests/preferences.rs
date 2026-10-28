@@ -109,3 +109,48 @@ fn subtitle_mode_derives_from_legacy_rows_and_decides_enabled() {
     broken.subtitles_enabled = false;
     assert!(broken.validate().is_err());
 }
+#[test]
+fn playback_preferences_keep_designed_defaults_and_migrate_legacy_rows() {
+    let defaults = ProfilePreferences::default();
+    assert!(defaults.next_episode_button);
+    assert!(!defaults.skip_intros);
+    assert!(defaults.match_frame_rate);
+    let legacy = serde_json::json!({"preferred_audio_language":null,"preferred_subtitle_language":null,"subtitles_enabled":true,"source_selection":"ask","max_quality_height":null});
+    let migrated: ProfilePreferences = serde_json::from_value(legacy).unwrap();
+    assert_eq!(
+        (
+            migrated.next_episode_button,
+            migrated.skip_intros,
+            migrated.match_frame_rate
+        ),
+        (true, false, true)
+    );
+    let wire = serde_json::to_value(&migrated).unwrap();
+    assert_eq!(wire["next_episode_button"], true);
+    assert_eq!(wire["skip_intros"], false);
+    assert_eq!(wire["match_frame_rate"], true);
+    let mut chosen = wire;
+    chosen["next_episode_button"] = serde_json::json!(false);
+    chosen["skip_intros"] = serde_json::json!(true);
+    chosen["match_frame_rate"] = serde_json::json!(false);
+    let chosen: ProfilePreferences = serde_json::from_value(chosen).unwrap();
+    assert_eq!(
+        (
+            chosen.next_episode_button,
+            chosen.skip_intros,
+            chosen.match_frame_rate
+        ),
+        (false, true, false)
+    );
+    assert!(chosen.validate().is_ok());
+    assert_eq!(
+        serde_json::from_value::<ProfilePreferences>(serde_json::to_value(&chosen).unwrap())
+            .unwrap(),
+        chosen
+    );
+    for key in ["next_episode_button", "skip_intros", "match_frame_rate"] {
+        let mut invalid = serde_json::json!({"preferred_audio_language":null,"preferred_subtitle_language":null,"subtitles_enabled":true,"source_selection":"ask","max_quality_height":null});
+        invalid[key] = serde_json::json!("on");
+        assert!(serde_json::from_value::<ProfilePreferences>(invalid).is_err(), "{key}");
+    }
+}

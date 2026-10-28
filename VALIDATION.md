@@ -1,3 +1,27 @@
+# Playback preference upstream (backend#43) — 2026-10-27
+
+`ProfilePreferences` carries the three playback choices the backend vendored by
+hand in its engine snapshot (`53c3085`): `next_episode_button` (default on),
+`skip_intros` (default off) and `match_frame_rate` (default on). All three are
+serde-defaulted in `StoredPreferences`, so rows saved before this change decode
+with the designed defaults, and the wire form now always projects them as
+booleans. A new `tests/preferences.rs` case pins the defaults, the legacy-row
+migration, the round trip of non-default choices and the rejection of
+non-boolean values.
+
+The engine contract is unchanged: `ProfilePreferences` is not registered with
+typegen and crosses the native bridge as JSON (`profile_preferences`,
+`update_profile_preferences`), so `cargo run -p viptv-typegen --bin
+viptv-typegen`, `--bin engine` regenerate with no diff. No UniFFI or WASM
+rebuild is needed (the browser graph excludes `viptv-engine`).
+
+Rust 1.98.0: `cargo test --workspace --all-features --no-fail-fast`: 329
+passed, 1 failed, 4 ignored. The failure is the pre-existing search-title
+assertion (core#10), untouched here; `cargo test -p viptv-engine --features
+runtime --test preferences`: 4 passed.
+
+---
+
 # Local engine avatar catalog (ADM-004) — 2026-10-26
 
 Local engine profiles store the design avatar catalog: `ProfileConfiguration`
