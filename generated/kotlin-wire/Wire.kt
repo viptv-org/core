@@ -650,3 +650,5 @@ object CoreJson { val codec = Json { ignoreUnknownKeys = true; explicitNulls = f
     val `timeoutMillis`: Long,
     val `maxResponseBytes`: Long
 )
+
+// stale: this line is not produced by the generator
