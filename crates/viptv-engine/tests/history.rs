@@ -1,3 +1,4 @@
+#![cfg(feature = "runtime")]
 use viptv_engine::{
     Error, identity::MediaIdentity, presentation::Card, profile::ProfileConfiguration, store::Store,
 };

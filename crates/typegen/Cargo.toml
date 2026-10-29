@@ -3,6 +3,7 @@ name = "viptv-typegen"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+default-run = "viptv-typegen"
 [dependencies]
 viptv-engine = { path = "../viptv-engine" }
 viptv-core = { path = "../viptv-core", features = ["typegen"] }
