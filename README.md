@@ -1,9 +1,9 @@
 # viptv shared core
 
-Actions delivery: main pushes and manual builds produce sideloading artifacts
-(Android universal APK; desktop Windows/Linux installers; Roku ZIP; TV WGT/IPK).
-Other repositories have no Actions workflows. Local checks remain; previous
-CI/release-publication descriptions below are historical. No automatic deploys.
+Actions delivery: main pushes and manual builds of the client repositories produce
+sideloading artifacts (Android universal APK; desktop Windows/Linux installers;
+Roku ZIP; TV WGT/IPK). This repository runs only the `core checks` workflow, on
+pull requests and main pushes: no artifacts, releases or deploys.
 
 Crux Rust application behavior and API normalization for browser, Android and Tauri. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/c58c9b91827a39442462797602bded35a83a9f64/SHARED_CORE.md); this repository owns the implementation. Roku stays independent.
 
@@ -63,7 +63,7 @@ backend reuse; normalization, authenticated session/v2 wire and SmartCast remain
 Consumers must adopt the regenerated native bindings and WASM together. See
 `scripts/test-v2-retirement-parity.mjs` for baseline native/actual-WASM comparison.
 
-Use a current Rust toolchain and the WASM target. Run `cargo run -p viptv-typegen` for the protocol types and `cargo run -p viptv-typegen --bin engine` for the engine contracts, `bash scripts/build-native-bindings.sh` for native Kotlin bindings, and `bash scripts/build-wasm.sh` with the matching wasm-bindgen CLI to build the browser artifact. Cargo.lock pins the dependency graph. This repository has no hosted CI and publishes no artifacts: run the generators and the local checks in VALIDATION.md, then commit the regenerated output with the source change.
+Use a current Rust toolchain and the WASM target. Run `cargo run -p viptv-typegen` for the protocol types and `cargo run -p viptv-typegen --bin engine` for the engine contracts, `bash scripts/build-native-bindings.sh` for native Kotlin bindings, and `bash scripts/build-wasm.sh` with the matching wasm-bindgen CLI to build the browser artifact. Cargo.lock pins the dependency graph. The `core checks` workflow runs on every pull request and main push with Rust 1.98: `cargo test --workspace --all-features`, both generators, and a failure if `generated/` differs from the committed output. Commit the regenerated output with the source change; the repository publishes no artifacts.
 
 Consumers adopt an immutable core commit together with its generated bindings and runtime. TV-web imports artifacts using `node scripts/core-sync.mjs sync ../core`, records CORE_REF and checks their hashes on build. Update Rust data handling here and regenerate once; consumer applications then adopt and rebuild. Installed apps still require an app update.
 
