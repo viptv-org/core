@@ -271,3 +271,76 @@ fn new_episode_detection_fails_closed_on_ambiguous_metadata() {
     );
     assert!(new_episodes(&first.card.identity, 1000, &[second], never_watched, 3000).is_none());
 }
+
+#[test]
+fn upcoming_episode_names_the_next_one_only_while_it_is_not_out() {
+    let mut show = vec![
+        released(1, 1, 4, Some(500)),
+        released(2, 1, 5, Some(4000)),
+        released(3, 1, 6, None),
+    ];
+    let current = show[0].card.identity.clone();
+    let hint = upcoming_episode(&current, &show, 1000).unwrap();
+    assert_eq!(hint.identity.id, "unparsed-child-2");
+    assert_eq!(hint.identity.episode.as_ref().unwrap().season, Some(1));
+    assert_eq!(hint.identity.episode.as_ref().unwrap().episode, 5);
+    assert_eq!(hint.released_at_millis, Some(4000));
+    // Once it is out it is the entry's card, not a date to announce.
+    assert!(upcoming_episode(&current, &show, 4000).is_none());
+    // A next episode with no date is only announced when it is proven unreleased.
+    show[1].released_at_millis = None;
+    show[1].aired = Some(false);
+    assert_eq!(
+        upcoming_episode(&current, &show, 4000).map(|hint| hint.released_at_millis),
+        Some(None)
+    );
+    show[1].aired = None;
+    assert!(upcoming_episode(&current, &show, 4000).is_none());
+    // Nothing after the finished episode: the show is over.
+    assert!(upcoming_episode(&show[2].card.identity, &show, 1000).is_none());
+    // Ambiguous metadata names nothing; `next_episode` already fails closed,
+    // so two episodes at the same coordinates or under the same identity are
+    // not announced.
+    let mut twice = show.clone();
+    twice.push(released(10, 1, 5, Some(4000)));
+    assert!(upcoming_episode(&current, &twice, 1000).is_none());
+    let mut conflicting = show.clone();
+    let mut other = released(11, 1, 5, Some(4000));
+    other.card.identity.id = "another-episode".into();
+    conflicting.push(other);
+    assert!(upcoming_episode(&current, &conflicting, 1000).is_none());
+}
+
+#[test]
+fn a_continuation_entry_decodes_without_the_next_episode_and_round_trips_it() {
+    let show = released(1, 1, 4, Some(500));
+    let card = show.card.clone();
+    let record: viptv_engine::playback::PlaybackRecord = serde_json::from_value(
+        serde_json::json!({"identity":card.identity,"parent_identity":card.parent_identity,
+            "provider_id":"metadata","title":"Episode","poster":null,"landscape":null,
+            "position_millis":0,"duration_millis":1000,"updated_at_millis":1,
+            "completed_at_millis":1}),
+    )
+    .unwrap();
+    // A payload written before the field existed still decodes.
+    let legacy = serde_json::json!({"card":card,"record":record,"status":"CaughtUp",
+        "previous_identity":null});
+    let entry: ContinuationEntry = serde_json::from_value(legacy).unwrap();
+    assert!(entry.next_episode.is_none());
+    let legacy = serde_json::to_value(&entry).unwrap();
+    assert!(legacy["next_episode"].is_null());
+
+    // The announced episode keeps its coordinates and date on the wire.
+    let entry = ContinuationEntry {
+        next_episode: Some(NextEpisode {
+            identity: card.identity.clone(),
+            released_at_millis: Some(4000),
+        }),
+        ..entry
+    };
+    let wire = serde_json::to_value(&entry).unwrap();
+    assert_eq!(wire["next_episode"]["identity"]["id"], card.identity.id);
+    assert_eq!(wire["next_episode"]["released_at_millis"], 4000);
+    let back: ContinuationEntry = serde_json::from_value(wire).unwrap();
+    assert_eq!(back.next_episode.unwrap().released_at_millis, Some(4000));
+}
