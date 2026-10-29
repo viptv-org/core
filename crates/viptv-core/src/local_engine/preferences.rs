@@ -94,13 +94,18 @@ impl LocalEngine {
             candidates.push(grant.candidate.clone());
         }
         // Title original-language metadata is not plumbed to ranking yet.
-        viptv_engine::preferences::rank_sources(
+        let ranking = viptv_engine::preferences::rank_sources(
             &mut candidates,
             &preferences,
             None,
             device_max_height,
         );
-        serde_json::to_string(&candidates).map_err(|_| CoreError::Bridge)
+        serde_json::to_string(&serde_json::json!({
+            "streams": candidates,
+            "best_match_ids": ranking.best_match_ids,
+            "best_match_id": ranking.best_match_id,
+        }))
+        .map_err(|_| CoreError::Bridge)
     }
 }
 #[cfg(test)]
@@ -165,10 +170,26 @@ mod tests {
                 .unwrap(),
         )
         .unwrap();
-        assert_eq!(ranked[0]["label"], "Compatible");
-        assert_eq!(ranked[1]["label"], "Unknown");
-        assert_eq!(ranked[2]["quality_height"], 2160);
-        assert_eq!(ranked[0]["delivery"], "direct");
+        let streams = ranked["streams"].as_array().unwrap();
+        assert_eq!(streams[0]["label"], "Compatible");
+        assert_eq!(streams[1]["label"], "Unknown");
+        assert_eq!(streams[2]["quality_height"], 2160);
+        assert_eq!(streams[0]["delivery"], "direct");
+        let best_match_ids = ranked["best_match_ids"].as_array().unwrap();
+        assert_eq!(
+            best_match_ids
+                .iter()
+                .map(|id| id.as_str().unwrap())
+                .collect::<Vec<_>>(),
+            streams
+                .iter()
+                .map(|row| row["id"].as_str().unwrap())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(
+            ranked["best_match_id"].as_str(),
+            best_match_ids.first().and_then(Value::as_str)
+        );
         // The device's own height lowers the profile cap; the lower one wins.
         let device: Value = serde_json::from_str(
             &engine
@@ -176,9 +197,10 @@ mod tests {
                 .unwrap(),
         )
         .unwrap();
-        assert_eq!(device[0]["label"], "Unknown");
-        assert_eq!(device[1]["label"], "Compatible");
-        assert_eq!(device[2]["quality_height"], 2160);
+        let streams = device["streams"].as_array().unwrap();
+        assert_eq!(streams[0]["label"], "Unknown");
+        assert_eq!(streams[1]["label"], "Compatible");
+        assert_eq!(streams[2]["quality_height"], 2160);
         for invalid in [100, 4321] {
             assert!(
                 engine
