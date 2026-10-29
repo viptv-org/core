@@ -322,3 +322,56 @@ fn new_fields_are_omitted_when_unknown_and_old_payloads_parse() {
         assert_eq!(wire[key], value, "{key}");
     }
 }
+
+#[test]
+fn best_matches_skip_hard_filters_and_cap_at_five() {
+    let mut rows = vec![
+        with("cam", |c| {
+            c.release_type = Some("cam".into());
+            c.quality_height = Some(2160);
+        }),
+        with("3d", |c| c.three_d = true),
+        with("dead-torrent", |c| {
+            c.delivery = Some("torrent".into());
+            c.seeders = Some(4);
+        }),
+        with("unknown-seeders", |c| {
+            c.delivery = Some("torrent".into());
+            c.seeders = None;
+        }),
+        source("a"),
+        source("b"),
+        source("c"),
+        source("d"),
+        source("e"),
+    ];
+    let ranking = rank_sources(&mut rows, &ProfilePreferences::default(), None, None);
+    assert_eq!(ranking.best_match_ids, ["a", "b", "c", "d", "e"]);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("a"));
+    // Hard-filtered rows stay in the ranked rows, after every passer.
+    assert_eq!(
+        rows.iter().map(|c| c.id.as_str()).collect::<Vec<_>>(),
+        [
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "unknown-seeders",
+            "cam",
+            "3d",
+            "dead-torrent"
+        ]
+    );
+}
+
+#[test]
+fn best_matches_are_empty_when_every_row_fails_a_hard_filter() {
+    let mut rows = vec![
+        with("cam", |c| c.release_type = Some("cam".into())),
+        with("3d", |c| c.three_d = true),
+    ];
+    let ranking = rank_sources(&mut rows, &ProfilePreferences::default(), None, None);
+    assert!(ranking.best_match_ids.is_empty());
+    assert_eq!(ranking.best_match_id, None);
+}
