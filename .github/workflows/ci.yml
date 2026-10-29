@@ -1,0 +1,41 @@
+name: Core checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: core-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    name: core checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust 1.98 and the WASM target
+        run: |
+          rustup toolchain install 1.98.0 --profile minimal --target wasm32-unknown-unknown
+          rustup default 1.98.0
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: cargo-${{ runner.os }}-${{ hashFiles('Cargo.lock', 'browser/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-
+      - name: Test the workspace
+        run: cargo test --workspace --all-features
+      - name: Regenerate the bindings
+        run: |
+          cargo run -p viptv-typegen
+          cargo run -p viptv-typegen --bin engine
+      - name: Fail on stale generated output
+        run: |
+          git diff --exit-code
+          test -z "$(git status --porcelain --untracked-files=all)"
