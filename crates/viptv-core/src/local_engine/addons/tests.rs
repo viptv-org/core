@@ -404,7 +404,7 @@ fn native_search_retains_each_addon_group_and_profile_enablement() {
     let rows=projected["rows"].as_array().unwrap();assert_eq!(rows.len(),2);
     for provider in &providers {
         let row=rows.iter().find(|r|r["provider_id"]==provider.as_str()).unwrap();
-        assert_eq!(row["title"],"Same provider name");assert_eq!(row["state"],"Ready");
+        assert_eq!(row["title"],"Same provider name · Movies");assert_eq!(row["state"],"Ready");
         assert_eq!(row["cards"][0]["provider_id"],provider.as_str());
         assert_eq!(row["cards"][0]["identity"]["id"],"same-media-id");
     }
