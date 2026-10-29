@@ -1,3 +1,4 @@
+#![cfg(feature = "runtime")]
 use viptv_engine::{profile::ProfileConfiguration, store::Store};
 
 #[test]
