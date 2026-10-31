@@ -430,9 +430,6 @@ pub fn rank_sources(
     }
 }
 
-// A row that reports no audio language is not disqualified; only a reported
-// language that differs from the resolved preferred one is. Torrents never
-// fully match.
 fn best_match_fully_matches(
     candidate: &crate::stremio::SourceCandidate,
     preferences: &ProfilePreferences,
