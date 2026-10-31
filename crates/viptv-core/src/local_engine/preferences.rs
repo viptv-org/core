@@ -104,6 +104,7 @@ impl LocalEngine {
             "streams": candidates,
             "best_match_ids": ranking.best_match_ids,
             "best_match_id": ranking.best_match_id,
+            "best_match_fully_matches": ranking.best_match_fully_matches,
         }))
         .map_err(|_| CoreError::Bridge)
     }
@@ -190,6 +191,7 @@ mod tests {
             ranked["best_match_id"].as_str(),
             best_match_ids.first().and_then(Value::as_str)
         );
+        assert_eq!(ranked["best_match_fully_matches"], json!(true));
         // The device's own height lowers the profile cap; the lower one wins.
         let device: Value = serde_json::from_str(
             &engine
@@ -201,6 +203,7 @@ mod tests {
         assert_eq!(streams[0]["label"], "Unknown");
         assert_eq!(streams[1]["label"], "Compatible");
         assert_eq!(streams[2]["quality_height"], 2160);
+        assert_eq!(device["best_match_fully_matches"], json!(false));
         for invalid in [100, 4321] {
             assert!(
                 engine

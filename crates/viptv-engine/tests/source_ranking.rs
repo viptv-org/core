@@ -375,3 +375,77 @@ fn best_matches_are_empty_when_every_row_fails_a_hard_filter() {
     assert!(ranking.best_match_ids.is_empty());
     assert_eq!(ranking.best_match_id, None);
 }
+
+#[test]
+fn best_match_fully_matches_every_preference() {
+    let mut rows = vec![
+        source("perfect"),
+        with("french", |c| c.audio_languages = langs(&["fr"])),
+    ];
+    let ranking = rank_sources(&mut rows, &english(), None, None);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("perfect"));
+    assert!(ranking.best_match_fully_matches);
+}
+
+#[test]
+fn best_match_quality_must_be_at_the_cap() {
+    let mut capped = english();
+    capped.max_quality_height = Some(1080);
+    let mut below = vec![with("low", |c| c.quality_height = Some(720))];
+    let ranking = rank_sources(&mut below, &capped, None, None);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("low"));
+    assert!(!ranking.best_match_fully_matches);
+    let mut at_cap = vec![with("high", |c| c.quality_height = Some(1080))];
+    let ranking = rank_sources(&mut at_cap, &capped, None, None);
+    assert!(ranking.best_match_fully_matches);
+}
+
+#[test]
+fn best_match_language_disqualifies_only_a_reported_differing_language() {
+    let mut french = vec![with("french", |c| c.audio_languages = langs(&["fr"]))];
+    let ranking = rank_sources(&mut french, &english(), None, None);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("french"));
+    assert!(!ranking.best_match_fully_matches);
+    let mut unmarked = vec![source("unmarked")];
+    let ranking = rank_sources(&mut unmarked, &english(), Some("ja"), None);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("unmarked"));
+    assert!(ranking.best_match_fully_matches);
+}
+
+#[test]
+fn best_match_hdr_preference_must_be_met() {
+    let pair = || {
+        vec![
+            source("sdr"),
+            with("dv", |c| c.dynamic_range = langs(&["dv"])),
+        ]
+    };
+    let mut prefer = english();
+    prefer.hdr_preference = HdrPreference::Prefer;
+    let mut rows = pair();
+    let ranking = rank_sources(&mut rows, &prefer, None, None);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("dv"));
+    assert!(ranking.best_match_fully_matches);
+    let mut avoid = english();
+    avoid.hdr_preference = HdrPreference::Avoid;
+    let mut rows = pair();
+    let ranking = rank_sources(&mut rows, &avoid, None, None);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("sdr"));
+    assert!(ranking.best_match_fully_matches);
+}
+
+#[test]
+fn best_match_never_fully_matches_a_torrent() {
+    let mut rows = vec![with("torrent", |c| c.delivery = Some("torrent".into()))];
+    let ranking = rank_sources(&mut rows, &ProfilePreferences::default(), None, None);
+    assert_eq!(ranking.best_match_id.as_deref(), Some("torrent"));
+    assert!(!ranking.best_match_fully_matches);
+}
+
+#[test]
+fn best_match_fully_matches_is_false_without_a_best_match() {
+    let mut rows = vec![with("cam", |c| c.release_type = Some("cam".into()))];
+    let ranking = rank_sources(&mut rows, &ProfilePreferences::default(), None, None);
+    assert_eq!(ranking.best_match_id, None);
+    assert!(!ranking.best_match_fully_matches);
+}
