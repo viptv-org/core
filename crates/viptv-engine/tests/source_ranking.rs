@@ -300,13 +300,21 @@ fn direct_before_torrents_then_seeders() {
 fn new_fields_are_omitted_when_unknown_and_old_payloads_parse() {
     let old = serde_json::json!({"id":"a","provider_id":"p","label":"L","detail":null,"quality_height":1080,"audio_languages":["en"],"presentation":null});
     let parsed: SourceCandidate = serde_json::from_value(old.clone()).unwrap();
-    assert!(parsed.release_type.is_none() && !parsed.three_d && parsed.delivery.is_none());
+    assert!(
+        parsed.release_type.is_none()
+            && !parsed.three_d
+            && parsed.delivery.is_none()
+            && !parsed.subbed
+            && parsed.subtitle_languages.is_empty()
+    );
     assert_eq!(serde_json::to_value(&parsed).unwrap(), old);
     let full = with("b", |c| {
         c.release_type = Some("web_dl".into());
         c.three_d = true;
         c.dynamic_range = langs(&["dv", "hdr10"]);
         c.audio_flags = langs(&["dual"]);
+        c.subbed = true;
+        c.subtitle_languages = langs(&["fr"]);
         c.seeders = Some(7);
         c.delivery = Some("torrent".into());
     });
@@ -316,6 +324,8 @@ fn new_fields_are_omitted_when_unknown_and_old_payloads_parse() {
         ("three_d", serde_json::json!(true)),
         ("dynamic_range", serde_json::json!(["dv", "hdr10"])),
         ("audio_flags", serde_json::json!(["dual"])),
+        ("subbed", serde_json::json!(true)),
+        ("subtitle_languages", serde_json::json!(["fr"])),
         ("seeders", serde_json::json!(7)),
         ("delivery", serde_json::json!("torrent")),
     ] {
