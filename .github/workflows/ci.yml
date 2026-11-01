@@ -39,6 +39,11 @@ jobs:
           fi
       - name: Test the workspace
         run: cargo test --workspace --all-features
+      - name: Keep the OS secret store out of the default build
+        run: |
+          cargo check --locked -p viptv-core --features native,live-runtime,vsources-runtime --lib
+          ! cargo tree --locked -p viptv-core -e normal --target x86_64-unknown-linux-gnu | grep -E 'keyring|dbus'
+          ! cargo tree --locked -p viptv-core -e normal --features native --target x86_64-unknown-linux-gnu | grep -E 'keyring|dbus'
       - name: Regenerate the bindings
         run: |
           cargo run -p viptv-typegen
