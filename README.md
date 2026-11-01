@@ -43,8 +43,8 @@ Metadata timeout requires that engine observation; total acquisition timeout
 does not assert absent peers. Existing recovery decisions remain separate.
 
 `tests/playback-error-vectors.json` supplies the canonical cases to the native
-`playback_errors` integration tests and the actual WASM suite. Consumer adoption
-requires the same immutable core revision and rebuilt native/WASM artifacts.
+`playback_errors` integration tests. Consumer adoption requires the same
+immutable core revision and rebuilt native artifacts.
 
 ## Playback protocol foundation
 
@@ -60,10 +60,9 @@ BE-002 retires the application-facing anonymous addon/provider bridge. Core
 native/WASM exports no longer plan anonymous discovery or construct provider
 media URLs. The standalone `crates/viptv-provider` parser/planner remains for
 backend reuse; normalization, authenticated session/v2 wire and SmartCast remain.
-Consumers must adopt the regenerated native bindings and WASM together. See
-`scripts/test-v2-retirement-parity.mjs` for baseline native/actual-WASM comparison.
+Consumers must adopt the regenerated native bindings.
 
-Use a current Rust toolchain and the WASM target. Run `cargo run -p viptv-typegen` for the protocol types and `cargo run -p viptv-typegen --bin engine` for the engine contracts, `bash scripts/build-native-bindings.sh` for native Kotlin bindings, and `bash scripts/build-wasm.sh` with the matching wasm-bindgen CLI to build the browser artifact. Cargo.lock pins the dependency graph. The `core checks` workflow runs on every pull request and main push with Rust 1.98: `cargo test --workspace --all-features`, both generators, and a failure if `generated/` differs from the committed output. Commit the regenerated output with the source change; the repository publishes no artifacts.
+Use a current Rust toolchain. Run `cargo run -p viptv-typegen` for the protocol types and `cargo run -p viptv-typegen --bin engine` for the engine contracts and `bash scripts/build-native-bindings.sh` for native Kotlin bindings. Cargo.lock pins the dependency graph. The `core checks` workflow runs on every pull request and main push with Rust 1.98: `cargo test --workspace --all-features`, both generators, and a failure if `generated/` differs from the committed output. Commit the regenerated output with the source change; the repository publishes no artifacts.
 
 Consumers adopt an immutable core commit together with its generated bindings and runtime. TV-web imports artifacts using `node scripts/core-sync.mjs sync ../core`, records CORE_REF and checks their hashes on build. Update Rust data handling here and regenerate once; consumer applications then adopt and rebuild. Installed apps still require an app update.
 
@@ -103,11 +102,11 @@ Rust work, run `cargo run --release -p viptv-core --example normalization_profil
 
 Android and TV-web adopt the native and WASM library respectively. Both use shared response normalization and presentation/policy outputs; the Crux session model governs restoration. Canonical artwork roles, continuation, source selection and request/response handling live in Rust. UI navigation, input/focus, device storage/network execution and player lifecycle stay in platform shells. Refer to consumer validation records for exact coverage rather than treating a binding build as adoption.
 
-Android vendors a hash-checked committed source snapshot and generated Kotlin; its own `scripts/prepare-core.sh` builds the host test library and three Android ABIs with cargo-ndk, locally or in the Android repository's build workflow. TV-web vendors the WASM module, generated TypeScript and shared effect runtime. Both record CORE_REF. Edit the owning Rust source here, regenerate, commit, and explicitly sync the same immutable revision into each consumer; do not edit vendor copies. This reduces duplicate rules, but generated code and reproducible source snapshots can increase checkout size.
+Android vendors a hash-checked committed source snapshot and generated Kotlin; its own `scripts/prepare-core.sh` builds the host test library and three Android ABIs with cargo-ndk, locally or in the Android repository's build workflow. Both record CORE_REF. Edit the owning Rust source here, regenerate, commit, and explicitly sync the same immutable revision into each consumer; do not edit vendor copies. This reduces duplicate rules, but generated code and reproducible source snapshots can increase checkout size.
 
 Tauri's native command and native-fetch adapters are available and tested through their injected ports. No installed desktop application migration is claimed in this Android/web delivery.
 
-Runtime tests use injected fetch/native command ports. Native Rust and WASM behavior tests are distinct from physical TV, Android and installed Tauri testing. See VALIDATION.md for the measured checkpoint.
+Runtime tests use injected fetch/native command ports. Native Rust behavior tests are distinct from physical TV, Android and installed Tauri testing. See VALIDATION.md for the measured checkpoint.
 
 ## Shared card contract
 
