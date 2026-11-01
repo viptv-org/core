@@ -1,4 +1,4 @@
-//! Native core bridge commands; link the real native core, never WASM.
+//! Native core bridge commands; link the real native core.
 use std::sync::Mutex;
 use viptv_core::CoreBridge;
 

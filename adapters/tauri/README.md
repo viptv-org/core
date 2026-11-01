@@ -12,7 +12,7 @@ tauri::Builder::default()
     // Continue with the application's existing setup and run context.
 ```
 
-The renderer invokes `core_update` with `{event: JSON.stringify(event)}`, `core_resolve` with `{id, result: JSON.stringify(result)}`, and `core_view` with no arguments. Each returns JSON text. Send every returned HTTP effect to `createTauriHttpTransport` and every Storage effect to the native secure storage adapter. Read the view on Render. The mutex serializes access to one native Rust instance; the renderer never instantiates WASM. Register these commands for the trusted local application window only, and scope the HTTP plugin to exact backend URLs.
+The renderer invokes `core_update` with `{event: JSON.stringify(event)}`, `core_resolve` with `{id, result: JSON.stringify(result)}`, and `core_view` with no arguments. Each returns JSON text. Execute every returned HTTP effect with `@tauri-apps/plugin-http` and send every Storage effect to the native secure storage adapter. Read the view on Render. The mutex serializes access to one native Rust instance; the renderer never loads the core itself. Register these commands for the trusted local application window only, and scope the HTTP plugin to exact backend URLs.
 
 This is integration source, not a standalone packaged Tauri app. Compile it as part of host adoption; current existing applications remain unchanged.
 

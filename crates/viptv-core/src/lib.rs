@@ -1,4 +1,4 @@
-//! VIPTV behavior shared by browser WASM and native shells. Roku is independent.
+//! VIPTV behavior shared by native shells. Roku is independent.
 pub mod app;
 #[cfg(feature = "native")]
 mod local_engine;
@@ -32,7 +32,6 @@ pub enum CoreError {
     SubtitleProjectionUnsupported,
 }
 
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen::prelude::wasm_bindgen)]
 #[cfg_attr(feature = "native", derive(uniffi::Object))]
 pub struct CoreBridge {
     inner: Bridge<Viptv, JsonFfiFormat>,
@@ -164,7 +163,6 @@ pub fn vizio_discovery_candidates(subnet: String) -> String {
 /// answering host is not a Vizio television. Direct-probe discovery uses
 /// this after connecting to each candidate from `vizio_discovery_candidates`.
 #[cfg_attr(feature = "native", uniffi::export)]
-#[cfg_attr(target_arch = "wasm32", wasm_bindgen::prelude::wasm_bindgen)]
 pub fn vizio_deviceinfo_name(body: String) -> Option<String> {
     vizio::deviceinfo_name(&body)
 }
@@ -249,35 +247,6 @@ impl SmartCastBridge {
 
 fn serialize_smartcast(output: vizio::VizioControllerOutput) -> Result<String, CoreError> {
     serde_json::to_string(&output).map_err(|_| CoreError::Bridge)
-}
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen::prelude::wasm_bindgen]
-impl CoreBridge {
-    #[wasm_bindgen::prelude::wasm_bindgen(constructor)]
-    pub fn wasm_new() -> Self {
-        Self::new()
-    }
-    #[wasm_bindgen::prelude::wasm_bindgen(js_name=update)]
-    pub fn wasm_update(&self, event: String) -> Result<String, wasm_bindgen::JsValue> {
-        self.update(event).map_err(|e| e.to_string().into())
-    }
-    #[wasm_bindgen::prelude::wasm_bindgen(js_name=resolve)]
-    pub fn wasm_resolve(&self, id: u32, result: String) -> Result<String, wasm_bindgen::JsValue> {
-        self.resolve(id, result).map_err(|e| e.to_string().into())
-    }
-    #[wasm_bindgen::prelude::wasm_bindgen(js_name=view)]
-    pub fn wasm_view(&self) -> Result<String, wasm_bindgen::JsValue> {
-        self.view().map_err(|e| e.to_string().into())
-    }
-}
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen::prelude::wasm_bindgen(js_name=normalize)]
-pub fn wasm_normalize(
-    kind: String,
-    input: String,
-    origin: String,
-) -> Result<String, wasm_bindgen::JsValue> {
-    normalize(kind, input, origin).map_err(|e| e.to_string().into())
 }
 #[cfg(feature = "native")]
 uniffi::setup_scaffolding!();

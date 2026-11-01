@@ -5,11 +5,11 @@ sideloading artifacts (Android universal APK; desktop Windows/Linux installers;
 Roku ZIP; TV WGT/IPK). This repository runs only the `core checks` workflow, on
 pull requests and main pushes: no artifacts, releases or deploys.
 
-Crux Rust application behavior and API normalization for browser, Android and Tauri. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/c58c9b91827a39442462797602bded35a83a9f64/SHARED_CORE.md); this repository owns the implementation. Roku stays independent.
+Crux Rust application behavior and API normalization for Android, Tauri and the backend. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/c58c9b91827a39442462797602bded35a83a9f64/SHARED_CORE.md); this repository owns the implementation. Roku stays independent.
 
-`crates/viptv-core` owns startup/session/profile state and normalization of backend identity, catalog, media, source and playback payloads. The Crux model requests HTTP, storage and rendering effects. The same library compiles to native code and browser WASM. Rust DTOs generate Kotlin/TypeScript interfaces and kotlinx.serialization JSON codecs in `generated/kotlin-wire`; `generated/typescript/wire.ts` describes the actual JSON bridge protocol. Native Kotlin calls use the generated UniFFI bridge, while browser JavaScript uses the generated wasm-bindgen bridge.
+`crates/viptv-core` owns startup/session/profile state and normalization of backend identity, catalog, media, source and playback payloads. The Crux model requests HTTP, storage and rendering effects. The library compiles to native code. Rust DTOs generate Kotlin/TypeScript interfaces and kotlinx.serialization JSON codecs in `generated/kotlin-wire`; `generated/typescript/wire.ts` describes the actual JSON bridge protocol. Native Kotlin calls use the generated UniFFI bridge.
 
-`packages/runtime` owns the shared TypeScript effect dispatcher and bounded HTTP execution. Browser fetch and Tauri native plugin fetch implement the same HTTP effect. Tauri loads the native Rust core, exposes its three commands, and uses `@tauri-apps/plugin-http` for network work; see `adapters/tauri`. Android uses native Rust and OkHttp, including PATCH; see `adapters/android`. Platform storage must use the appropriate credential store. Actual codecs and rendering remain platform responsibilities.
+Tauri loads the native Rust core, exposes its three commands, and uses `@tauri-apps/plugin-http` for network work; see `adapters/tauri`. Android uses native Rust and OkHttp, including PATCH; see `adapters/android`. Platform storage must use the appropriate credential store. Actual codecs and rendering remain platform responsibilities.
 
 `crates/viptv-core::vizio` ports the MIT-licensed `get-air/vizio` SmartCast protocol into Rust. `SmartCastBridge` is a serialized native workflow for Android mobile and Tauri desktop: platform code executes one exact-TV-origin HTTPS request at a time and returns status/body, while Rust owns pairing-token adoption, input freshness, setting validation/retry and command payloads. Android adapter source includes a dedicated scoped-TLS OkHttp client and Android Keystore token store. Tauri adapter source includes a native reqwest client and OS keyring. SmartCast is not a playback backend and is not wired into browser, Android TV, Tizen, Vizio-hosted, or Roku applications.
 
@@ -18,7 +18,7 @@ Crux Rust application behavior and API normalization for browser, Android and Ta
 `normalize("apiError", ...)` maps stable backend `error_code` values to canonical,
 user-safe messages. `normalize("playbackV2", ...)` uses the same mapping for failed
 and expired leases, so HTTP refusal and asynchronous preparation failure retain
-one explanation across native and WASM consumers. Gateway access/scope, capacity,
+one explanation across native consumers. Gateway access/scope, capacity,
 cleanup, startup timeout, processing, protocol and connectivity failures stay
 separate from provider limits, source access/configuration and unsupported delivery.
 A bare HTTP 429 is rate limiting, not evidence of a provider connection limit.
@@ -57,7 +57,7 @@ separate qualification work; TV-web never advertises native delivery.
 ## Build and adoption
 
 BE-002 retires the application-facing anonymous addon/provider bridge. Core
-native/WASM exports no longer plan anonymous discovery or construct provider
+native exports no longer plan anonymous discovery or construct provider
 media URLs. The standalone `crates/viptv-provider` parser/planner remains for
 backend reuse; normalization, authenticated session/v2 wire and SmartCast remain.
 Consumers must adopt the regenerated native bindings.
@@ -100,13 +100,13 @@ Rust work, run `cargo run --release -p viptv-core --example normalization_profil
 
 ## Migration state
 
-Android and TV-web adopt the native and WASM library respectively. Both use shared response normalization and presentation/policy outputs; the Crux session model governs restoration. Canonical artwork roles, continuation, source selection and request/response handling live in Rust. UI navigation, input/focus, device storage/network execution and player lifecycle stay in platform shells. Refer to consumer validation records for exact coverage rather than treating a binding build as adoption.
+Android adopts the native library. It uses shared response normalization and presentation/policy outputs; the Crux session model governs restoration. Canonical artwork roles, continuation, source selection and request/response handling live in Rust. UI navigation, input/focus, device storage/network execution and player lifecycle stay in platform shells. Refer to consumer validation records for exact coverage rather than treating a binding build as adoption.
 
 Android vendors a hash-checked committed source snapshot and generated Kotlin; its own `scripts/prepare-core.sh` builds the host test library and three Android ABIs with cargo-ndk, locally or in the Android repository's build workflow. Both record CORE_REF. Edit the owning Rust source here, regenerate, commit, and explicitly sync the same immutable revision into each consumer; do not edit vendor copies. This reduces duplicate rules, but generated code and reproducible source snapshots can increase checkout size.
 
-Tauri's native command and native-fetch adapters are available and tested through their injected ports. No installed desktop application migration is claimed in this Android/web delivery.
+Tauri's native command adapter is available and tested through their injected ports. No installed desktop application migration is claimed in this Android/web delivery.
 
-Runtime tests use injected fetch/native command ports. Native Rust behavior tests are distinct from physical TV, Android and installed Tauri testing. See VALIDATION.md for the measured checkpoint.
+Tests use injected native command ports. Native Rust behavior tests are distinct from physical TV, Android and installed Tauri testing. See VALIDATION.md for the measured checkpoint.
 
 ## Shared card contract
 

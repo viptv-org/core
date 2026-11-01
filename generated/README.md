@@ -2,9 +2,9 @@
 
 Do not edit these files. `cargo run --locked -p viptv-typegen` reflects the Crux application and normalized DTOs from Rust using Crux 0.20's supported Facet registry.
 
-- `typescript/wire.ts` declares the exact serde JSON bridge representation, including externally tagged enums, byte arrays, sanitized untagged JSON and normalized optional fields. Browser/runtime consumers import these types.
+- `typescript/wire.ts` declares the exact serde JSON bridge representation, including externally tagged enums, byte arrays, sanitized untagged JSON and normalized optional fields.
 - `typescript/viptv_core_types.ts` and `kotlin/org/viptv/core/types/Types.kt` are Facet foreign object declarations. Their enum object layout is **not** the serialized JSON layout. They contain no JSON codec and should not be directly JSON-serialized into the bridge.
 - `kotlin-wire/Wire.kt` contains generated kotlinx.serialization DTO codecs for the exact JSON fields; Android decodes normalized results and views with `CoreJson`. These are separate from the foreign declarations above.
-- `native-kotlin/uniffi/viptv_core/viptv_core.kt` is the callable native Kotlin binding, generated from the actual compiled Rust library by `scripts/build-native-bindings.sh`. It exposes the same `CoreBridge.update`, `resolve`, `view` and `normalize` JSON string interface as WASM. Android supplies its native library for the target ABI and the adapter executes the HTTP/storage effects.
+- `native-kotlin/uniffi/viptv_core/viptv_core.kt` is the callable native Kotlin binding, generated from the actual compiled Rust library by `scripts/build-native-bindings.sh`. It exposes the same `CoreBridge.update`, `resolve`, `view` and `normalize` JSON string interface. Android supplies its native library for the target ABI and the adapter executes the HTTP/storage effects.
 
 `tests/bridge-vectors.json` is executed by Rust against the JSON protocol. Kotlin compilation/device acceptance is separate from generating its native binding.

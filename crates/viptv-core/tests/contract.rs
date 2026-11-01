@@ -236,7 +236,7 @@ fn container_follows_the_url_path_not_its_query() {
     );
 }
 #[test]
-fn shared_native_wasm_vectors() {
+fn shared_native_vectors() {
     let vectors: Value =
         serde_json::from_str(include_str!("../../../tests/bridge-vectors.json")).unwrap();
     for scenario in vectors.as_array().unwrap() {
