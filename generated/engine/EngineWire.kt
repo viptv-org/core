@@ -502,6 +502,8 @@ data class SourceCandidate(
     val detail: String? = null,
     val quality_height: Long? = null,
     val audio_languages: List<String> = emptyList(),
+    val subbed: Boolean = false,
+    val subtitle_languages: List<String> = emptyList(),
     val presentation: SourcePresentation? = null,
     val release_type: String? = null,
     val three_d: Boolean = false,

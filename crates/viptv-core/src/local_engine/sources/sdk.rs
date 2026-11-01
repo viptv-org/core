@@ -21,12 +21,39 @@ pub(in crate::local_engine) fn sdk_playable(
             .unwrap_or_else(|| "VIPTV Sources".into()),
         detail: stream.meta.resolution.map(|r| format!("{r}p")),
         quality_height: stream.meta.resolution.map(u32::from),
-        audio_languages: stream
+        audio_languages: if stream.meta.languages.is_empty() {
+            stream
+                .meta
+                .audio_selection
+                .as_ref()
+                .map(|audio| vec![audio.language.as_str().into()])
+                .unwrap_or_default()
+        } else {
+            stream
+                .meta
+                .languages
+                .iter()
+                .map(|language| language.as_str().into())
+                .collect()
+        },
+        audio_flags: stream
             .meta
-            .audio_selection
-            .as_ref()
-            .map(|audio| vec![audio.language.as_str().into()])
+            .dubbed
+            .filter(|dubbed| *dubbed)
+            .map(|_| vec!["dubbed".into()])
             .unwrap_or_default(),
+        subbed: stream.meta.subbed.unwrap_or(false) || !stream.meta.subtitles.is_empty(),
+        subtitle_languages: stream
+            .meta
+            .subtitles
+            .iter()
+            .filter_map(|subtitle| subtitle.language.clone())
+            .fold(Vec::new(), |mut languages, language| {
+                if !languages.contains(&language) {
+                    languages.push(language);
+                }
+                languages
+            }),
         ..Default::default()
     };
     let playable = Playable {
@@ -92,12 +119,22 @@ mod tests {
         );
         stream.meta.audio_selection =
             Some(serde_json::from_str(r#"{"language":"En","audio_index":1}"#).unwrap());
+        stream.meta.languages = serde_json::from_str(r#"["En","Fr"]"#).unwrap();
+        stream.meta.dubbed = Some(true);
+        stream.meta.subbed = Some(false);
+        stream.meta.subtitles = serde_json::from_str(
+            r#"[{"label":"English","language":"en","url":"https://subs.example/en.vtt"}]"#,
+        )
+        .unwrap();
         stream
             .meta
             .request_headers
             .insert("Referer".into(), "https://provider.example/".into());
         let (id, grant) = sdk_playable(profile.scope, &card, "vsources:owned", "job", stream);
-        assert_eq!(grant.candidate.audio_languages, ["en"]);
+        assert_eq!(grant.candidate.audio_languages, ["en", "fr"]);
+        assert_eq!(grant.candidate.audio_flags, ["dubbed"]);
+        assert!(grant.candidate.subbed);
+        assert_eq!(grant.candidate.subtitle_languages, ["en"]);
         let public = serde_json::to_string(&grant.candidate).unwrap();
         assert!(!public.contains("media.example") && !public.contains("provider.example"));
         engine.playable.lock().unwrap().insert(id.clone(), grant);
