@@ -138,18 +138,14 @@ asserts that peers are absent. Storage/cache and aggregate 2 GiB payload refusal
 require their corresponding observations. Unknown exceptions become the closed
 `native_playback_failed` reason. Presentation does not change recovery decisions.
 
-Regenerate at the canonical source with `cargo run --locked -p viptv-typegen`,
-`bash scripts/build-native-bindings.sh` and `bash scripts/build-wasm.sh` using
-wasm-bindgen CLI 0.2.92. `tests/playback-protocol-vectors.json` preserves raw text
-for native regressions and `node scripts/test-playback-protocol.mjs`; the latter
-runs the real generated WASM and a native corpus runner and compares every result
-and static error. The ordinary WASM suite includes this parity check.
-`tests/native-torrent-vectors.json` and `node scripts/test-native-torrent.mjs`
-exercise the actual private holder, original bytes, grant clocks, transitions,
-request/recovery decisions and reflected-data privacy through both runtimes.
+Regenerate at the canonical source with `cargo run --locked -p viptv-typegen` and
+`bash scripts/build-native-bindings.sh`. `tests/playback-protocol-vectors.json`
+preserves raw text for native regressions. `tests/native-torrent-vectors.json`
+exercises the actual private holder, original bytes, grant clocks, transitions,
+request/recovery decisions and reflected-data privacy.
 
 Adopt one immutable committed core revision in Android and TV-web together using
-each consumer's `scripts/core-sync.mjs`; import generated Kotlin/native/WASM from
+each consumer's `scripts/core-sync.mjs`; import generated Kotlin/native bindings from
 that same source, check both pins/hashes and run each consumer's local checks.
 Do not edit vendored snapshots or activate native capability during adoption.
 
