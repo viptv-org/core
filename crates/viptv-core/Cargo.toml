@@ -42,9 +42,6 @@ keyring = { version = "3.6.3", default-features = false, features = ["apple-nati
 [target.'cfg(target_os = "linux")'.dependencies]
 dbus-secret-service = { version = "=4.1.0", default-features = false, features = ["crypto-rust"] }
 
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2"
-
 [[bin]]
 name = "viptv-uniffi-bindgen"
 path = "src/bin/uniffi-bindgen.rs"

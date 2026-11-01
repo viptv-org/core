@@ -6,7 +6,7 @@ Design `16277caf2c7bf16296e25da40f143666465f0d2b` authorizes client integration
 with measured performance work deferred. `torrentRuntimeProtocol` parses the
 separate closed version-2 response and requests GET
 `/api/v2/torrent-runtime-protocol` with no body. Native v1 parsing and its route
-remain strict and separate. Both native Rust and actual WASM reject mixed
+remain strict and separate. Native Rust rejects mixed
 versions, duplicate fields and non-integer version tokens.
 
 `torrent_runtime::TorrentRuntimeGrant` is a private, redacted transport value
@@ -34,7 +34,7 @@ Omitting it preserves the existing serialized request and direct/gateway shape.
 
 ## String bridge operations
 
-Use the existing native UniFFI / browser WASM `normalize(kind, input, origin)`.
+Use the existing native UniFFI `normalize(kind, input, origin)`.
 
 | Kind / input | Output |
 | --- | --- |
@@ -82,7 +82,7 @@ capability decision. TV-web/desktop/Roku must not advertise native support.
 
 ## Private grant authority
 
-`NativeTorrentBridge` is a separate nonserializable, redacted native/WASM object.
+`NativeTorrentBridge` is a separate nonserializable, redacted native object.
 Construct it with generated `NativeTorrentContext` JSON: configured HTTPS origin,
 opaque authenticated scope, generation, qualified/negotiated/VOD facts and the
 exact `PlaybackV2Request`. It accepts only qualified Android platforms carrying
@@ -156,7 +156,7 @@ Do not edit vendored snapshots or activate native capability during adoption.
 `/api/v2/torrent-runtime-protocol`. It preserves tracker hints, nullable file and
 archive indexes and the original source descriptor. V1 parsing and behavior are
 unchanged. Its byte-only adoption, clock checks, renewal and redacted state use
-native and actual-WASM bindings from one revision. `bindResolution` records the
+native bindings from one revision. `bindResolution` records the
 runtime's verified file/member and media length; explicit selections and repeated
 resolution must agree. Renewal cannot replace that identity.
 

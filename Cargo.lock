@@ -3523,7 +3523,6 @@ dependencies = [
  "url",
  "uuid",
  "viptv-engine",
- "wasm-bindgen",
 ]
 
 [[package]]
