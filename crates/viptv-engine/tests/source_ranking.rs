@@ -102,8 +102,8 @@ fn language_tier_table() {
             .map(|c| language_tier(c, requested, original))
             .collect::<Vec<_>>()
     };
-    // English requested, original unknown: dual/multi ties with unmarked.
-    assert_eq!(tiers(Some("en"), None), [3, 1, 1, 3, 3, 3, 4, 4]);
+    // English requested, original unknown: dual/multi audio outranks unmarked.
+    assert_eq!(tiers(Some("en"), None), [3, 1, 1, 2, 2, 3, 4, 4]);
     // English requested for a Japanese title: dual/multi and bare dub are tier 2.
     assert_eq!(tiers(Some("en"), Some("ja")), [3, 1, 1, 2, 2, 2, 4, 4]);
     // English requested and English is original: unmarked ties with tier 1,
@@ -128,7 +128,8 @@ fn torrentio_rows_for_an_english_profile() {
             c.audio_flags = langs(&["dual"]);
         }),
     ];
-    // Original unknown: unmarked and Multi Audio tie and keep input order.
+    // Original unknown: Multi Audio (a dub beside the original track) beats
+    // unmarked, which usually carries the original audio only.
     assert_eq!(
         ranked(rows.clone(), &english(), None, None),
         ["dual-audio-gb", "multi-audio", "unmarked", "french-only"]

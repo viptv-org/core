@@ -26,6 +26,12 @@ Cached batches:
   media identities, source grants, hashes, account/provider identities and links
   are replaced or omitted. Golden quality labels and filename codecs/containers
   are checked independently. No network requests are needed to reuse this cache.
+- `tests/source-ranking-anime-captured.json`: 16 captured Torrentio anime
+  responses and 20 captured VSources stream records, replayed through the same
+  projection and `preferences::rank_sources` by
+  `cargo test -p viptv-engine --test anime_source_ranking`. Provider URLs,
+  infoHashes, trackers and site names are removed; release text is kept because
+  it is the audio evidence.
 
 `cargo test -p viptv-engine --test source_metadata --test streams --locked --jobs 2`
 checks all 942 cards in one batch and the actual local `read_streams` projection.
