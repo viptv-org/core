@@ -255,14 +255,14 @@ fn torrentio_name_title_pairs() {
         &["dual", "dubbed"],
         &[],
     );
-    // A Multi Subs label no longer hides the audio flags on the same line.
+    // Torrentio's `Multi Subs` line lists subtitle languages, never audio.
     expect(
         json!({"name":"Torrentio\n1080p","title":"Show.S01E01.1080p.WEB.h264-GRP\n👤 5 💾 1 GB ⚙️ EZTV\nMulti Subs / 🇬🇧"}),
         Some("web_dl"),
         false,
         &[],
         &[],
-        &["en"],
+        &[],
     );
     expect(
         json!({"name":"Torrentio\n1080p","title":"Show.S01E01.1080p.WEB.h264-GRP\n👤 5 💾 1 GB ⚙️ EZTV\nMulti Subs"}),
