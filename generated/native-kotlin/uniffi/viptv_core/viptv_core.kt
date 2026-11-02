@@ -1006,6 +1006,8 @@ internal open class UniffiVTableCallbackInterfaceSecretStore(
 
 
 
+
+
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -1144,6 +1146,8 @@ fun uniffi_viptv_core_checksum_method_localengine_project_subtitles(
 fun uniffi_viptv_core_checksum_method_localengine_rank_sources(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_rank_sources_for_device(
+): Short
+fun uniffi_viptv_core_checksum_method_localengine_rank_sources_with_context(
 ): Short
 fun uniffi_viptv_core_checksum_method_localengine_record_progress(
 ): Short
@@ -1438,6 +1442,8 @@ fun uniffi_viptv_core_fn_method_localengine_project_subtitles(`ptr`: Pointer,`op
 fun uniffi_viptv_core_fn_method_localengine_rank_sources(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`sourcesJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_rank_sources_for_device(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`sourcesJson`: RustBuffer.ByValue,`deviceMaxHeight`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+): RustBuffer.ByValue
+fun uniffi_viptv_core_fn_method_localengine_rank_sources_with_context(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`sourcesJson`: RustBuffer.ByValue,`contextJson`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
 ): RustBuffer.ByValue
 fun uniffi_viptv_core_fn_method_localengine_record_progress(`ptr`: Pointer,`profile`: RustBuffer.ByValue,`revision`: Long,`cardJson`: RustBuffer.ByValue,`positionMillis`: Long,`durationMillis`: Long,uniffi_out_err: UniffiRustCallStatus,
 ): Unit
@@ -1907,6 +1913,9 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources_for_device() != 9705.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources_with_context() != 38425.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_record_progress() != 19446.toShort()) {
@@ -2938,6 +2947,11 @@ public interface LocalEngineInterface {
      */
     fun `rankSourcesForDevice`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `deviceMaxHeight`: kotlin.UInt?): kotlin.String
 
+    /**
+     * `context_json` is a `RankingContext`: device capability and series memory.
+     */
+    fun `rankSourcesWithContext`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `contextJson`: kotlin.String): kotlin.String
+
     fun `recordProgress`(`profile`: kotlin.String, `revision`: kotlin.ULong, `cardJson`: kotlin.String, `positionMillis`: kotlin.ULong, `durationMillis`: kotlin.ULong)
 
     fun `removeAddon`(`id`: kotlin.String)
@@ -3758,6 +3772,22 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
     uniffiRustCallWithError(CoreException) { _status ->
     UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_rank_sources_for_device(
         it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`sourcesJson`),FfiConverterOptionalUInt.lower(`deviceMaxHeight`),_status)
+}
+    }
+    )
+    }
+
+
+
+    /**
+     * `context_json` is a `RankingContext`: device capability and series memory.
+     */
+    @Throws(CoreException::class)override fun `rankSourcesWithContext`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `contextJson`: kotlin.String): kotlin.String {
+            return FfiConverterString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CoreException) { _status ->
+    UniffiLib.INSTANCE.uniffi_viptv_core_fn_method_localengine_rank_sources_with_context(
+        it, FfiConverterString.lower(`profile`),FfiConverterString.lower(`sourcesJson`),FfiConverterString.lower(`contextJson`),_status)
 }
     }
     )

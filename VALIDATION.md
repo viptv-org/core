@@ -1,3 +1,37 @@
+# Ranking capability, decode class and series memory (core#32) — 2026-11-02
+
+`ReleaseFacts` and `SourceCandidate` gain `dv_base_layer`, `video_codec` and
+`binge_group`: the Dolby Vision base layer is derived only for DV rows (HDR10
+marker, explicit SDR, otherwise `none`), the codec from the declared field or
+release name, and the binge group from `behaviorHints.bingeGroup` only. All
+three are optional and skipped when unknown, so stored payloads and older wire
+JSON still parse.
+
+`rank_sources` takes one `RankingContext`: the title's original language, a
+`DeviceCapability` (display height, per-codec hardware decode height, Dolby
+Vision decoder, display HDR types, audio support; every answer supported,
+unsupported or unknown) and the `SeriesMemory` pair. Decode class is ranking
+key 1 and an unsupported codec joins the hard filters; risky sorts after
+supported and unknown. Series memory is key 4. HDR *Prefer* now ranks
+decodable Dolby Vision first. A default context ranks exactly as before, which
+the existing source-ranking tests pin.
+
+`LocalEngine::rank_sources_with_context` crosses the bridge with the context
+JSON; `rank_sources` and `rank_sources_for_device` keep their signatures and
+delegate with a height-only context. Typegen (`--bin viptv-typegen`,
+`--bin engine`) and `scripts/build-native-bindings.sh` regenerated the
+committed outputs.
+
+Rust 1.98.0: `cargo test -p viptv-engine --all-features`: 140 passed, 1
+ignored; `cargo test -p viptv-core --all-features --lib`: 75 passed, 3
+ignored; `cargo test --workspace --all-features --no-run` builds every test
+target. The new fixtures cover real add-on DV/base-layer names, DV-only and
+DV+HDR10 rows, software-only codecs at a resolution, the unsupported hard
+filter, memory inside and across language tiers, and decodable Dolby Vision
+under *Prefer*. The full workspace suite runs in the PR check.
+
+---
+
 # Playback preference upstream (backend#43) — 2026-10-27
 
 `ProfilePreferences` carries the three playback choices the backend vendored by

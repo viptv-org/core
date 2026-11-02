@@ -432,3 +432,47 @@ fn delivery_comes_from_transport_and_reaches_native_streams() {
     assert_eq!(stream.release_facts.audio_flags, strings(&["dual"]));
     assert_eq!(stream.release_facts.seeders, Some(4));
 }
+
+#[test]
+fn dolby_vision_base_layer_codec_and_binge_group() {
+    // Torrentio-style DV-only release: profile 5, no HDR10 base layer.
+    let dv_only = facts(json!({"title":"Show.S01E02.2160p.WEB-DL.DV.H.265-GRP"}));
+    assert_eq!(dv_only.dv_base_layer.as_deref(), Some("none"));
+    assert_eq!(dv_only.video_codec.as_deref(), Some("hevc"));
+    let dv_hdr10 = facts(
+        json!({"name":"Provider","behaviorHints":{"filename":"Dune.Part.Two.2024.2160p.MAX.WEB-DL.DDP5.1.Atmos.DV.HDR10.H.265-FLUX.mkv"}}),
+    );
+    assert_eq!(dv_hdr10.dv_base_layer.as_deref(), Some("hdr10"));
+    let dv_sdr = facts(json!({"title":"Movie.2024.1080p.WEB-DL.DV.SDR.H.264-GRP"}));
+    assert_eq!(dv_sdr.dv_base_layer.as_deref(), Some("sdr"));
+    assert_eq!(dv_sdr.video_codec.as_deref(), Some("avc"));
+    // A non-Dolby-Vision row has no base layer to report.
+    let hdr10 = facts(json!({"title":"Movie.2024.2160p.HDR10.HEVC-GRP"}));
+    assert_eq!(hdr10.dv_base_layer, None);
+    assert_eq!(hdr10.video_codec.as_deref(), Some("hevc"));
+    let av1 = facts(json!({"title":"Movie.2024.1080p.WEB-DL.AV1-GRP"}));
+    assert_eq!(av1.video_codec.as_deref(), Some("av1"));
+}
+
+#[test]
+fn declared_facts_and_binge_group_win_and_stay_bounded() {
+    let declared = facts(json!({
+        "title":"Show.S01E03.1080p.WEB-DL.AV1-GRP",
+        "video_codec":"VP9",
+        "dv_base_layer":"hdr10",
+        "behaviorHints":{"bingeGroup":"netflix"}
+    }));
+    assert_eq!(declared.video_codec.as_deref(), Some("vp9"));
+    assert_eq!(declared.dv_base_layer.as_deref(), Some("hdr10"));
+    assert_eq!(declared.binge_group.as_deref(), Some("netflix"));
+    // A group is add-on data only, never parsed from the release name.
+    let text = facts(json!({"title":"Show.S01E04.1080p.WEB-DL.bingeGroup=g1"}));
+    assert_eq!(text.binge_group, None);
+    let empty = facts(json!({"behaviorHints":{"bingeGroup":"  "}}));
+    assert_eq!(empty.binge_group, None);
+    let oversized = facts(json!({"behaviorHints":{"bingeGroup":"g".repeat(129)}}));
+    assert_eq!(oversized.binge_group, None);
+    // An unknown declared codec falls back to the release name.
+    let fallback = facts(json!({"title":"Movie.2024.1080p.x265-GRP","video_codec":"unknown"}));
+    assert_eq!(fallback.video_codec.as_deref(), Some("hevc"));
+}
