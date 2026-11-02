@@ -389,6 +389,38 @@ fn anime_audio_markers_are_flags_not_languages() {
 }
 
 #[test]
+fn markerless_and_mixed_flag_lines_are_not_audio() {
+    // A remux of a Japanese film: the 🇬🇧 / 🇨🇳 line Torrentio appends lists
+    // subtitle languages, not audio. Only the JAPANESE release word is audio.
+    expect(
+        json!({"name":"Torrentio\n4k","title":"Your.Name.2016.JAPANESE.2160p.BluRay.HEVC.DTS-HD.MA.5.1-TASTED\n👤 62 💾 61.23 GB ⚙️ Site\n🇬🇧 / 🇨🇳"}),
+        Some("bluray"),
+        false,
+        &[],
+        &[],
+        &["ja"],
+    );
+    // A line mixing audio and subtitle markers leaves every flag ambiguous.
+    expect(
+        json!({"name":"Torrentio\n4k","title":"[ToonsHub] Solo Leveling S01E01 2160p WEB-DL x264 (Multi-Audio Multi-Subs)\n👤 29 💾 1.51 GB ⚙️ Site\nDubbed / Multi Audio / Multi Subs / 🇬🇧 / 🇮🇹 / 🇵🇹 / 🇪🇸 / 🇰🇷 / 🇫🇷 / 🇩🇪 / 🇮🇳","behaviorHints":{"filename":"Solo.Leveling.S01E01.Im.Used.to.It.2160p.CR.WEB-DL.MULTi.AAC.2.0.x264.MSubs-ToonsHub.mkv"}}),
+        Some("web_dl"),
+        false,
+        &[],
+        &["multi", "dubbed"],
+        &[],
+    );
+    // A markerless single flag stays unknown rather than claiming a language.
+    expect(
+        json!({"name":"Torrentio","title":"Show.S01E01.1080p.WEB.h264-GRP\n👤 5 💾 1 GB ⚙️ Site\n🇫🇷"}),
+        Some("web_dl"),
+        false,
+        &[],
+        &[],
+        &[],
+    );
+}
+
+#[test]
 fn declared_fields_win_and_invalid_declarations_fall_back() {
     let declared = json!({
         "title":"Movie.2024.CAM.HDR.x264",
