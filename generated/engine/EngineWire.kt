@@ -511,6 +511,9 @@ data class SourceCandidate(
     val audio_flags: List<String> = emptyList(),
     val seeders: Long? = null,
     val delivery: String? = null,
+    val video_codec: String? = null,
+    val dv_base_layer: String? = null,
+    val binge_group: String? = null,
 )
 
 @Serializable
