@@ -180,12 +180,19 @@ fn a_different_profile_audio_language_is_respected() {
                 .audio_flags
                 .iter()
                 .any(|flag| flag == "dual" || flag == "multi");
+            let dubbed = row.audio_flags.iter().any(|flag| flag == "dubbed");
             if listed("es") {
                 assert_eq!(*tier, 1, "{id} {} lists the requested language", row.id);
             } else if dual_or_multi {
                 assert_eq!(
                     *tier, 2,
                     "{id} {} carries a dub beside the original track",
+                    row.id
+                );
+            } else if dubbed && row.audio_languages.is_empty() {
+                assert_eq!(
+                    *tier, 2,
+                    "{id} {} is dubbed but lists no audio language",
                     row.id
                 );
             } else if row.audio_languages.is_empty() {

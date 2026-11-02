@@ -11,8 +11,9 @@ real 720p label with an original 1080p filename, so a merged highest-number rule
 would fabricate the rendition's reported quality. Unknown values stay unknown.
 
 Codec/container/size/language values remain unverified provider reports. Release
-labels never prove decoder support or selected audio. Subtitle-only mentions and
-ambiguous two-letter release words do not become audio languages. Explicit unknown
+labels never prove decoder support or selected audio. Subtitle-only mentions,
+ambiguous two-letter release words, markerless flag lines and lines mixing audio
+and subtitle markers do not become audio languages. Explicit unknown
 language reports override title decorations. Delivery URLs and proxy headers never
 supply technical display metadata; backend parsing follows private-value redaction.
 

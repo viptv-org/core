@@ -102,8 +102,9 @@ fn language_tier_table() {
             .map(|c| language_tier(c, requested, original))
             .collect::<Vec<_>>()
     };
-    // English requested, original unknown: dual/multi audio outranks unmarked.
-    assert_eq!(tiers(Some("en"), None), [3, 1, 1, 2, 2, 3, 4, 4]);
+    // English requested, original unknown: dual/multi audio and a bare dub
+    // outrank unmarked.
+    assert_eq!(tiers(Some("en"), None), [3, 1, 1, 2, 2, 2, 4, 4]);
     // English requested for a Japanese title: dual/multi and bare dub are tier 2.
     assert_eq!(tiers(Some("en"), Some("ja")), [3, 1, 1, 2, 2, 2, 4, 4]);
     // English requested and English is original: unmarked ties with tier 1,
