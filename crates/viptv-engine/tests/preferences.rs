@@ -154,3 +154,25 @@ fn playback_preferences_keep_designed_defaults_and_migrate_legacy_rows() {
         assert!(serde_json::from_value::<ProfilePreferences>(invalid).is_err(), "{key}");
     }
 }
+#[test]
+fn remembered_source_reuse_defaults_true_round_trips_and_survives_older_clients() {
+    let defaults = ProfilePreferences::default();
+    assert!(defaults.remembered_source_reuse);
+    let legacy = serde_json::json!({"preferred_audio_language":null,"preferred_subtitle_language":null,"subtitles_enabled":true,"source_selection":"ask","max_quality_height":null});
+    let migrated: ProfilePreferences = serde_json::from_value(legacy.clone()).unwrap();
+    assert!(migrated.remembered_source_reuse);
+    let wire = serde_json::to_value(&migrated).unwrap();
+    assert_eq!(wire["remembered_source_reuse"], true);
+    let mut disabled = wire;
+    disabled["remembered_source_reuse"] = serde_json::json!(false);
+    let disabled: ProfilePreferences = serde_json::from_value(disabled).unwrap();
+    assert!(!disabled.remembered_source_reuse);
+    assert_eq!(
+        serde_json::from_value::<ProfilePreferences>(serde_json::to_value(&disabled).unwrap())
+            .unwrap(),
+        disabled
+    );
+    // An older client omits the field; a full replacement keeps true.
+    let kept = ProfilePreferences::from_update(legacy, &disabled).unwrap();
+    assert!(kept.remembered_source_reuse);
+}
