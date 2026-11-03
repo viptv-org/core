@@ -188,13 +188,7 @@ pub fn cards(raw: &str, provider: &str) -> Result<Vec<Card>, Error> {
                     year: field(v, "releaseInfo", 256)
                         .and_then(|s| s.get(..4).and_then(|s| s.parse::<u32>().ok()))
                         .filter(|n| *n <= 9999),
-                    runtime_minutes: field(v, "runtime", 64)
-                        .and_then(|s| {
-                            s.split_whitespace()
-                                .next()
-                                .and_then(|s| s.parse::<u32>().ok())
-                        })
-                        .filter(|n| *n <= 10000),
+                    runtime_minutes: crate::simkl::runtime_minutes(&v["runtime"]),
                     genres: v["genres"]
                         .as_array()
                         .into_iter()
@@ -466,5 +460,33 @@ mod identity_proof_tests {
                 value: value.into(),
             }));
         }
+    }
+
+    #[test]
+    fn stremio_runtime_hours_and_minutes_forms_normalize_to_minutes() {
+        let cards = cards(
+            &serde_json::json!({"metas":[
+                {"id":"tt1","type":"movie","name":"HoursMinutes","runtime":"1h 45min"},
+                {"id":"tt2","type":"movie","name":"HoursOnly","runtime":"2h"},
+                {"id":"tt3","type":"movie","name":"BareMinutes","runtime":"120 min"},
+                {"id":"tt4","type":"movie","name":"BareNumber","runtime":"120"}
+            ]}).to_string(),
+            "addon:one",
+        )
+        .unwrap();
+        let minutes = |id: &str| {
+            cards
+                .iter()
+                .find(|card| card.identity.id == id)
+                .unwrap()
+                .metadata
+                .as_ref()
+                .unwrap()
+                .runtime_minutes
+        };
+        assert_eq!(minutes("tt1"), Some(105));
+        assert_eq!(minutes("tt2"), Some(120));
+        assert_eq!(minutes("tt3"), Some(120));
+        assert_eq!(minutes("tt4"), Some(120));
     }
 }
