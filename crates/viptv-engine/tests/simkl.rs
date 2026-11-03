@@ -39,6 +39,34 @@ fn simkl_titles_and_episodes_keep_distinct_exact_identities() {
 }
 
 #[test]
+fn simkl_top_billed_cast_is_bounded_from_people_or_cast_fields() {
+    let movie = simkl::card(
+        &json!({"title":"Movie","ids":{"simkl":10},
+            "people":{"cast":[
+                {"person":{"name":"First"},"character":"Hero"},
+                {"person":{"name":"Second"}},
+                "Third",
+                {"person":{"name":"Fourth"}},
+                {"name":"Ignored beyond three"}
+            ]}}),
+        "movie",
+    )
+    .unwrap();
+    assert_eq!(
+        movie.metadata.unwrap().cast,
+        vec!["First", "Second", "Third"]
+    );
+    let flat = simkl::card(
+        &json!({"title":"Flat","ids":{"simkl":11},"cast":["A","B"]}),
+        "movie",
+    )
+    .unwrap();
+    assert_eq!(flat.metadata.unwrap().cast, vec!["A", "B"]);
+    let none = simkl::card(&json!({"title":"None","ids":{"simkl":12}}), "movie").unwrap();
+    assert!(none.metadata.unwrap().cast.is_empty());
+}
+
+#[test]
 fn conflicting_simkl_identifiers_and_content_types_are_rejected() {
     assert!(
         simkl::card(
