@@ -49,6 +49,7 @@ data class Card(
     val badges: List<String>,
     val parent_identity: MediaIdentity? = null,
     val added_at_millis: Long? = null,
+    val released_at_millis: Long? = null,
     val metadata_origin: MetadataOrigin? = null,
 )
 

@@ -23,6 +23,7 @@ fn card() -> Card {
         badges: vec![],
         parent_identity: None,
         added_at_millis:None,
+        released_at_millis:None,
         category:None,
         metadata:None,
         metadata_origin:None,
