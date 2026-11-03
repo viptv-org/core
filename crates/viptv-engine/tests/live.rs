@@ -9,6 +9,11 @@ fn xmltv_preserves_timezone_entities_and_rejects_external_entity_documents(){
 }
 
 #[test]
+fn xmltv_keeps_title_and_description_text_after_inline_tags(){
+ let xml=r#"<tv><programme channel="news" start="20261013000000 +0000" stop="20261013010000 +0000"><title>Foo <b>bar</b> baz</title><desc>Nested <b>bold</b> and <i>italic</i> text</desc></programme></tv>"#;let programs=parse_xmltv(xml,"news","opaque-channel").unwrap();assert_eq!(programs.len(),1);assert_eq!(programs[0].title,"Foo bar baz");assert_eq!(programs[0].description.as_deref(),Some("Nested bold and italic text"));
+}
+
+#[test]
 fn directory_offsets_do_not_truncate_catalogs_but_pages_remain_bounded() {
     for offset in [10_000,10_040,1_000_000,u32::MAX] {
         assert!(LiveQuery{offset,limit:Some(200),..Default::default()}.validate().is_ok());
