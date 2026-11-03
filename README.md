@@ -1,17 +1,17 @@
 # viptv shared core
 
-Actions delivery: main pushes and manual builds of the client repositories produce
-sideloading artifacts (Android universal APK; desktop Windows/Linux installers;
-Roku ZIP; TV WGT/IPK). This repository runs only the `core checks` workflow, on
-pull requests and main pushes: no artifacts, releases or deploys.
+Actions delivery: main pushes and manual builds of the app repository produce
+sideloading artifacts (Android universal APK; desktop Windows/Linux installers).
+This repository runs only the `core checks` workflow, on pull requests and main
+pushes: no artifacts, releases or deploys.
 
-Crux Rust application behavior and API normalization for Android, Tauri and the backend. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/c58c9b91827a39442462797602bded35a83a9f64/SHARED_CORE.md); this repository owns the implementation. Roku stays independent.
+Crux Rust application behavior and API normalization for the KMP app and the backend. The product contract is [SHARED_CORE.md](https://github.com/viptv-org/design/blob/c58c9b91827a39442462797602bded35a83a9f64/SHARED_CORE.md); this repository owns the implementation.
 
 `crates/viptv-core` owns startup/session/profile state and normalization of backend identity, catalog, media, source and playback payloads. The Crux model requests HTTP, storage and rendering effects. The library compiles to native code. Rust DTOs generate Kotlin/TypeScript interfaces and kotlinx.serialization JSON codecs in `generated/kotlin-wire`; `generated/typescript/wire.ts` describes the actual JSON bridge protocol. Native Kotlin calls use the generated UniFFI bridge.
 
-Tauri loads the native Rust core, exposes its three commands, and uses `@tauri-apps/plugin-http` for network work; see `adapters/tauri`. Android uses native Rust and OkHttp, including PATCH; see `adapters/android`. Platform storage must use the appropriate credential store. Actual codecs and rendering remain platform responsibilities.
+The KMP app loads the native Rust core through the generated UniFFI bindings on Android and desktop, and owns its HTTP transports, credential storage, codecs and rendering. The web build runs against the backend and loads no core. Platform storage must use the appropriate credential store.
 
-`crates/viptv-core::vizio` ports the MIT-licensed `get-air/vizio` SmartCast protocol into Rust. `SmartCastBridge` is a serialized native workflow for Android mobile and Tauri desktop: platform code executes one exact-TV-origin HTTPS request at a time and returns status/body, while Rust owns pairing-token adoption, input freshness, setting validation/retry and command payloads. Android adapter source includes a dedicated scoped-TLS OkHttp client and Android Keystore token store. Tauri adapter source includes a native reqwest client and OS keyring. SmartCast is not a playback backend and is not wired into browser, Android TV, Tizen, Vizio-hosted, or Roku applications.
+`crates/viptv-core::vizio` ports the MIT-licensed `get-air/vizio` SmartCast protocol into Rust. `SmartCastBridge` is a serialized native workflow for Android: platform code executes one exact-TV-origin HTTPS request at a time and returns status/body, while Rust owns pairing-token adoption, input freshness, setting validation/retry and command payloads. The app's Android build supplies a dedicated scoped-TLS OkHttp client and an Android Keystore token store. SmartCast is not a playback backend, and the desktop and web builds expose no SmartCast engine.
 
 ## Playback error normalization
 
@@ -52,7 +52,7 @@ The closed `playbackProtocolV2` raw-text normalizer and bodyless protocol/reques
 cancellation operations are documented in [docs/playback-protocol.md](docs/playback-protocol.md).
 The private native grant bridge and shared admission/recovery decisions are
 documented there. Capability activation and platform/backend effects remain
-separate qualification work; TV-web never advertises native delivery.
+separate qualification work.
 
 ## Build and adoption
 
@@ -64,16 +64,14 @@ Consumers must adopt the regenerated native bindings.
 
 Use a current Rust toolchain. Run `cargo run -p viptv-typegen` for the protocol types and `cargo run -p viptv-typegen --bin engine` for the engine contracts and `bash scripts/build-native-bindings.sh` for native Kotlin bindings. Cargo.lock pins the dependency graph. The `os-secrets` feature of `viptv-core` links the operating system secret store (`keyring`, and D-Bus on Linux) behind `system_secret_store`; without it the function returns a store whose every call fails, so the server build links no D-Bus. Desktop builds of the native library enable it; Android does not. The `core checks` workflow runs on every pull request and main push with Rust 1.98: `cargo test --workspace --all-features`, both generators, and a failure if `generated/` differs from the committed output. Commit the regenerated output with the source change; the repository publishes no artifacts.
 
-Consumers adopt an immutable core commit together with its generated bindings and runtime. TV-web imports artifacts using `node scripts/core-sync.mjs sync ../core`, records CORE_REF and checks their hashes on build. Update Rust data handling here and regenerate once; consumer applications then adopt and rebuild. Installed apps still require an app update.
+Consumers adopt an immutable core commit together with its generated bindings and runtime; Migration state records how each vendors it. Update Rust data handling here and regenerate once; consumers then adopt and rebuild. Installed apps still require an app update.
 
-## WASI / BrightScript experiment
+## WASI experiment
 
 `crates/viptv-core/examples/wasi.rs` exposes the real Crux core through a persistent
 JSON-lines process. One request produces one flushed response; the instance and
-pending effects remain alive between lines. Run `bash scripts/build-brightscript.sh`
-with the patched `wasm2brs` checkout beside this repository, or set `WASM2BRS_ROOT`.
-That checkout owns the translator/runtime and writes converted files under `out/`.
-For native bridge development, use `cargo run --release -p viptv-core --example wasi`.
+pending effects remain alive between lines. Run it with
+`cargo run --release -p viptv-core --example wasi`.
 
 Requests are JSON objects with `op`: `normalize` takes `kind`, `input`, and optional
 `origin`; `vizio_platform_support` takes `platform`; `update` takes an `event` object
@@ -86,27 +84,18 @@ Each input line is capped at 12 MiB (including JSON byte-array overhead); oversi
 input returns an error and closes the process. Invalid JSON returns an error and
 allows the next request.
 
-After building, `python3 scripts/test-wasi.py ../wasm2brs/tools/wasmtime
-../wasm2brs/artifacts/viptv-core-wasi.wasm` checks the existing shared startup vectors,
-normalization, malformed inputs and warm latency. This is an experimental bridge;
-it does not change the production Roku application's adoption status. See the
-translator's `HANDOFF.md` for generated BrightScript and device validation.
-The full conversion currently produces about 14 MB of BrightScript. The measured
-Roku WASM/WASI initialization is about 296 ms; warm normalization of ten catalogs
-takes about 431 ms. A 100-catalog checkpoint took 4,256 ms, so large batches still
-need to stay off the interactive path. Keep it off animation/input hot paths; native/WASI host latency
-is not representative of BrightScript execution. For a repeatable breakdown of
+`python3 scripts/test-wasi.py <bridge command> [arguments ...]` checks the shared
+startup vectors, normalization, malformed inputs and warm latency against this
+example or a WASI runtime running a built module. For a repeatable breakdown of
 Rust work, run `cargo run --release -p viptv-core --example normalization_profile`.
 
 ## Migration state
 
-Android adopts the native library. It uses shared response normalization and presentation/policy outputs; the Crux session model governs restoration. Canonical artwork roles, continuation, source selection and request/response handling live in Rust. UI navigation, input/focus, device storage/network execution and player lifecycle stay in platform shells. Refer to consumer validation records for exact coverage rather than treating a binding build as adoption.
+The KMP app adopts the native library on Android and desktop. It uses shared response normalization, local engine and presentation/policy outputs; the Crux session model governs restoration. Canonical artwork roles, continuation, source selection and request/response handling live in Rust. UI navigation, input/focus, device storage/network execution and player lifecycle stay in the app. Refer to consumer validation records for exact coverage rather than treating a binding build as adoption.
 
-Android vendors a hash-checked committed source snapshot and generated Kotlin; its own `scripts/prepare-core.sh` builds the host test library and three Android ABIs with cargo-ndk, locally or in the Android repository's build workflow. Both record CORE_REF. Edit the owning Rust source here, regenerate, commit, and explicitly sync the same immutable revision into each consumer; do not edit vendor copies. This reduces duplicate rules, but generated code and reproducible source snapshots can increase checkout size.
+The app vendors this repository as the `native/core` git submodule and builds the native library with `tools/build_engine.py` for the shipped Android ABIs and desktop. The backend vendors hash-checked snapshots of `crates/viptv-engine` (`server/shared/engine`), `crates/viptv-core` (`server/shared/core`) and `crates/viptv-provider` (`server/provider`), each recording its source revision and file hashes. Edit the owning Rust source here, regenerate, commit, and sync the same immutable revision into each consumer; do not edit vendored copies.
 
-Tauri's native command adapter is available and tested through their injected ports. No installed desktop application migration is claimed in this Android/web delivery.
-
-Tests use injected native command ports. Native Rust behavior tests are distinct from physical TV, Android and installed Tauri testing. See VALIDATION.md for the measured checkpoint.
+Tests use injected native command ports. Native Rust behavior tests are distinct from physical TV and device testing. See VALIDATION.md for the measured checkpoint.
 
 ## Shared card contract
 
@@ -116,4 +105,4 @@ Tests use injected native command ports. Native Rust behavior tests are distinct
 
 Copyright (C) 2026 viptv contributors.
 
-This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License. See [LICENSE](LICENSE). The playback adapters (`viptv-org/video`, `viptv-org/tauri-video-plugin`) and the Android repository remain under their existing MIT OR Apache-2.0 terms.
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; version 2 of the License. See [LICENSE](LICENSE). Portions of the playback adapters come from `viptv-org/video` and `viptv-org/tauri-video-plugin`, which remain under their existing MIT OR Apache-2.0 terms.

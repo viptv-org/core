@@ -78,7 +78,7 @@ The cancellation extension uses release's 10-second deadline/zero redirects;
 only negotiated extension flows may call it. Status/auth recovery, origin and
 authenticated-generation fencing, old-server fallback, cancellation effects,
 native qualification remain separate integration work. A typed `PlaybackProtocol` is support information, never an admission or
-capability decision. TV-web/desktop/Roku must not advertise native support.
+capability decision.
 
 ## Private grant authority
 
@@ -144,9 +144,9 @@ preserves raw text for native regressions. `tests/native-torrent-vectors.json`
 exercises the actual private holder, original bytes, grant clocks, transitions,
 request/recovery decisions and reflected-data privacy.
 
-Adopt one immutable committed core revision in Android and TV-web together using
-each consumer's `scripts/core-sync.mjs`; import generated Kotlin/native bindings from
-that same source, check both pins/hashes and run each consumer's local checks.
+Adopt the same immutable committed core revision in the app and the backend:
+import the generated Kotlin/native bindings and the Rust snapshots from that
+revision, check the pins/hashes and run each consumer's local checks.
 Do not edit vendored snapshots or activate native capability during adoption.
 
 

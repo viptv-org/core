@@ -10,6 +10,5 @@ unit tests and old WASM bridge block tested the retired wrappers, not
 authenticated v2 playback. Domain/Stremio normalizers, Crux session/events/effects,
 runtime transports and SmartCast are unchanged.
 
-TV-web adoption is coordinated next. Android's isolated category work and user
-UI checkout, desktop pins and production are deliberately not changed here.
-No physical device or installed application qualification follows from bindings.
+The app and the backend adopt an immutable core revision independently; no
+physical device or installed application qualification follows from bindings.
