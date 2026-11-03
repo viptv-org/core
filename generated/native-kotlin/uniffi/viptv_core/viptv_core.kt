@@ -4985,7 +4985,7 @@ public object FfiConverterTypeSecretStore: FfiConverter<SecretStore, Pointer> {
 
 
 /**
- * Stateful SmartCast workflow used by Android mobile and Tauri desktop.
+ * Stateful SmartCast workflow used by the Android app.
  *
  * The shell executes each returned request and resolves it by ID. The bridge
  * keeps pairing credentials, fresh hash values, retry state, and command
@@ -5012,7 +5012,7 @@ public interface SmartCastBridgeInterface {
 }
 
 /**
- * Stateful SmartCast workflow used by Android mobile and Tauri desktop.
+ * Stateful SmartCast workflow used by the Android app.
  *
  * The shell executes each returned request and resolves it by ID. The bridge
  * keeps pairing credentials, fresh hash values, retry state, and command
