@@ -2,6 +2,25 @@ use serde_json::json;
 use viptv_engine::simkl;
 
 #[test]
+fn simkl_episodes_project_the_air_date() {
+    let parent = simkl::card(
+        &json!({"title":"Show","ids":{"simkl":42}}),
+        "tv",
+    )
+    .unwrap();
+    let episodes = simkl::episodes(
+        &json!([
+            {"season":1,"episode":1,"ids":{"simkl_id":9},"date":"2024-04-01"},
+            {"season":1,"episode":2,"ids":{"simkl_id":10},"date":"2024-04-02T00:00:00Z"}
+        ]),
+        &parent,
+    )
+    .unwrap();
+    assert_eq!(episodes[0].released_at_millis, Some(1_711_929_600_000));
+    assert_eq!(episodes[1].released_at_millis, Some(1_712_016_000_000));
+}
+
+#[test]
 fn simkl_titles_and_episodes_keep_distinct_exact_identities() {
     let parent = simkl::card(
         &json!({"title":"Show","ids":{"simkl":42,"imdb":"tt123"},"poster":"42/abc","progress":0.7}),
