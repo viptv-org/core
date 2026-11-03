@@ -27,6 +27,24 @@ fn catalog_projection_does_not_use_a_poster_as_landscape_or_merge_unrelated_ids(
 }
 
 #[test]
+fn title_cast_is_bounded_to_three_top_billed_names() {
+    let cards = cards(r#"{"metas":[
+        {"id":"movie","type":"movie","name":"A","cast":["One","Two","Three","Four"]},
+        {"id":"credits","type":"movie","name":"B","credits":{"cast":["P","Q"]}},
+        {"id":"none","type":"movie","name":"C"}
+    ]}"#, "addon:fixture").unwrap();
+    assert_eq!(
+        cards[0].metadata.as_ref().unwrap().cast,
+        vec!["One", "Two", "Three"]
+    );
+    assert_eq!(
+        cards[1].metadata.as_ref().unwrap().cast,
+        vec!["P", "Q"]
+    );
+    assert!(cards[2].metadata.as_ref().unwrap().cast.is_empty());
+}
+
+#[test]
 fn manifest_url_rejects_embedded_userinfo_and_unbounded_or_wrong_documents() {
     assert!(manifest_url("https://example.com/manifest.json").is_ok());
     assert!(manifest_url("https://name:password@example.com/manifest.json").is_err());
