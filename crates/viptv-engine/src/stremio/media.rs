@@ -106,18 +106,22 @@ pub fn episode_cards(meta: &Value, provider: &str, item: &Card) -> Result<Vec<Ca
                 if episode == 0 {
                     continue;
                 }
+                let episode = match u32::try_from(episode) {
+                    Ok(episode) => episode,
+                    Err(_) => continue,
+                };
                 let season = if video["season"].is_null() {
                     None
                 } else {
-                    Some(
-                        u32::try_from(video["season"].as_u64().ok_or(Error::InvalidQuery)?)
-                            .map_err(|_| Error::InvalidQuery)?,
-                    )
+                    match video["season"].as_u64().and_then(|n| u32::try_from(n).ok()) {
+                        Some(season) => Some(season),
+                        None => continue,
+                    }
                 };
                 card.identity.episode = Some(EpisodeCoordinates {
                     order: "aired".into(),
                     season,
-                    episode: u32::try_from(episode).map_err(|_| Error::InvalidQuery)?,
+                    episode,
                 });
             }
             card.parent_identity = Some(item.identity.clone());
@@ -392,6 +396,29 @@ mod identity_proof_tests {
         assert_eq!(coordinates[1].episode, 2);
         assert_eq!(coordinates[0].season, Some(1));
     }
+    #[test]
+    fn malformed_season_or_episode_skips_only_the_bad_episode() {
+        let detail = detail_page(
+            r#"{"meta":{"id":"tt33673360","type":"series","name":"Series",
+                "videos":[
+                    {"id":"tt33673360:1:1","season":"1","episode":1},
+                    {"id":"tt33673360:1:2","season":-1,"episode":2},
+                    {"id":"tt33673360:1:3","season":1.5,"episode":3},
+                    {"id":"tt33673360:1:4","season":1,"episode":4294967296},
+                    {"id":"tt33673360:1:5","season":99999999999,"episode":5},
+                    {"id":"tt33673360:1:6","season":1,"episode":6},
+                    {"id":"tt33673360:1:7","season":7,"episode":7}
+                ]}}"#,
+            "addon:one", "series", "tt33673360", 0, 24,
+        ).unwrap();
+        let coordinates: Vec<_> = detail.episodes.iter().filter_map(|e| e.identity.episode.clone()).collect();
+        assert_eq!(coordinates.len(), 2, "malformed episodes are skipped, well-formed ones remain");
+        assert_eq!(coordinates[0].episode, 6);
+        assert_eq!(coordinates[0].season, Some(1));
+        assert_eq!(coordinates[1].episode, 7);
+        assert_eq!(coordinates[1].season, Some(7));
+    }
+
     #[test]
     fn conflicts_remain_visible_and_invalid_nested_fractional_or_noncanonical_ids_are_ignored() {
         let detail=detail_page(r#"{"meta":{"id":"tt1111111","name":"Movie","imdb_id":"tt2222222","ids":{"imdb":"tt3333333","tmdb":"00123"},"tmdb_id":1.25,"tvdb_id":{"id":123},"mal_id":true,"anilist_id":0,"kitsu_id":"12x"}}"#,"addon:one","movie","tt1111111",0,24).unwrap();
