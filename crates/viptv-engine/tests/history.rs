@@ -24,6 +24,7 @@ fn card() -> Card {
         parent_identity: None,
         added_at_millis:None,
         released_at_millis:None,
+        released_at_date:None,
         category:None,
         metadata:None,
         metadata_origin:None,

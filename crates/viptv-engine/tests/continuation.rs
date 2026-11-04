@@ -23,6 +23,7 @@ fn episode(index: u32, season: u32, number: u32) -> EpisodeAvailability {
     EpisodeAvailability {
         card,
         released_at_millis: Some(10),
+        released_at_date: None,
         aired: None,
     }
 }
@@ -335,12 +336,14 @@ fn a_continuation_entry_decodes_without_the_next_episode_and_round_trips_it() {
         next_episode: Some(NextEpisode {
             identity: card.identity.clone(),
             released_at_millis: Some(4000),
+            released_at_date: Some("2020-01-01".into()),
         }),
         ..entry
     };
     let wire = serde_json::to_value(&entry).unwrap();
     assert_eq!(wire["next_episode"]["identity"]["id"], card.identity.id);
     assert_eq!(wire["next_episode"]["released_at_millis"], 4000);
+    assert_eq!(wire["next_episode"]["released_at_date"], "2020-01-01");
     let back: ContinuationEntry = serde_json::from_value(wire).unwrap();
     assert_eq!(back.next_episode.unwrap().released_at_millis, Some(4000));
 }
