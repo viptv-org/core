@@ -1,16 +1,17 @@
 // Generated from Rust by viptv-typegen. Serde JSON bridge representation.
+export type AddonFailure = { readonly addon_id: number; readonly addon_name: string; readonly error_code: string };
 export type Availability = "Available" | "NeedsConfiguration" | "NeedsAuthorization" | "TemporarilyUnavailable" | "Unsupported";
 export type Capability = "Discovery" | "Search" | "Metadata" | "Sources" | "Subtitles" | "Tracking" | "Authorization" | "Mapping" | "LiveTv";
 export type CapabilityState = { readonly capability: Capability; readonly availability: Availability; readonly message: string | null };
 export type Card = { readonly identity: MediaIdentity; readonly category: string | null; readonly metadata: CardMetadata | null; readonly provider_id: string; readonly title: string; readonly subtitle: string | null; readonly description: string | null; readonly poster: string | null; readonly landscape: string | null; readonly logo: string | null; readonly progress: number | null; readonly badges: ReadonlyArray<string>; readonly parent_identity: MediaIdentity | null; readonly added_at_millis: number | null; readonly released_at_millis: number | null; readonly released_at_date: string | null; readonly metadata_origin: MetadataOrigin | null };
 export type CardMetadata = { readonly year: number | null; readonly runtime_minutes: number | null; readonly genres: ReadonlyArray<string>; readonly rating: number | null; readonly rating_votes: number | null; readonly certification: string | null; readonly alternate_titles: ReadonlyArray<string>; readonly cast: ReadonlyArray<string> };
-export type CatalogPage = { readonly cards: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly complete: boolean };
+export type CatalogPage = { readonly cards: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly complete: boolean; readonly failures: ReadonlyArray<AddonFailure> };
 export type Choice = { readonly value: string; readonly label: string };
 export type ContinuationEntry = { readonly card: Card; readonly record: PlaybackRecord; readonly status: ContinuationStatus; readonly previous_identity: MediaIdentity | null; readonly next_episode: NextEpisode | null };
 export type ContinuationPage = { readonly scope: Scope; readonly revision: number; readonly entries: ReadonlyArray<ContinuationEntry>; readonly next_cursor: string | null; readonly complete: boolean };
 export type ContinuationStatus = "Resume" | "Next" | "Pending" | "CaughtUp" | "Upcoming" | "Unavailable";
 export type ControlKind = "Text" | "SingleChoice" | "MultiChoice" | "Toggle" | "Number" | "Date";
-export type DetailSnapshot = { readonly item: Card; readonly recommendations: ReadonlyArray<Card>; readonly episodes: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly seasons: ReadonlyArray<EpisodeSeason> };
+export type DetailSnapshot = { readonly item: Card; readonly recommendations: ReadonlyArray<Card>; readonly episodes: ReadonlyArray<Card>; readonly next_cursor: string | null; readonly seasons: ReadonlyArray<EpisodeSeason>; readonly failures: ReadonlyArray<AddonFailure> };
 export type EpisodeCoordinates = { readonly order: string; readonly season: number | null; readonly episode: number };
 export type EpisodeSeason = { readonly season: number | null; readonly episode_count: number; readonly offset: number };
 export type ExecutionMode = "Local" | "Server";
