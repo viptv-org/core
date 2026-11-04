@@ -46,3 +46,35 @@ fn directory_offsets_do_not_truncate_catalogs_but_pages_remain_bounded() {
     assert!(LiveQuery{offset:0,limit:Some(2),page_size:Some(40),..Default::default()}.validate().is_ok());
     assert!(serde_json::to_value(LiveQuery::default()).unwrap().get("page_size").is_none());
 }
+
+#[test]
+fn m3u_parses_every_channel_of_a_large_playlist() {
+    let base = url::Url::parse("https://provider.example/list.m3u").unwrap();
+    let mut body = String::from("#EXTM3U\n");
+    for i in 0..20_000 {
+        body.push_str(&format!(
+            "#EXTINF:-1 tvg-id=\"c{i}\" group-title=\"Group {i}\",Channel {i}\nhttps://media.example/{i}.m3u8?token=private\n"
+        ));
+    }
+    let channels = parse_m3u(&body, &base, "m3u:opaque").unwrap();
+    assert_eq!(channels.len(), 20_000);
+    assert_eq!(channels[19_999].channel.card.title, "Channel 19999");
+}
+
+#[test]
+fn xtream_parses_every_stream_of_a_large_feed() {
+    let configuration = XtreamConfiguration {
+        server_url: "https://provider.example".into(),
+        username: "fixture-user".into(),
+        password: "fixture-password".into(),
+    };
+    let values: Vec<serde_json::Value> = (0..20_000)
+        .map(|i| {
+            serde_json::json!({"stream_id": i, "name": format!("Channel {i}"), "category_id": "news"})
+        })
+        .collect();
+    let raw = serde_json::to_string(&values).unwrap();
+    let channels = parse_xtream(&raw, "xtream:opaque", &configuration).unwrap();
+    assert_eq!(channels.len(), 20_000);
+    assert_eq!(channels[19_999].stream_id.as_deref(), Some("19999"));
+}
