@@ -132,6 +132,7 @@ impl LocalEngine {
             cards: Vec::new(),
             next_cursor: None,
             complete: true,
+            failures: vec![],
         };
         let mut seen = std::collections::HashSet::new();
         let mut success = false;
