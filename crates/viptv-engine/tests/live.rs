@@ -9,6 +9,23 @@ fn xmltv_preserves_timezone_entities_and_rejects_external_entity_documents(){
 }
 
 #[test]
+fn xmltv_naive_times_default_to_utc_and_offsets_stay_absolute(){
+ let xml=r#"<tv><programme channel="news" start="20250101120000" stop="20250101130000"><title>Naive noon</title></programme><programme channel="news" start="20250101120000 +0200" stop="20250101130000 +0200"><title>Plus two</title></programme><programme channel="news" start="20250101230000" stop="20250102010000"><title>Midnight crossing</title></programme></tv>"#;
+ let programs=parse_xmltv(xml,"news","opaque-channel").unwrap();
+ assert_eq!(programs.len(),3);
+ let find=|title:&str|programs.iter().find(|p|p.title==title).unwrap();
+ let naive=find("Naive noon");
+ assert_eq!(naive.start_millis,1735732800000);
+ assert_eq!(naive.end_millis,1735736400000);
+ let offset=find("Plus two");
+ assert_eq!(offset.start_millis,1735725600000);
+ assert_eq!(offset.end_millis,1735729200000);
+ let midnight=find("Midnight crossing");
+ assert_eq!(midnight.start_millis,1735772400000);
+ assert_eq!(midnight.end_millis,1735779600000);
+}
+
+#[test]
 fn xmltv_keeps_title_and_description_text_after_inline_tags(){
  let xml=r#"<tv><programme channel="news" start="20261013000000 +0000" stop="20261013010000 +0000"><title>Foo <b>bar</b> baz</title><desc>Nested <b>bold</b> and <i>italic</i> text</desc></programme></tv>"#;let programs=parse_xmltv(xml,"news","opaque-channel").unwrap();assert_eq!(programs.len(),1);assert_eq!(programs[0].title,"Foo bar baz");assert_eq!(programs[0].description.as_deref(),Some("Nested bold and italic text"));
 }
