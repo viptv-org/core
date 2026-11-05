@@ -21,6 +21,31 @@ fn simkl_episodes_project_the_air_date() {
 }
 
 #[test]
+fn simkl_listed_episode_zero_keeps_its_coordinates_and_source_target() {
+    let parent = simkl::card(
+        &json!({"title":"Show","ids":{"simkl":42,"imdb":"tt1234567"}}),
+        "tv",
+    )
+    .unwrap();
+    let episodes = simkl::episodes(
+        &json!([
+            {"season":1,"episode":0,"ids":{"simkl_id":7},"title":"Prologue"},
+            {"season":1,"episode":1,"ids":{"simkl_id":8},"title":"One"}
+        ]),
+        &parent,
+    )
+    .unwrap();
+    assert_eq!(episodes.len(), 2);
+    assert_eq!(episodes[0].identity.id, "simkl:tv:42:1:0");
+    assert_eq!(episodes[0].identity.episode.as_ref().unwrap().episode, 0);
+    assert_eq!(episodes[0].subtitle.as_deref(), Some("S1 E0"));
+    assert_eq!(episodes[1].identity.id, "simkl:tv:42:1:1");
+    let target = simkl::source_identity(&parent, Some(&episodes[0])).unwrap();
+    assert_eq!(target.id, "tt1234567:1:0");
+    assert_eq!(target.episode.as_ref().unwrap().episode, 0);
+}
+
+#[test]
 fn simkl_titles_and_episodes_keep_distinct_exact_identities() {
     let parent = simkl::card(
         &json!({"title":"Show","ids":{"simkl":42,"imdb":"tt123"},"poster":"42/abc","progress":0.7}),
