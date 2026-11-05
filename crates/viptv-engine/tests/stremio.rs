@@ -87,6 +87,28 @@ fn a_listed_episode_zero_is_a_coordinate_like_any_other() {
 }
 
 #[test]
+fn a_series_without_season_numbers_is_one_season_of_its_numbered_episodes() {
+    let raw = r#"{"meta":{"id":"tt1","type":"series","name":"Flat","videos":[
+        {"id":"tt1:1","episode":1,"released":"2020-01-01T00:00:00.000Z"},
+        {"id":"tt1:2","episode":2,"released":"2020-01-08T00:00:00.000Z"}]}}"#;
+    let detail = detail(raw, "addon:a", "series", "tt1", 0).unwrap();
+    assert_eq!(
+        detail
+            .seasons
+            .iter()
+            .map(|season| (season.season, season.episode_count, season.offset))
+            .collect::<Vec<_>>(),
+        [(Some(1), 2, 0)]
+    );
+    assert!(detail.episodes.iter().all(|card| card
+        .identity
+        .episode
+        .as_ref()
+        .is_some_and(|episode| episode.season == Some(1))));
+    assert_eq!(detail.episodes[1].identity.id, "tt1:2");
+}
+
+#[test]
 fn details_keep_episode_identity_and_reject_other_titles() {
     let raw = r#"{"meta":{"id":"tt123","type":"series","name":"A series","videos":[{"id":"tt123:2:3","season":2,"episode":3,"title":"Episode three","thumbnail":"https://images.example/still"}]}}"#;
     let detail = detail(raw, "addon:a", "series", "tt123", 0).unwrap();
@@ -108,12 +130,13 @@ fn details_keep_episode_identity_and_reject_other_titles() {
 }
 
 #[test]
-fn detail_season_index_uses_the_complete_verified_sorted_sequence_without_inventing_seasons(){
+fn detail_season_index_uses_the_complete_verified_sorted_sequence_with_absent_season_as_season_one(){
  let mut videos=Vec::new();for season in [2,1]{for episode in (1..=30).rev(){videos.push(serde_json::json!({"id":format!("opaque-{season}-{episode}"),"title":format!("Episode {episode}"),"season":season,"episode":episode}));}}
- videos.push(serde_json::json!({"id":"special","title":"Special","season":0,"episode":1}));videos.push(serde_json::json!({"id":"unknown-season","title":"Known episode, unknown season","episode":12}));videos.push(videos[0].clone());let body=serde_json::json!({"meta":{"id":"parent","name":"Series","type":"series","videos":videos}}).to_string();
- let first=detail(&body,"addon","series","parent",0).unwrap();assert_eq!(first.episodes.len(),24);assert_eq!(first.next_cursor.as_deref(),Some("24"));assert_eq!(first.seasons.iter().map(|s|(s.season,s.episode_count,s.offset)).collect::<Vec<_>>(),vec![(Some(0),1,0),(Some(1),30,1),(Some(2),30,31),(None,1,61)]);
- let second=detail(&body,"addon","series","parent",31).unwrap();assert_eq!(second.episodes[0].identity.id,"opaque-2-1");assert_eq!(second.episodes[23].identity.id,"opaque-2-24");assert_eq!(second.next_cursor.as_deref(),Some("55"));assert!(second.episodes.iter().all(|e|e.parent_identity.as_ref()==Some(&first.item.identity)));
- let terminal=detail(&body,"addon","series","parent",55).unwrap();assert_eq!(terminal.episodes.len(),7);assert!(terminal.next_cursor.is_none());let unknown=terminal.episodes.last().unwrap().identity.episode.as_ref().unwrap();assert_eq!(unknown.season,None);assert_eq!(unknown.episode,12);
+ videos.push(serde_json::json!({"id":"special","title":"Special","season":0,"episode":1}));videos.push(serde_json::json!({"id":"unknown-season","title":"Known episode, absent season","episode":12}));videos.push(videos[0].clone());let body=serde_json::json!({"meta":{"id":"parent","name":"Series","type":"series","videos":videos}}).to_string();
+ let first=detail(&body,"addon","series","parent",0).unwrap();assert_eq!(first.episodes.len(),24);assert_eq!(first.next_cursor.as_deref(),Some("24"));assert_eq!(first.seasons.iter().map(|s|(s.season,s.episode_count,s.offset)).collect::<Vec<_>>(),vec![(Some(0),1,0),(Some(1),31,1),(Some(2),30,32)]);
+ let absent=first.episodes.iter().find(|e|e.identity.id=="unknown-season").unwrap().identity.episode.as_ref().unwrap();assert_eq!(absent.season,Some(1));assert_eq!(absent.episode,12);
+ let second=detail(&body,"addon","series","parent",32).unwrap();assert_eq!(second.episodes[0].identity.id,"opaque-2-1");assert_eq!(second.episodes[23].identity.id,"opaque-2-24");assert_eq!(second.next_cursor.as_deref(),Some("56"));assert!(second.episodes.iter().all(|e|e.parent_identity.as_ref()==Some(&first.item.identity)));
+ let terminal=detail(&body,"addon","series","parent",56).unwrap();assert_eq!(terminal.episodes.len(),6);assert!(terminal.next_cursor.is_none());assert_eq!(terminal.episodes.last().unwrap().identity.id,"opaque-2-30");
 }
 
 #[test]

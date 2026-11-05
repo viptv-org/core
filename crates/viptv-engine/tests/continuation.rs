@@ -97,6 +97,55 @@ fn unknown_airing_conflicting_coordinates_parent_and_duplicate_ids_fail_closed()
         ContinuationStatus::Unavailable
     );
 }
+
+#[test]
+fn a_series_without_season_numbers_advances_through_its_numbered_episodes() {
+    let mut show = vec![
+        released(1, 1, 1, Some(10)),
+        released(2, 1, 2, Some(20)),
+        released(3, 1, 3, Some(30)),
+    ];
+    for entry in show.iter_mut() {
+        entry.card.identity.episode.as_mut().unwrap().season = None;
+    }
+    let anchor = show[0].card.identity.clone();
+    assert_eq!(
+        next_episode(&anchor, &show, 15).status,
+        ContinuationStatus::Upcoming
+    );
+    let upcoming = upcoming_episode(&anchor, &show, 15).unwrap();
+    assert_eq!(
+        upcoming.identity.episode.as_ref().unwrap().season,
+        None
+    );
+    let next = next_episode(&anchor, &show, 20);
+    assert_eq!(next.status, ContinuationStatus::Next);
+    assert_eq!(next.item.unwrap().identity.id, "unparsed-child-2");
+    let new = new_episodes(&anchor, 10, &show, never_watched, 25).unwrap();
+    assert_eq!(new.count, 1);
+    assert_eq!(new.next.identity.id, "unparsed-child-2");
+    assert_eq!(
+        next_episode(&show[2].card.identity, &show, 30).status,
+        ContinuationStatus::CaughtUp
+    );
+}
+
+#[test]
+fn an_absent_season_continues_into_season_one_and_never_into_specials() {
+    let mut flat = episode(1, 1, 1);
+    flat.card.identity.episode.as_mut().unwrap().season = None;
+    let special = episode(2, 0, 1);
+    let explicit = episode(3, 1, 2);
+    let show = vec![flat.clone(), special, explicit.clone()];
+    let next = next_episode(&flat.card.identity, &show, 20);
+    assert_eq!(next.status, ContinuationStatus::Next);
+    assert_eq!(next.item.unwrap().identity.id, "unparsed-child-3");
+    assert_eq!(
+        next_episode(&explicit.card.identity, &show, 20).status,
+        ContinuationStatus::CaughtUp
+    );
+}
+
 #[test]
 fn a_listed_episode_zero_is_a_valid_anchor_and_precedes_episode_one() {
     let prologue = released(0, 1, 0, Some(10));
