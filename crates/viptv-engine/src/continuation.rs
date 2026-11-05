@@ -129,12 +129,12 @@ fn sequence<'a>(
     {
         return Err(());
     }
-    let season = at.season.ok_or(())?;
+    let season = at.season_number();
     let mut later = episodes
         .iter()
         .filter_map(|e| {
             let c = e.card.identity.episode.as_ref()?;
-            Some((c.season?, c.episode, c.order.as_str(), e))
+            Some((c.season_number(), c.episode, c.order.as_str(), e))
         })
         .filter(|(s, e, order, _)| {
             *order == at.order
