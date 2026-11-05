@@ -224,4 +224,16 @@ fn merged_browse_rejects_a_cursor_it_did_not_issue() {
             "{cursor}"
         );
     }
+}#[test]
+fn aggregated_search_stays_one_page() {
+    let fixture = Fixture::new();
+    fixture.install(
+        "https://search.example/manifest.json",
+        json!({"id":"search","type":"movie","name":"Search","extra":[{"name":"search"},{"name":"skip"}]}),
+    );
+    let plan = fixture.plan(json!({"type":"movie","search":"dune"}));
+    assert_eq!(plan["requests"].as_array().unwrap().len(), 1);
+    let page = page(&fixture, &plan, |_| metas("s", 0..20));
+    assert_eq!(page["complete"], true);
+    assert_eq!(page["next_cursor"], Value::Null);
 }
