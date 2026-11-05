@@ -4,16 +4,20 @@ use viptv_engine::{
 };
 
 fn card() -> Card {
+    titled_card("fixture-film", "Fixture")
+}
+
+fn titled_card(id: &str, title: &str) -> Card {
     Card {
         identity: MediaIdentity {
-            id: "fixture-film".into(),
+            id: id.into(),
             kind: "movie".into(),
             ids: vec![],
             episode: None,
             edition: None,
         },
         provider_id: "addon:one".into(),
-        title: "Fixture".into(),
+        title: title.into(),
         subtitle: None,
         description: None,
         poster: Some("https://images.example/signed.jpg?token=private".into()),
@@ -82,6 +86,88 @@ fn history_is_profile_scoped_completion_survives_rewatch_and_private_art_is_not_
         Err(Error::InvalidQuery)
     );
     assert_eq!(store.history(&b.scope, 10).unwrap().len(), 1);
+}
+
+#[test]
+fn clock_step_backwards_cannot_reorder_history_or_rewind_last_watched() {
+    let mut store = Store::memory().unwrap();
+    let profile = ProfileConfiguration::local("local".into(), "alice".into(), "Alice".into());
+    store.save_profile(&profile, None).unwrap();
+    let ahead = titled_card("ahead", "Ahead");
+    let behind = titled_card("behind", "Behind");
+    store.save_favorite(&profile.scope, &ahead).unwrap();
+    store
+        .record_playback(&profile.scope, &ahead, 30_000, 100_000, 5_000)
+        .unwrap();
+    store
+        .record_playback(&profile.scope, &behind, 30_000, 100_000, 4_000)
+        .unwrap();
+    store
+        .record_playback(&profile.scope, &ahead, 70_000, 100_000, 2_000)
+        .unwrap();
+    let history = store.history(&profile.scope, 10).unwrap();
+    assert_eq!(history[0].identity.id, "ahead");
+    assert_eq!(history[1].identity.id, "behind");
+    assert_eq!(history[0].updated_at_millis, 5_000);
+    assert_eq!(history[0].position_millis, 70_000);
+    assert_eq!(
+        store.library_entries(&profile.scope).unwrap()[0]
+            .statistics
+            .last_watched_millis,
+        Some(5_000)
+    );
+}
+
+#[test]
+fn two_device_interleaving_keeps_latest_position_and_never_rewinds_ordering() {
+    let mut store = Store::memory().unwrap();
+    let profile = ProfileConfiguration::local("local".into(), "alice".into(), "Alice".into());
+    store.save_profile(&profile, None).unwrap();
+    let card = card();
+    let record = |store: &Store| {
+        store
+            .playback(&profile.scope, "movie", "fixture-film")
+            .unwrap()
+            .unwrap()
+    };
+    store
+        .record_playback(&profile.scope, &card, 40_000, 100_000, 9_000)
+        .unwrap();
+    store
+        .record_playback(&profile.scope, &card, 70_000, 100_000, 6_000)
+        .unwrap();
+    let stale = record(&store);
+    assert_eq!(stale.updated_at_millis, 9_000);
+    assert_eq!(stale.position_millis, 70_000);
+    store
+        .record_playback(&profile.scope, &card, 50_000, 100_000, 9_500)
+        .unwrap();
+    store
+        .record_playback(&profile.scope, &card, 80_000, 100_000, 6_500)
+        .unwrap();
+    let later = record(&store);
+    assert_eq!(later.updated_at_millis, 9_500);
+    assert_eq!(later.position_millis, 80_000);
+    assert!(later.can_resume());
+}
+
+#[test]
+fn stale_completion_keeps_the_stored_completion_time() {
+    let mut store = Store::memory().unwrap();
+    let profile = ProfileConfiguration::local("local".into(), "alice".into(), "Alice".into());
+    store.save_profile(&profile, None).unwrap();
+    store
+        .record_playback(&profile.scope, &card(), 30_000, 100_000, 5_000)
+        .unwrap();
+    store
+        .record_playback(&profile.scope, &card(), 97_000, 100_000, 1_000)
+        .unwrap();
+    let completed = store
+        .playback(&profile.scope, "movie", "fixture-film")
+        .unwrap()
+        .unwrap();
+    assert_eq!(completed.updated_at_millis, 5_000);
+    assert_eq!(completed.completed_at_millis, Some(5_000));
 }
 
 #[test]
