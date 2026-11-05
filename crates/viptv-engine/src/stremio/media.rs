@@ -104,9 +104,6 @@ pub fn episode_cards(meta: &Value, provider: &str, item: &Card) -> Result<Vec<Ca
                     if parts.len() == 3 { parts[2].parse::<u64>().ok() } else { None }
                 });
             if let Some(episode) = episode {
-                if episode == 0 {
-                    continue;
-                }
                 let episode = match u32::try_from(episode) {
                     Ok(episode) => episode,
                     Err(_) => continue,

@@ -53,6 +53,40 @@ fn manifest_url_rejects_embedded_userinfo_and_unbounded_or_wrong_documents() {
 }
 
 #[test]
+fn a_listed_episode_zero_is_a_coordinate_like_any_other() {
+    let raw = r#"{"meta":{"id":"tt123","type":"series","name":"Prologues","videos":[
+        {"id":"tt123:1:0","season":1,"episode":0,"name":"Prologue"},
+        {"id":"tt123:1:1","season":1,"number":1,"name":"One"},
+        {"id":"tt123:2:0","season":2,"name":"Season two prologue"}]}}"#;
+    let detail = detail(raw, "addon:a", "series", "tt123", 0).unwrap();
+    let coordinates = detail
+        .episodes
+        .iter()
+        .map(|card| {
+            let episode = card.identity.episode.clone().unwrap();
+            (card.identity.id.as_str(), episode.season, episode.episode)
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        coordinates,
+        [
+            ("tt123:1:0", Some(1), 0),
+            ("tt123:1:1", Some(1), 1),
+            ("tt123:2:0", Some(2), 0)
+        ]
+    );
+    assert_eq!(
+        detail
+            .seasons
+            .iter()
+            .map(|season| (season.season, season.episode_count))
+            .collect::<Vec<_>>(),
+        [(Some(1), 2), (Some(2), 1)]
+    );
+    assert_eq!(detail.episodes[0].title, "Prologue");
+}
+
+#[test]
 fn details_keep_episode_identity_and_reject_other_titles() {
     let raw = r#"{"meta":{"id":"tt123","type":"series","name":"A series","videos":[{"id":"tt123:2:3","season":2,"episode":3,"title":"Episode three","thumbnail":"https://images.example/still"}]}}"#;
     let detail = detail(raw, "addon:a", "series", "tt123", 0).unwrap();

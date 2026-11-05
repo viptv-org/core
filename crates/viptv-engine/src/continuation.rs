@@ -92,7 +92,7 @@ pub fn validate_identity(identity: &MediaIdentity) -> Result<(), Error> {
         || identity
             .episode
             .as_ref()
-            .is_some_and(|e| identity.kind != "series" || e.episode == 0 || !bounded(&e.order, 64))
+            .is_some_and(|e| identity.kind != "series" || !bounded(&e.order, 64))
     {
         return Err(Error::InvalidQuery);
     }

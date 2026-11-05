@@ -98,6 +98,27 @@ fn unknown_airing_conflicting_coordinates_parent_and_duplicate_ids_fail_closed()
     );
 }
 #[test]
+fn a_listed_episode_zero_is_a_valid_anchor_and_precedes_episode_one() {
+    let prologue = released(0, 1, 0, Some(10));
+    let first = released(1, 1, 1, Some(20));
+    let show = vec![prologue.clone(), first.clone()];
+    assert!(validate_identity(&prologue.card.identity).is_ok());
+    assert_eq!(
+        next_episode(&prologue.card.identity, &show, 20).status,
+        ContinuationStatus::Next
+    );
+    assert_eq!(
+        next_episode(&prologue.card.identity, &show, 15).status,
+        ContinuationStatus::Upcoming
+    );
+    let upcoming = upcoming_episode(&prologue.card.identity, &show, 15).unwrap();
+    assert_eq!(upcoming.identity.episode.as_ref().unwrap().episode, 1);
+    let new = new_episodes(&prologue.card.identity, 10, &show, never_watched, 30).unwrap();
+    assert_eq!(new.next.identity.id, "unparsed-child-1");
+    assert_eq!(new.count, 1);
+}
+
+#[test]
 fn continuation_intents_are_typed_and_reject_unrecognized_control_fields() {
     let identity = episode(1, 1, 1).card.identity;
     assert!(validate_identity(&identity).is_ok());

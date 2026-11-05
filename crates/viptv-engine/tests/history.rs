@@ -127,5 +127,22 @@ fn opaque_episode_parent_survives_local_history_and_legacy_json_defaults() {
 #[test]
 fn resume_caption_uses_typed_episode_coordinates_before_remaining_time_and_never_invents_season(){
  use viptv_engine::{identity::EpisodeCoordinates,playback::resume_caption};
- let mut identity=card().identity;assert_eq!(resume_caption(&identity,22*60000),"22m left");identity.kind="series".into();identity.episode=Some(EpisodeCoordinates{order:"aired".into(),season:Some(1),episode:1});assert_eq!(resume_caption(&identity,22*60000),"S1 E1 · 22m left");identity.episode.as_mut().unwrap().season=None;assert_eq!(resume_caption(&identity,3000),"E1 · 3s left");identity.kind="movie".into();assert_eq!(resume_caption(&identity,22*60000),"22m left");
+ let mut identity=card().identity;assert_eq!(resume_caption(&identity,22*60000),"22m left");identity.kind="series".into();identity.episode=Some(EpisodeCoordinates{order:"aired".into(),season:Some(1),episode:1});assert_eq!(resume_caption(&identity,22*60000),"S1 E1 · 22m left");identity.episode.as_mut().unwrap().season=None;assert_eq!(resume_caption(&identity,3000),"E1 · 3s left");identity.episode.as_mut().unwrap().episode=0;assert_eq!(resume_caption(&identity,3000),"E0 · 3s left");identity.kind="movie".into();assert_eq!(resume_caption(&identity,22*60000),"22m left");
+}
+#[test]
+fn episode_zero_progress_is_recorded_and_resumes_under_its_own_typed_coordinates(){
+ use viptv_engine::identity::EpisodeCoordinates;
+ let mut store=Store::memory().unwrap();
+ let profile=ProfileConfiguration::local("local".into(),"alice".into(),"Alice".into());
+ store.save_profile(&profile,None).unwrap();
+ let mut prologue=card();
+ prologue.identity.kind="series".into();
+ prologue.identity.id="tt1:1:0".into();
+ prologue.identity.episode=Some(EpisodeCoordinates{order:"aired".into(),season:Some(1),episode:0});
+ store.record_playback(&profile.scope,&prologue,30_000,100_000,1000).unwrap();
+ let saved=store.playback(&profile.scope,"series","tt1:1:0").unwrap().unwrap();
+ assert!(saved.can_resume());
+ assert_eq!(saved.identity.episode.as_ref().unwrap().episode,0);
+ let entry=store.history(&profile.scope,10).unwrap().pop().unwrap();
+ assert_eq!(entry.card().subtitle.as_deref(),Some("S1 E0 · 2m left"));
 }
