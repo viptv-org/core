@@ -817,6 +817,51 @@ fn capability_names_validate_and_unknown_display_facts_are_carried() {
 }
 
 #[test]
+fn hdr_preference_outranks_release_type_and_affinity_sits_between_them() {
+    let rows = || {
+        vec![
+            with("sdr-web_dl", |c| c.release_type = Some("web_dl".into())),
+            with("hdr-remux", |c| {
+                c.release_type = Some("remux".into());
+                c.dynamic_range = langs(&["hdr10"]);
+            }),
+            with("hdr-web_dl-other_provider", |c| {
+                c.provider_id = "addon:2".into();
+                c.release_type = Some("web_dl".into());
+                c.dynamic_range = langs(&["hdr10"]);
+            }),
+        ]
+    };
+    let mut prefer = ProfilePreferences::default();
+    prefer.hdr_preference = HdrPreference::Prefer;
+    // The HDR key (6) sits above release type (8), so a remux with HDR beats an SDR WEB-DL.
+    assert_eq!(
+        ranked(rows(), &prefer, None, None),
+        ["hdr-web_dl-other_provider", "hdr-remux", "sdr-web_dl"]
+    );
+    let affinity = RankingContext {
+        provider_affinity: Some("addon:1".into()),
+        ..Default::default()
+    };
+    // Affinity (7) decides within one HDR answer, before release type (8), and never lifts
+    // an SDR row over an HDR one.
+    assert_eq!(
+        ranked_in(rows(), &prefer, &affinity),
+        ["hdr-remux", "hdr-web_dl-other_provider", "sdr-web_dl"]
+    );
+    // With no HDR preference, release type decides inside the affinity group and affinity
+    // still comes before it across providers.
+    assert_eq!(
+        ranked_in(rows(), &ProfilePreferences::default(), &affinity),
+        ["sdr-web_dl", "hdr-remux", "hdr-web_dl-other_provider"]
+    );
+    assert_eq!(
+        ranked(rows(), &ProfilePreferences::default(), None, None),
+        ["sdr-web_dl", "hdr-web_dl-other_provider", "hdr-remux"]
+    );
+}
+
+#[test]
 fn provider_affinity_breaks_ties_before_release_type() {
     let rows = || {
         vec![

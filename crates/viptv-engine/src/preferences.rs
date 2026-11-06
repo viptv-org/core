@@ -640,9 +640,9 @@ pub fn rank_sources(
             } else {
                 -i64::from(candidate.quality_height.unwrap_or(0))
             },
+            hdr,
             !affinity_provider,
             release,
-            hdr,
             torrent,
             seeders,
         )
