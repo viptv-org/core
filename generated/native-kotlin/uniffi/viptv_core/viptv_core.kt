@@ -1915,7 +1915,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
     if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources_for_device() != 9705.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
-    if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources_with_context() != 38425.toShort()) {
+    if (lib.uniffi_viptv_core_checksum_method_localengine_rank_sources_with_context() != 14012.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_viptv_core_checksum_method_localengine_record_progress() != 19446.toShort()) {
@@ -2948,7 +2948,8 @@ public interface LocalEngineInterface {
     fun `rankSourcesForDevice`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `deviceMaxHeight`: kotlin.UInt?): kotlin.String
 
     /**
-     * `context_json` is a `RankingContext`: device capability and series memory.
+     * `context_json` is a `RankingContext`: device capability, series memory
+     * and provider affinity.
      */
     fun `rankSourcesWithContext`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `contextJson`: kotlin.String): kotlin.String
 
@@ -3780,7 +3781,8 @@ open class LocalEngine: Disposable, AutoCloseable, LocalEngineInterface
 
 
     /**
-     * `context_json` is a `RankingContext`: device capability and series memory.
+     * `context_json` is a `RankingContext`: device capability, series memory
+     * and provider affinity.
      */
     @Throws(CoreException::class)override fun `rankSourcesWithContext`(`profile`: kotlin.String, `sourcesJson`: kotlin.String, `contextJson`: kotlin.String): kotlin.String {
             return FfiConverterString.lift(

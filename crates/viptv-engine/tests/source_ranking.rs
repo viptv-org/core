@@ -815,3 +815,108 @@ fn capability_names_validate_and_unknown_display_facts_are_carried() {
     };
     assert!(memory.validate().is_err());
 }
+
+#[test]
+fn provider_affinity_breaks_ties_before_release_type() {
+    let rows = || {
+        vec![
+            with("affinity-remux", |c| c.release_type = Some("remux".into())),
+            with("other-web_dl", |c| {
+                c.provider_id = "addon:2".into();
+                c.release_type = Some("web_dl".into());
+            }),
+            with("affinity-web_dl", |c| c.release_type = Some("web_dl".into())),
+        ]
+    };
+    let affinity = RankingContext {
+        provider_affinity: Some("addon:1".into()),
+        ..Default::default()
+    };
+    assert_eq!(
+        ranked_in(rows(), &ProfilePreferences::default(), &affinity),
+        ["affinity-web_dl", "affinity-remux", "other-web_dl"]
+    );
+    // Without an affinity, release type decides and equal rows keep arrival order.
+    assert_eq!(
+        ranked_in(rows(), &ProfilePreferences::default(), &RankingContext::default()),
+        ["other-web_dl", "affinity-web_dl", "affinity-remux"]
+    );
+}
+
+#[test]
+fn provider_affinity_loses_to_quality_audio_and_series_memory() {
+    let quality = || {
+        vec![
+            with("affinity-720", |c| c.quality_height = Some(720)),
+            with("other-1080", |c| {
+                c.provider_id = "addon:2".into();
+                c.quality_height = Some(1080);
+            }),
+        ]
+    };
+    let audio = || {
+        vec![
+            with("affinity-french", |c| c.audio_languages = langs(&["fr"])),
+            with("other-english", |c| {
+                c.provider_id = "addon:2".into();
+                c.audio_languages = langs(&["en"]);
+            }),
+        ]
+    };
+    let memory = SeriesMemory {
+        provider_id: "addon:2".into(),
+        binge_group: "g1".into(),
+    };
+    let remembered = || {
+        vec![
+            source("affinity-plain"),
+            with("other-remembered", |c| {
+                c.provider_id = "addon:2".into();
+                c.binge_group = Some("g1".into());
+            }),
+        ]
+    };
+    let affinity = RankingContext {
+        provider_affinity: Some("addon:1".into()),
+        ..Default::default()
+    };
+    assert_eq!(
+        ranked_in(quality(), &ProfilePreferences::default(), &affinity),
+        ["other-1080", "affinity-720"]
+    );
+    assert_eq!(
+        ranked_in(audio(), &english(), &affinity),
+        ["other-english", "affinity-french"]
+    );
+    let with_memory = RankingContext {
+        series_memory: Some(memory),
+        ..affinity
+    };
+    assert_eq!(
+        ranked_in(remembered(), &ProfilePreferences::default(), &with_memory),
+        ["other-remembered", "affinity-plain"]
+    );
+}
+
+#[test]
+fn provider_affinity_is_wire_optional_and_validated() {
+    let wire = serde_json::to_value(&RankingContext {
+        provider_affinity: Some("addon:1".into()),
+        ..Default::default()
+    })
+    .unwrap();
+    assert_eq!(wire["provider_affinity"], "addon:1");
+    let empty = serde_json::to_value(RankingContext::default()).unwrap();
+    assert!(empty.get("provider_affinity").is_none());
+    let read: RankingContext =
+        serde_json::from_str(r#"{"provider_affinity":"addon:1"}"#).unwrap();
+    assert!(read.validate().is_ok());
+    assert_eq!(read.provider_affinity.as_deref(), Some("addon:1"));
+    for invalid in [String::new(), "addon\n1".into(), "a".repeat(129)] {
+        let context = RankingContext {
+            provider_affinity: Some(invalid),
+            ..Default::default()
+        };
+        assert!(context.validate().is_err());
+    }
+}
