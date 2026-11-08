@@ -165,8 +165,15 @@ fn preferred_discovery_uses_current_language_and_stable_supplier_without_soft_ma
 }
 
 #[test]
-fn reuse_rejects_over_cap_and_unknown_resolution_without_blocking_eligible_fallback() {
+fn soft_quality_preferences_do_not_block_preferred_eligible_audio() {
  let mut rows=vec![row("large","addon:manual","CineStream",&["en"]),row("unknown","addon:manual","CineStream",&["en"]),row("fits","addon:other","Other",&["en"])];rows[0].quality_height=Some(2160);rows[1].quality_height=None;rows[2].quality_height=Some(720);
- let context=RankingContext::for_device_height(Some(1080));let result=reusable_source_context(&rows,Some(&memory(&["eng-US"])),None,&ProfilePreferences::default(),&context).unwrap();assert_eq!(result.ids,vec!["fits"]);assert!(result.ready);
+ let context=RankingContext::for_device_height(Some(1080));let result=reusable_source_context(&rows,Some(&memory(&["eng-US"])),None,&ProfilePreferences::default(),&context).unwrap();assert_eq!(result.ids,vec!["large","unknown","fits"]);assert!(result.ready);assert!(!result.fully_matches);
  let normalized=preferred_source_memory(Some(&memory(&["eng-US"])),None,&ProfilePreferences::default()).unwrap().unwrap();assert_eq!(normalized.audio_languages,vec!["en-US"]);
+}
+
+#[test]
+fn selected_reuse_audio_is_an_explicit_admission_intent_not_a_subtitle_or_default_track() {
+ let candidate=row("multi","addon:manual","CineStream",&["ja","en"]);let memory=memory(&["eng-US"]);
+ assert_eq!(reuse_audio_language(&candidate,Some(&memory),&ProfilePreferences::default()).unwrap().as_deref(),Some("en"));
+ let spanish=ProfilePreferences{preferred_audio_language:Some("es".into()),..Default::default()};assert_eq!(reuse_audio_language(&candidate,Some(&memory),&spanish).unwrap(),None);
 }
