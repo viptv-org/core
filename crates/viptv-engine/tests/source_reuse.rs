@@ -163,3 +163,10 @@ fn preferred_discovery_uses_current_language_and_stable_supplier_without_soft_ma
  assert_eq!(preferred_supplier_id(&remembered,&[("a".into(),"CineStream".into()),("b".into(),"cinestream".into())]),None);
  assert_eq!(preferred_source_decision(true,false,4999,false),PreferredSourceDecision::Start);assert_eq!(preferred_source_decision(true,false,5000,false),PreferredSourceDecision::Fallback);assert_eq!(preferred_source_decision(false,true,0,false),PreferredSourceDecision::Fallback);assert_eq!(preferred_source_decision(true,false,0,true),PreferredSourceDecision::Cancel);
 }
+
+#[test]
+fn reuse_rejects_over_cap_and_unknown_resolution_without_blocking_eligible_fallback() {
+ let mut rows=vec![row("large","addon:manual","CineStream",&["en"]),row("unknown","addon:manual","CineStream",&["en"]),row("fits","addon:other","Other",&["en"])];rows[0].quality_height=Some(2160);rows[1].quality_height=None;rows[2].quality_height=Some(720);
+ let context=RankingContext::for_device_height(Some(1080));let result=reusable_source_context(&rows,Some(&memory(&["eng-US"])),None,&ProfilePreferences::default(),&context).unwrap();assert_eq!(result.ids,vec!["fits"]);assert!(result.ready);
+ let normalized=preferred_source_memory(Some(&memory(&["eng-US"])),None,&ProfilePreferences::default()).unwrap().unwrap();assert_eq!(normalized.audio_languages,vec!["en-US"]);
+}

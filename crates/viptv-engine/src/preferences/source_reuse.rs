@@ -86,11 +86,17 @@ pub fn reusable_sources(
     if !preferences.remembered_source_reuse {
         return Ok(ReusableSources::default());
     }
-    let languages =
-        source_audio_languages(&serde_json::json!({"audio_languages":memory.audio_languages}));
+    let Some(effective) = preferred_source_memory(Some(memory), None, preferences)? else { return Ok(ReusableSources::default()); };
+    let memory = &effective;
+    let languages = source_audio_languages(&serde_json::json!({"audio_languages":memory.audio_languages}));
+    let cap = match (preferences.max_quality_height, context.device.max_height) {
+        (Some(a), Some(b)) => Some(a.min(b)),
+        (a, b) => a.or(b),
+    };
     let eligible = rows
         .iter()
         .filter(|row| !row.id.is_empty() && !fails_hard_filter(row, &context.device))
+        .filter(|row| cap.is_none_or(|cap| row.quality_height.is_some_and(|height| height <= cap)))
         .filter(|row| {
             languages.is_empty() || {
                 let audio = source_audio_languages(
@@ -126,10 +132,6 @@ pub fn reusable_sources(
             }
         }
     }
-    let cap = match (preferences.max_quality_height, context.device.max_height) {
-        (Some(a), Some(b)) => Some(a.min(b)),
-        (a, b) => a.or(b),
-    };
     let first = ids
         .first()
         .and_then(|id| rows.iter().find(|row| row.id == *id));
@@ -166,6 +168,7 @@ pub fn preferred_source_memory(title: Option<&RememberedSource>, across: Option<
     memory.validate()?;
     if !preferences.remembered_source_reuse { return Ok(None); }
     let mut memory = memory.clone();
+    memory.audio_languages = source_audio_languages(&serde_json::json!({"audio_languages":memory.audio_languages}));
     if let Some(language) = &preferences.preferred_audio_language {
         memory.audio_languages = source_audio_languages(&serde_json::json!({"audio_languages":[language]}));
         if memory.audio_languages.is_empty() { return Ok(None); }

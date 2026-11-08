@@ -278,8 +278,9 @@ mod vsources {
                     sdk_candidate(format!("{id}-{index}"), "vsources:1", &stream(row))
                 })
                 .collect();
-            for row in &rows {
-                assert_eq!(row.audio_languages, strings(&expect["languages"]), "{id}");
+            for (index,row) in rows.iter().enumerate() {
+                let selected=stream(&case["streams"][index]).meta.audio_selection.map(|audio| vec![audio.language.as_str().to_owned()]);
+                assert_eq!(row.audio_languages, selected.unwrap_or_else(||strings(&expect["languages"])), "{id}");
                 assert_eq!(row.audio_flags, strings(&expect["flags"]), "{id}");
                 assert_eq!(
                     row.subbed,

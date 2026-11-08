@@ -11,6 +11,8 @@ use vsources::error::FetchError;
 use vsources::traits::{FetchRequest, FetchResponse, Fetcher, ProbeResponse};
 use vsources::{MediaId, MediaRef, MediaType};
 pub use vsources::Stream as SdkStream;
+pub use vsources::MediaRef as SdkMediaRef;
+pub use vsources::traits::ResolvedMedia as SdkResolvedMedia;
 pub use vsources::types::{AudioSelection, CountryCode, Format};
 
 /// Canonical metadata IDs are authoritative. Opaque title IDs and title text are never parsed.
@@ -296,6 +298,13 @@ pub fn engine(
 }
 
 /// Merged SDK snapshots become a bounded sequence of new grants, never URL-bearing public events.
+pub fn sdk_metadata(title: &crate::presentation::Card, media: &MediaRef) -> Option<SdkResolvedMedia> {
+    if title.identity.episode.is_some() || title.title.trim().is_empty() { return None; }
+    let tmdb_id = match media.id { MediaId::Tmdb(id) => Some(id), _ => None };
+    let imdb_id = crate::identity::resolve(&title.identity, "imdb", &[]).ok().map(|id| id.value);
+    Some(SdkResolvedMedia { tmdb_id, imdb_id, name: title.title.clone(), year: title.metadata.as_ref().and_then(|m|m.year).and_then(|y|y.try_into().ok()), season: media.season, episode: media.episode })
+}
+
 pub fn preferred_supplier(config: &VsourcesConfiguration, memory: &crate::preferences::RememberedSource) -> Result<Option<String>, Error> {
     let engine = engine(config, Arc::new(SolvingFetcher::new(Arc::new(|| true), None)))?;
     let enabled = engine.providers().iter().map(|source| (source.id.clone(), source.label.clone())).collect::<Vec<_>>();
@@ -303,15 +312,15 @@ pub fn preferred_supplier(config: &VsourcesConfiguration, memory: &crate::prefer
 }
 
 pub fn resolve_progressive<'a>(config: VsourcesConfiguration, media: MediaRef, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>) + Send + 'a) -> std::pin::Pin<Box<dyn std::future::Future<Output=Result<(), Error>> + Send + 'a>> {
-    Box::pin(resolve_scoped(config, media, None, vec![], authorize, cloudflare, publish))
+    Box::pin(resolve_scoped(config, media, None, vec![], None, authorize, cloudflare, publish))
 }
 
 pub fn resolve_progressive_excluding<'a>(config: VsourcesConfiguration, media: MediaRef, excluded: Vec<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>) + Send + 'a) -> std::pin::Pin<Box<dyn std::future::Future<Output=Result<(), Error>> + Send + 'a>> {
-    Box::pin(resolve_scoped(config, media, None, excluded, authorize, cloudflare, publish))
+    Box::pin(resolve_scoped(config, media, None, excluded, None, authorize, cloudflare, publish))
 }
 
-pub fn resolve_preferred_progressive<'a>(config: VsourcesConfiguration, media: MediaRef, supplier: String, language: Option<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>) + Send + 'a) -> std::pin::Pin<Box<dyn std::future::Future<Output=Result<(), Error>> + Send + 'a>> {
-    Box::pin(resolve_scoped(config, media, Some((supplier, language)), vec![], authorize, cloudflare, publish))
+pub fn resolve_preferred_progressive<'a>(config: VsourcesConfiguration, media: MediaRef, supplier: String, language: Option<String>, metadata: Option<SdkResolvedMedia>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>) + Send + 'a) -> std::pin::Pin<Box<dyn std::future::Future<Output=Result<(), Error>> + Send + 'a>> {
+    Box::pin(resolve_scoped(config, media, Some((supplier, language)), vec![], metadata, authorize, cloudflare, publish))
 }
 
 async fn resolve_scoped(
@@ -319,6 +328,7 @@ async fn resolve_scoped(
     media: MediaRef,
     preferred: Option<(String, Option<String>)>,
     excluded: Vec<String>,
+    metadata: Option<SdkResolvedMedia>,
     authorize: Arc<dyn Fn() -> bool + Send + Sync>,
     cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>,
     mut publish: impl FnMut(Vec<vsources::Stream>) + Send,
@@ -333,7 +343,7 @@ async fn resolve_scoped(
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
     let resolve = async {
         if let Some((supplier, language)) = &preferred {
-            engine.resolve_provider_progressive(&media, supplier, language.as_deref(), tx).await
+            engine.resolve_provider_progressive(&media, supplier, language.as_deref().map(|tag|tag.split('-').next().unwrap_or(tag)), metadata, tx).await
         } else {
             engine.resolve_progressive_excluding(&media, &excluded, tx).await
         }
@@ -456,6 +466,12 @@ mod tests {
             episode: None,
             edition: None,
         }
+    }
+    #[test]
+    fn required_audio_selection_overrides_other_available_languages() {
+        let mut stream=vsources::Stream::new(Url::parse("https://media.example/clip.m3u8").unwrap(),vsources::types::Format::Hls);
+        stream.meta.languages=vec![vsources::types::CountryCode::En,vsources::types::CountryCode::Fr];stream.meta.audio_selection=Some(vsources::types::AudioSelection{language:vsources::types::CountryCode::Fr,audio_index:1});
+        assert_eq!(candidate("clip".into(),"vsources:1",&stream).audio_languages,vec!["fr"]);
     }
     #[test]
     fn distinct_required_audio_selections_are_not_deduplicated_as_same_source() {

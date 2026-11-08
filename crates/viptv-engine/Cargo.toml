@@ -27,8 +27,8 @@ tokio = { version = "1", features = ["time", "rt", "sync", "macros", "net"], opt
 rusqlite = { version = "0.32", features = ["bundled"], optional = true }
 futures = { version = "0.3", optional = true }
 
-vsources = { git = "https://github.com/vynxc/vsources.git", rev = "d9756d870429f556a229302d7225cf4fe3b7ba06", default-features = false, optional = true }
-vsources-cloudflare = { git = "https://github.com/vynxc/vsources.git", rev = "d9756d870429f556a229302d7225cf4fe3b7ba06", default-features = false, optional = true }
+vsources = { git = "https://github.com/vynxc/vsources.git", rev = "39df0e7040fbf3c6b000c18877a304792919738f", default-features = false, optional = true }
+vsources-cloudflare = { git = "https://github.com/vynxc/vsources.git", rev = "39df0e7040fbf3c6b000c18877a304792919738f", default-features = false, optional = true }
 async-trait = { version = "0.1", optional = true }
 flate2 = { version = "1", default-features = false, features = ["rust_backend"], optional = true }
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream", "gzip", "brotli", "deflate"], optional = true }
