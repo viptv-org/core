@@ -19,6 +19,7 @@ fn row(id: &str, addon: &str, supplier: &str, languages: &[&str]) -> SourceCandi
 fn memory(languages: &[&str]) -> RememberedSource {
     RememberedSource {
         provider_id: "addon:manual".into(),
+        source_id: None,
         provider_name: Some("CineStream".into()),
         audio_languages: languages.iter().map(|s| s.to_string()).collect(),
     }
@@ -149,4 +150,16 @@ fn cross_title_reuse_applies_only_without_a_title_choice_and_never_overrides_its
             .ids,
         vec!["english"]
     );
+}
+
+#[test]
+fn preferred_discovery_uses_current_language_and_stable_supplier_without_soft_match_waits() {
+ let mut prefs=ProfilePreferences::default();prefs.preferred_audio_language=Some("es".into());prefs.max_quality_height=Some(1080);
+ let remembered=memory(&["en"]);let current=preferred_source_memory(Some(&remembered),None,&prefs).unwrap().unwrap();assert_eq!(current.audio_languages,vec!["es"]);
+ let mut rows=vec![row("ready","addon:manual","CineStream",&["es"])];rows[0].quality_height=Some(720);
+ let selected=reusable_source_context(&rows,Some(&remembered),None,&prefs,&RankingContext::default()).unwrap();assert!(selected.ready);assert!(!selected.fully_matches);
+ assert!(!reusable_source_context(&[row("wrong","addon:manual","CineStream",&["en"])],Some(&remembered),None,&prefs,&RankingContext::default()).unwrap().ready);
+ let suppliers=vec![("a".into(),"CineStream".into()),("b".into(),"Other".into())];assert_eq!(preferred_supplier_id(&remembered,&suppliers),Some("a".into()));let mut stable=remembered.clone();stable.source_id=Some("b".into());assert_eq!(preferred_supplier_id(&stable,&suppliers),Some("b".into()));stable.source_id=Some("removed".into());assert_eq!(preferred_supplier_id(&stable,&suppliers),None);
+ assert_eq!(preferred_supplier_id(&remembered,&[("a".into(),"CineStream".into()),("b".into(),"cinestream".into())]),None);
+ assert_eq!(preferred_source_decision(true,false,4999,false),PreferredSourceDecision::Start);assert_eq!(preferred_source_decision(true,false,5000,false),PreferredSourceDecision::Fallback);assert_eq!(preferred_source_decision(false,true,0,false),PreferredSourceDecision::Fallback);assert_eq!(preferred_source_decision(true,false,0,true),PreferredSourceDecision::Cancel);
 }

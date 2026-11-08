@@ -296,9 +296,29 @@ pub fn engine(
 }
 
 /// Merged SDK snapshots become a bounded sequence of new grants, never URL-bearing public events.
-pub async fn resolve_progressive(
+pub fn preferred_supplier(config: &VsourcesConfiguration, memory: &crate::preferences::RememberedSource) -> Result<Option<String>, Error> {
+    let engine = engine(config, Arc::new(SolvingFetcher::new(Arc::new(|| true), None)))?;
+    let enabled = engine.providers().iter().map(|source| (source.id.clone(), source.label.clone())).collect::<Vec<_>>();
+    Ok(crate::preferences::preferred_supplier_id(memory, &enabled))
+}
+
+pub async fn resolve_progressive(config: VsourcesConfiguration, media: MediaRef, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>)) -> Result<(), Error> {
+    resolve_scoped(config, media, None, vec![], authorize, cloudflare, publish).await
+}
+
+pub async fn resolve_progressive_excluding(config: VsourcesConfiguration, media: MediaRef, excluded: Vec<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>)) -> Result<(), Error> {
+    resolve_scoped(config, media, None, excluded, authorize, cloudflare, publish).await
+}
+
+pub async fn resolve_preferred_progressive(config: VsourcesConfiguration, media: MediaRef, supplier: String, language: Option<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>)) -> Result<(), Error> {
+    resolve_scoped(config, media, Some((supplier, language)), vec![], authorize, cloudflare, publish).await
+}
+
+async fn resolve_scoped(
     config: VsourcesConfiguration,
     media: MediaRef,
+    preferred: Option<(String, Option<String>)>,
+    excluded: Vec<String>,
     authorize: Arc<dyn Fn() -> bool + Send + Sync>,
     cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>,
     mut publish: impl FnMut(Vec<vsources::Stream>),
@@ -311,7 +331,13 @@ pub async fn resolve_progressive(
         Arc::new(SolvingFetcher::new(authorize.clone(), cloudflare)),
     )?;
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
-    let resolve = engine.resolve_progressive(&media, tx);
+    let resolve = async {
+        if let Some((supplier, language)) = &preferred {
+            engine.resolve_provider_progressive(&media, supplier, language.as_deref(), tx).await
+        } else {
+            engine.resolve_progressive_excluding(&media, &excluded, tx).await
+        }
+    };
     tokio::pin!(resolve);
     let deadline = tokio::time::sleep(Duration::from_secs(45));
     tokio::pin!(deadline);
@@ -353,10 +379,8 @@ pub fn candidate(
             languages.push(language.as_str().to_owned());
         }
     }
-    if languages.is_empty() {
-        if let Some(audio) = meta.audio_selection.as_ref() {
-            languages.push(audio.language.as_str().to_owned());
-        }
+    if let Some(audio) = meta.audio_selection.as_ref() {
+        languages = vec![audio.language.as_str().to_owned()];
     }
     let audio_flags = meta
         .dubbed
