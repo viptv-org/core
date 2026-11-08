@@ -302,16 +302,16 @@ pub fn preferred_supplier(config: &VsourcesConfiguration, memory: &crate::prefer
     Ok(crate::preferences::preferred_supplier_id(memory, &enabled))
 }
 
-pub async fn resolve_progressive(config: VsourcesConfiguration, media: MediaRef, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>)) -> Result<(), Error> {
-    resolve_scoped(config, media, None, vec![], authorize, cloudflare, publish).await
+pub fn resolve_progressive<'a>(config: VsourcesConfiguration, media: MediaRef, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>) + Send + 'a) -> std::pin::Pin<Box<dyn std::future::Future<Output=Result<(), Error>> + Send + 'a>> {
+    Box::pin(resolve_scoped(config, media, None, vec![], authorize, cloudflare, publish))
 }
 
-pub async fn resolve_progressive_excluding(config: VsourcesConfiguration, media: MediaRef, excluded: Vec<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>)) -> Result<(), Error> {
-    resolve_scoped(config, media, None, excluded, authorize, cloudflare, publish).await
+pub fn resolve_progressive_excluding<'a>(config: VsourcesConfiguration, media: MediaRef, excluded: Vec<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>) + Send + 'a) -> std::pin::Pin<Box<dyn std::future::Future<Output=Result<(), Error>> + Send + 'a>> {
+    Box::pin(resolve_scoped(config, media, None, excluded, authorize, cloudflare, publish))
 }
 
-pub async fn resolve_preferred_progressive(config: VsourcesConfiguration, media: MediaRef, supplier: String, language: Option<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>)) -> Result<(), Error> {
-    resolve_scoped(config, media, Some((supplier, language)), vec![], authorize, cloudflare, publish).await
+pub fn resolve_preferred_progressive<'a>(config: VsourcesConfiguration, media: MediaRef, supplier: String, language: Option<String>, authorize: Arc<dyn Fn() -> bool + Send + Sync>, cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>, publish: impl FnMut(Vec<vsources::Stream>) + Send + 'a) -> std::pin::Pin<Box<dyn std::future::Future<Output=Result<(), Error>> + Send + 'a>> {
+    Box::pin(resolve_scoped(config, media, Some((supplier, language)), vec![], authorize, cloudflare, publish))
 }
 
 async fn resolve_scoped(
@@ -321,7 +321,7 @@ async fn resolve_scoped(
     excluded: Vec<String>,
     authorize: Arc<dyn Fn() -> bool + Send + Sync>,
     cloudflare: Option<Arc<vsources_cloudflare::SolverChain>>,
-    mut publish: impl FnMut(Vec<vsources::Stream>),
+    mut publish: impl FnMut(Vec<vsources::Stream>) + Send,
 ) -> Result<(), Error> {
     if !authorize() {
         return Err(Error::Forbidden);
