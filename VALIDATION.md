@@ -167,3 +167,14 @@ and incremental publication remain unqualified.
 Bounded asynchronous Home assembly now marks deadline-expired rows Failed with
 retry copy and returns a complete snapshot, because its remaining futures are
 cancelled. Pending no longer implies a continuation that does not exist.
+
+## Device source-choice reuse
+
+The engine now projects eligible automatic IDs and remembered supplier/add-on/
+audio candidates from its ranked rows. Expiring source IDs and URLs are not
+part of the durable observation schema. Title memory takes precedence over an
+opt-in cross-title memory; an unmatched known language produces no candidate.
+Existing hard filters and profile reuse opt-out remain authoritative. Runtime
+engine tests pass (171 cases, including six reuse cases). Engine contract
+regeneration completes without changing generated bindings; this is an opt-in
+server projection and does not change the existing rank order or native bridge.
