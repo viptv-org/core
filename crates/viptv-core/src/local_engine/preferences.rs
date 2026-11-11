@@ -159,7 +159,8 @@ impl LocalEngine {
             None,
         )
     }
-    /// `context_json` is a `RankingContext`: device capability and series memory.
+    /// `context_json` is a `RankingContext`: device capability, series memory
+    /// and provider affinity.
     pub fn rank_sources_with_context(
         &self,
         profile: String,
