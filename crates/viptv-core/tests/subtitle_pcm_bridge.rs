@@ -21,6 +21,15 @@ fn capabilities_and_epoch_are_explicit() {
     let c: Value = serde_json::from_str(&subtitle_pcm_capabilities()).unwrap();
     assert_eq!(c["available"], cfg!(feature = "subtitle-vad"));
     assert_eq!(c["maxInputBytes"], 32768);
+    assert_eq!(c["frontendVersion"], "pcm16-webrtc20-v2");
+    assert_eq!(
+        c["vadPatch"],
+        if cfg!(feature = "subtitle-vad") {
+            "48k-input-offset-v1"
+        } else {
+            "unavailable"
+        }
+    );
     let b = SubtitlePcmSyncBridge::new(3, "[]".into()).unwrap();
     let stale = call(&b, 2, 0, 48000, 2, vec![0; 3840]);
     assert_eq!(stale["status"], "staleEpoch");
@@ -134,4 +143,31 @@ fn dropped_subframes_cannot_make_fake_complete_frames() {
     assert_eq!(a["processedFrames"], 1);
     assert_eq!(a["lastFrameStartUs"], 20_000);
     assert_eq!(a["lastFrameEndUs"], 40_000);
+}
+
+#[cfg(feature = "subtitle-vad")]
+#[test]
+fn forty_eight_khz_pcm_preserves_speech_classified_second_half() {
+    let bridge = SubtitlePcmSyncBridge::new(8, "[]".into()).unwrap();
+    let mut samples = vec![0_i16; 480];
+    samples.extend(
+        (0..480).map(|i| {
+            ((i as f64 * std::f64::consts::TAU * 440.0 / 48_000.0).sin() * 20_000.0) as i16
+        }),
+    );
+    let bytes: Vec<_> = samples
+        .iter()
+        .flat_map(|sample| sample.to_le_bytes())
+        .collect();
+    for frame in 0..5 {
+        assert_eq!(
+            call(&bridge, 8, frame * 20_000, 48000, 1, bytes.clone())["status"],
+            "ok"
+        );
+    }
+    let after_gap: Value =
+        serde_json::from_str(&bridge.gap(8, 100_000, 60_000_000).unwrap()).unwrap();
+    assert_eq!(after_gap["processedFrames"], 5);
+    assert_eq!(after_gap["estimate"]["evidence"]["observedUs"], 100_000);
+    assert_eq!(after_gap["estimate"]["evidence"]["speechUs"], 100_000);
 }

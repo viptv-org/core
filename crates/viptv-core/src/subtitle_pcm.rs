@@ -4,6 +4,10 @@ use std::sync::{Mutex, TryLockError};
 use viptv_engine::subtitle_sync::{CueInterval, Estimate, Estimator};
 
 pub const MAX_PCM_BYTES: usize = 32 * 1024;
+#[cfg(feature = "subtitle-vad")]
+const VAD_PATCH: &str = viptv_vad::PATCH_VERSION;
+#[cfg(not(feature = "subtitle-vad"))]
+const VAD_PATCH: &str = "unavailable";
 const VAD_REVISION: &str = "e283ca41df3a84b0e87fb1f5cb9b21580a286b09";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -71,7 +75,7 @@ pub fn subtitle_pcm_capabilities() -> String {
     serde_json::json!({"available":available, "encoding":"pcmS16Le", "frameMs":20,
         "sampleRates":if available { vec![8_000,16_000,32_000,48_000] } else { vec![] },
         "channels":if available { vec![1,2] } else { vec![] }, "maxInputBytes":MAX_PCM_BYTES,
-        "vadRevision":VAD_REVISION,"vadMode":2,"frontendVersion":"pcm16-webrtc20-v1","workerOnly":true})
+        "vadRevision":VAD_REVISION,"vadMode":2,"frontendVersion":"pcm16-webrtc20-v2","vadPatch":VAD_PATCH,"workerOnly":true})
     .to_string()
 }
 

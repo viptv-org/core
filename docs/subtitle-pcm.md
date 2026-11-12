@@ -5,6 +5,9 @@ Enable core feature `subtitle-vad` to compile the pinned native WebRTC VAD.
 The exported ABI remains present without that feature and reports unavailable.
 Generated bindings and the native library must be adopted from the same core
 revision; build native bindings with `VIPTV_CORE_FEATURES=native,subtitle-vad`.
+Require `frontendVersion=pcm16-webrtc20-v2` and
+`vadPatch=48k-input-offset-v1` before activating the worker. These identify the
+48 kHz correction that consumes every 10 ms input block.
 
 Use `SubtitlePcmSyncBridge(epoch, cuesJson)` on one background worker:
 

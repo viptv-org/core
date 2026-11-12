@@ -617,7 +617,7 @@ int WebRtcVad_CalcVad48khz(VadInstT* inst, const int16_t* speech_frame,
   size_t num_10ms_frames = frame_length / kFrameLen10ms48khz;
 
   for (i = 0; i < num_10ms_frames; i++) {
-    WebRtcSpl_Resample48khzTo8khz(speech_frame,
+    WebRtcSpl_Resample48khzTo8khz(speech_frame + i * kFrameLen10ms48khz,
                                   &speech_nb[i * kFrameLen10ms8khz],
                                   &inst->state_48_to_8,
                                   tmp_mem);

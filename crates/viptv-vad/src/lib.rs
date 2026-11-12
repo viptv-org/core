@@ -1,6 +1,7 @@
 use std::{ffi::c_void, ptr::NonNull};
 
 pub const SOURCE_REVISION: &str = "e283ca41df3a84b0e87fb1f5cb9b21580a286b09";
+pub const PATCH_VERSION: &str = "48k-input-offset-v1";
 pub const SAMPLE_RATES: [u32; 4] = [8_000, 16_000, 32_000, 48_000];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,6 +97,29 @@ mod tests {
             vad.classify(44_100, &vec![0; 882]),
             Err(VadError::UnsupportedRate)
         );
+    }
+
+    #[test]
+    fn forty_eight_khz_classifies_signal_present_only_in_second_half() {
+        let tone: Vec<i16> = (0..480)
+            .map(|i| {
+                ((i as f64 * std::f64::consts::TAU * 440.0 / 48_000.0).sin() * 20_000.0) as i16
+            })
+            .collect();
+        let mut second_half = vec![0; 480];
+        second_half.extend_from_slice(&tone);
+        let mut first_half = tone;
+        first_half.extend_from_slice(&[0; 480]);
+        let mut vad = Vad::new().unwrap();
+        assert_eq!(
+            vad.classify(48_000, &second_half),
+            Ok(true),
+            "the second 10 ms block must contribute"
+        );
+        vad.reset().unwrap();
+        assert_eq!(vad.classify(48_000, &first_half), Ok(true));
+        vad.reset().unwrap();
+        assert_eq!(vad.classify(48_000, &[0; 960]), Ok(false));
     }
 
     #[test]
