@@ -3523,6 +3523,7 @@ dependencies = [
  "url",
  "uuid",
  "viptv-engine",
+ "viptv-vad",
 ]
 
 [[package]]
@@ -3570,6 +3571,13 @@ dependencies = [
  "facet_generate",
  "viptv-core",
  "viptv-engine",
+]
+
+[[package]]
+name = "viptv-vad"
+version = "0.1.0"
+dependencies = [
+ "cc",
 ]
 
 [[package]]

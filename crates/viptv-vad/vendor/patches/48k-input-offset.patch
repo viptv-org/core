@@ -1,0 +1,7 @@
+--- a/webrtc/common_audio/vad/vad_core.c
++++ b/webrtc/common_audio/vad/vad_core.c
+@@ -619,3 +619,3 @@
+   for (i = 0; i < num_10ms_frames; i++) {
+-    WebRtcSpl_Resample48khzTo8khz(speech_frame,
++    WebRtcSpl_Resample48khzTo8khz(speech_frame + i * kFrameLen10ms48khz,
+                                   &speech_nb[i * kFrameLen10ms8khz],

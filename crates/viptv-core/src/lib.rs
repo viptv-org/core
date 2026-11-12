@@ -283,3 +283,6 @@ fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreErro
 
 pub mod subtitle_sync;
 pub use subtitle_sync::SubtitleSyncBridge;
+
+pub mod subtitle_pcm;
+pub use subtitle_pcm::SubtitlePcmSyncBridge;
