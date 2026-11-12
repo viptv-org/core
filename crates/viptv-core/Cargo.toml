@@ -16,10 +16,12 @@ live-runtime = ["native", "viptv-engine/source-runtime", "dep:tokio"]
 vsources-runtime = ["native", "viptv-engine/vsources-runtime", "dep:tokio"]
 native = ["dep:uniffi", "viptv-engine/runtime"]
 bindgen = ["native", "uniffi/cli"]
+subtitle-vad = ["native", "dep:viptv-vad"]
 os-secrets = ["dep:keyring", "dep:dbus-secret-service"]
 
 [dependencies]
 viptv-engine = { path = "../viptv-engine" }
+viptv-vad = { path = "../viptv-vad", optional = true }
 base64 = "0.22.1"
 sha1 = "0.10.6"
 unicode-normalization = "0.1.24"
