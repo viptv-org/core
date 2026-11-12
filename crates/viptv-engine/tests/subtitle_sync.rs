@@ -451,7 +451,7 @@ fn partial_frames_missing_subframes_and_large_gaps_are_bounded() {
 }
 
 #[test]
-fn unsupported_offset_jump_does_not_relabel_previous_correction_as_current() {
+fn discontinuous_offset_jump_does_not_relabel_previous_correction_as_current() {
     let track = cues(300, 42);
     let mut estimator = Estimator::new(1, track.clone()).unwrap();
     estimator
@@ -486,7 +486,7 @@ fn unsupported_offset_jump_does_not_relabel_previous_correction_as_current() {
         )
         .unwrap();
     let second = estimator.estimate(1).unwrap();
-    assert_eq!(second.state, State::Observing);
+    assert_eq!(second.state, State::Ambiguous);
     assert_eq!(second.correction, first.correction);
     assert_eq!(second.revision, first.revision);
 }
@@ -576,4 +576,27 @@ fn old_anchors_expire_across_large_observed_gap() {
     let result = estimator.estimate(1).unwrap();
     assert_eq!(result.evidence.anchors, 1);
     assert_eq!(result.revision, accepted.revision);
+}
+
+#[test]
+fn nonlinear_step_cannot_be_outvoted_by_later_matching_windows() {
+    let track = cues(1_800, 42);
+    let mut estimator = Estimator::new(1, track.clone()).unwrap();
+    for window in 0..22 {
+        let offset_us = if window < 3 { 0 } else { 5_000_000 };
+        let map = Correction {
+            anchor_us: 0,
+            offset_us,
+            scale: 1.0,
+        };
+        estimator
+            .push(1, &observations(&track, map, 40 + window * 60, 60))
+            .unwrap();
+        let result = estimator.estimate(1).unwrap();
+        assert_eq!(result.revision, 1);
+        assert_eq!(result.correction.unwrap().offset_us, 0);
+        if window >= 3 {
+            assert_eq!(result.state, State::Ambiguous);
+        }
+    }
 }

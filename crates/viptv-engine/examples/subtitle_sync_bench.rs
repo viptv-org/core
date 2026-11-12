@@ -47,11 +47,23 @@ fn main() {
         }
     }
     latencies.sort_by(f64::total_cmp);
+    let process_peak_rss_kib =
+        std::fs::read_to_string("/proc/self/status")
+            .ok()
+            .and_then(|status| {
+                status.lines().find_map(|line| {
+                    line.strip_prefix("VmHWM:")?
+                        .split_whitespace()
+                        .next()?
+                        .parse::<u64>()
+                        .ok()
+                })
+            });
     println!(
         "{}",
         serde_json::json!({ "fixture": "synthetic-activity-only", "windows": latencies.len(),
         "acceptedWindows": accepted, "windowSeconds": 60, "meanMs": latencies.iter().sum::<f64>() / latencies.len() as f64,
         "p95Ms": latencies[(latencies.len() * 95 / 100).min(latencies.len() - 1)],
-        "maxMs": latencies.last().unwrap(), "algorithmVersion": ALGORITHM_VERSION })
+        "maxMs": latencies.last().unwrap(), "processPeakRssKiB": process_peak_rss_kib, "algorithmVersion": ALGORITHM_VERSION })
     );
 }

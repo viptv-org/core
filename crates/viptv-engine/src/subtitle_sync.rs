@@ -165,6 +165,7 @@ pub struct Estimator {
     analyzed_end: Option<i64>,
     anchors: VecDeque<Anchor>,
     output: Estimate,
+    incompatible: bool,
 }
 
 impl Estimator {
@@ -183,6 +184,7 @@ impl Estimator {
             last_end_us: None,
             analyzed_end: None,
             anchors: VecDeque::new(),
+            incompatible: false,
             output: Estimate {
                 algorithm_version: ALGORITHM_VERSION.into(),
                 epoch,
@@ -371,8 +373,21 @@ impl Estimator {
         }
         let offset_us = offset_bin * BIN_US;
         let title_center = start_bin * BIN_US + WINDOW as i64 * BIN_US / 2;
+        let subtitle_us = title_center - offset_us;
+        if let Some(previous) = self.anchors.back() {
+            let elapsed_us = subtitle_us - previous.subtitle_us;
+            let jump_us = (offset_us - previous.offset_us).abs();
+            if elapsed_us <= 0 || jump_us > 500_000 + elapsed_us / 200 {
+                self.incompatible = true;
+            }
+        }
+        if self.incompatible {
+            self.output.state = State::Ambiguous;
+            self.output.evidence = evidence;
+            return Ok(self.output.clone());
+        }
         self.anchors.push_back(Anchor {
-            subtitle_us: title_center - offset_us,
+            subtitle_us,
             offset_us,
             evidence: evidence.clone(),
         });

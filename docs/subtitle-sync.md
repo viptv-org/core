@@ -32,6 +32,9 @@ caller policy. Nothing persists audio, subtitles or corrections.
   Inliers must also span ten minutes. A residual/quantization sensitivity bound
   must be ≤500 ppm; it is a heuristic bound, not a statistical interval.
   Revisions use 100 ms/50 ppm hysteresis.
+- A validated local-offset jump exceeding 500 ms plus 0.5% of elapsed content
+  time latches ambiguity for that estimator instance. Later windows cannot
+  outvote a detected nonlinear edit into a global affine correction.
 
 `state` reports the latest observation attempt. `observationRevision` increases
 only when a new independent window is analyzed; use it to discard asynchronous
@@ -87,8 +90,10 @@ cargo run --locked -p viptv-engine --example subtitle_sync < input.json
 
 It accepts at most 32 batches and emits the final estimate as one JSON object.
 `subtitle_sync_bench` measures push/estimate windows using generated activity;
-it excludes fixture construction, audio acquisition, decode/VAD, bindings and
-playback. The implementation is independently written and adds no dependencies
+latency excludes fixture construction, audio acquisition, decode/VAD, bindings
+and playback. `processPeakRssKiB` reads Linux process high-water RSS, including
+fixture construction and all benchmark data; it is not incremental playback
+memory. Other platforms report null for that metric. The implementation is independently written and adds no dependencies
 or third-party alignment code.
 
 ## Qualification
