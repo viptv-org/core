@@ -13,4 +13,3 @@ VadInst* viptv_webrtc_vad_create(void) {
     }
     return (VadInst*)instance;
 }
-
