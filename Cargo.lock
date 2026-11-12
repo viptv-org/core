@@ -1464,6 +1464,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6dbf3de79e51f3d586ab4cb9d5c3e2c14aa28ed23d180cf89b4df0454a69cc87"
 
 [[package]]
+name = "httpdate"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df3b46402a9d5adb4c86a0cf463f42e19994e3ee891101b1841f30a545cb49a9"
+
+[[package]]
 name = "hyper"
 version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3583,7 +3589,7 @@ dependencies = [
 [[package]]
 name = "vsources"
 version = "0.1.0"
-source = "git+https://github.com/viptv-org/vsources.git?rev=320645b0a95ef1ba942e27b8ae4ee1c96ee5a523#320645b0a95ef1ba942e27b8ae4ee1c96ee5a523"
+source = "git+https://github.com/viptv-org/vsources.git?rev=4195c1d71d155270738ff52343e9e2b3c7f6433a#4195c1d71d155270738ff52343e9e2b3c7f6433a"
 dependencies = [
  "async-trait",
  "futures",
@@ -3601,7 +3607,7 @@ dependencies = [
 [[package]]
 name = "vsources-cloudflare"
 version = "0.1.0"
-source = "git+https://github.com/viptv-org/vsources.git?rev=320645b0a95ef1ba942e27b8ae4ee1c96ee5a523#320645b0a95ef1ba942e27b8ae4ee1c96ee5a523"
+source = "git+https://github.com/viptv-org/vsources.git?rev=4195c1d71d155270738ff52343e9e2b3c7f6433a#4195c1d71d155270738ff52343e9e2b3c7f6433a"
 dependencies = [
  "async-trait",
  "serde",
@@ -3616,7 +3622,7 @@ dependencies = [
 [[package]]
 name = "vsources-core"
 version = "0.1.0"
-source = "git+https://github.com/viptv-org/vsources.git?rev=320645b0a95ef1ba942e27b8ae4ee1c96ee5a523#320645b0a95ef1ba942e27b8ae4ee1c96ee5a523"
+source = "git+https://github.com/viptv-org/vsources.git?rev=4195c1d71d155270738ff52343e9e2b3c7f6433a#4195c1d71d155270738ff52343e9e2b3c7f6433a"
 dependencies = [
  "async-trait",
  "fancy-regex",
@@ -3634,7 +3640,7 @@ dependencies = [
 [[package]]
 name = "vsources-extractors"
 version = "0.1.0"
-source = "git+https://github.com/viptv-org/vsources.git?rev=320645b0a95ef1ba942e27b8ae4ee1c96ee5a523#320645b0a95ef1ba942e27b8ae4ee1c96ee5a523"
+source = "git+https://github.com/viptv-org/vsources.git?rev=4195c1d71d155270738ff52343e9e2b3c7f6433a#4195c1d71d155270738ff52343e9e2b3c7f6433a"
 dependencies = [
  "aes",
  "async-trait",
@@ -3656,7 +3662,7 @@ dependencies = [
 [[package]]
 name = "vsources-providers"
 version = "0.1.0"
-source = "git+https://github.com/viptv-org/vsources.git?rev=320645b0a95ef1ba942e27b8ae4ee1c96ee5a523#320645b0a95ef1ba942e27b8ae4ee1c96ee5a523"
+source = "git+https://github.com/viptv-org/vsources.git?rev=4195c1d71d155270738ff52343e9e2b3c7f6433a#4195c1d71d155270738ff52343e9e2b3c7f6433a"
 dependencies = [
  "aes",
  "async-trait",
@@ -3665,6 +3671,7 @@ dependencies = [
  "fancy-regex",
  "futures",
  "hmac",
+ "httpdate",
  "md-5",
  "moka",
  "num-bigint",
@@ -3681,7 +3688,7 @@ dependencies = [
 [[package]]
 name = "vsources-tt"
 version = "0.1.0"
-source = "git+https://github.com/viptv-org/vsources.git?rev=320645b0a95ef1ba942e27b8ae4ee1c96ee5a523#320645b0a95ef1ba942e27b8ae4ee1c96ee5a523"
+source = "git+https://github.com/viptv-org/vsources.git?rev=4195c1d71d155270738ff52343e9e2b3c7f6433a#4195c1d71d155270738ff52343e9e2b3c7f6433a"
 dependencies = [
  "fancy-regex",
  "serde",
