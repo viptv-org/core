@@ -59,7 +59,8 @@ separate qualification work.
 The bounded activity estimator and `SubtitleSyncBridge` are documented in
 [docs/subtitle-sync.md](docs/subtitle-sync.md). Timestamped speech, observed
 silence and gaps produce session/epoch-fenced offset and drift candidates.
-Confidence remains heuristic; automatic playback application requires the
+The optional native [PCM/VAD frontend](docs/subtitle-pcm.md) supplies observed
+activity through a bounded worker API. Confidence remains heuristic; automatic playback application requires the
 held-out accuracy and platform gates documented there.
 
 ## Build and adoption
