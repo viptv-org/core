@@ -3,8 +3,8 @@
 Native C activity classification from `wiseman/py-webrtcvad` revision
 `e283ca41df3a84b0e87fb1f5cb9b21580a286b09`. Only the native C VAD/SPL closure is
 compiled; the Python wrapper, C++ implementation and external subprocesses are
-not used. `vendor/source-manifest.json` records the source archive hash and every
-upstream and compiled file hashes. Native notices are retained. One local patch,
+not used. `vendor/source-manifest.json` records the source archive hash and
+upstream/compiled file hashes. Native notices are retained. One local patch,
 `48k-input-offset-v1`, advances the 48 kHz input for each 10 ms resampling block.
 The manifest records its upstream/patched hashes and patch-file hash; the other
 44 upstream files are unchanged. The patch is in

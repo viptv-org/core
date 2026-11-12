@@ -53,7 +53,7 @@
       "file": "webrtc/common_audio/vad/vad_core.c",
       "identity": "48k-input-offset-v1",
       "patch": "patches/48k-input-offset.patch",
-      "patchSha256": "6a18c28f2423deecd904f820ae828c7c1156c17a56a388c3740c3619e1e86d37",
+      "patchSha256": "2987aca8acd98eb0dbdfaf2baa83eeec21d07cb144a9a6857c8245bb82296665",
       "patchedSha256": "abb940e5329da26a935a5eceff54f2f45db709fc326ee23f5ea0da3b5e20fb0d",
       "purpose": "Advance 48 kHz input by 480 samples for each 10 ms resampling block.",
       "upstreamSha256": "e73c0a7562225cb36eeca4a9d849cb445a932a8cb4bf948eb11135cfcfc81e57"
