@@ -54,6 +54,14 @@ The private native grant bridge and shared admission/recovery decisions are
 documented there. Capability activation and platform/backend effects remain
 separate qualification work.
 
+## Subtitle synchronization
+
+The bounded activity estimator and `SubtitleSyncBridge` are documented in
+[docs/subtitle-sync.md](docs/subtitle-sync.md). Timestamped speech, observed
+silence and gaps produce session/epoch-fenced offset and drift candidates.
+Confidence remains heuristic; automatic playback application requires the
+held-out accuracy and platform gates documented there.
+
 ## Build and adoption
 
 BE-002 retires the application-facing anonymous addon/provider bridge. Core

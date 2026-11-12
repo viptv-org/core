@@ -280,3 +280,6 @@ fn validate_normalized(kind: &str, v: &serde_json::Value) -> Result<(), CoreErro
         _ => Ok(()),
     }
 }
+
+pub mod subtitle_sync;
+pub use subtitle_sync::SubtitleSyncBridge;

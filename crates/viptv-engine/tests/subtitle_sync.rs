@@ -98,7 +98,7 @@ fn explicit_and_implicit_gaps_are_unobserved_not_silence() {
 }
 
 #[test]
-fn silence_sparse_music_and_mismatched_release_abstain() {
+fn silence_sparse_sustained_activity_and_mismatched_activity_abstain() {
     let track = cues(180, 42);
     let other = cues(180, 754);
     let mut mismatched = Estimator::new(1, track).unwrap();
@@ -267,6 +267,13 @@ fn large_timestamps_mapping_origin_manual_delay_and_inverse() {
         Some(650_000_000)
     );
     let base = 8_000_000_000_000_000_000_i64;
+    let unit = Correction {
+        anchor_us: 0,
+        offset_us: 17,
+        scale: 1.0,
+    };
+    assert_eq!(unit.title_time_us(base + 3), Some(base + 20));
+    assert_eq!(unit.subtitle_time_us(base + 23, 3), Some(base + 3));
     let large = Correction {
         anchor_us: base,
         offset_us: 2_000_000,
@@ -305,7 +312,7 @@ fn large_timestamps_mapping_origin_manual_delay_and_inverse() {
 #[test]
 fn out_of_search_range_and_different_edit_abstain() {
     let track = cues(180, 42);
-    for offset_us in [45_000_000, -45_000_000] {
+    for offset_us in [45_000_000, -45_000_000, 30_200_000, -30_200_000] {
         let mut estimator = Estimator::new(1, track.clone()).unwrap();
         estimator
             .push(
@@ -383,6 +390,7 @@ fn correction_evidence_is_stable_when_new_evidence_abstains() {
     assert_eq!(absent.state, State::Unavailable);
     assert_eq!(absent.correction, accepted.correction);
     assert_eq!(absent.revision, accepted.revision);
+    assert!(absent.observation_revision > accepted.observation_revision);
     assert_eq!(
         absent.correction_evidence.unwrap().end_us,
         accepted.correction_evidence.unwrap().end_us
@@ -440,4 +448,132 @@ fn partial_frames_missing_subframes_and_large_gaps_are_bounded() {
         ),
         Err(SyncError::InvalidInput)
     );
+}
+
+#[test]
+fn unsupported_offset_jump_does_not_relabel_previous_correction_as_current() {
+    let track = cues(300, 42);
+    let mut estimator = Estimator::new(1, track.clone()).unwrap();
+    estimator
+        .push(
+            1,
+            &observations(
+                &track,
+                Correction {
+                    anchor_us: 0,
+                    offset_us: 0,
+                    scale: 1.0,
+                },
+                40,
+                60,
+            ),
+        )
+        .unwrap();
+    let first = estimator.estimate(1).unwrap();
+    estimator
+        .push(
+            1,
+            &observations(
+                &track,
+                Correction {
+                    anchor_us: 0,
+                    offset_us: 5_000_000,
+                    scale: 1.0,
+                },
+                100,
+                60,
+            ),
+        )
+        .unwrap();
+    let second = estimator.estimate(1).unwrap();
+    assert_eq!(second.state, State::Observing);
+    assert_eq!(second.correction, first.correction);
+    assert_eq!(second.revision, first.revision);
+}
+
+#[test]
+fn negative_drift_is_fitted_and_nonlinear_edit_is_not() {
+    let track = cues(1_200, 42);
+    let truth = Correction {
+        anchor_us: 0,
+        offset_us: -1_200_000,
+        scale: 0.999,
+    };
+    let mut drifting = Estimator::new(1, track.clone()).unwrap();
+    let mut edited = Estimator::new(2, track.clone()).unwrap();
+    for window in 0..13 {
+        drifting
+            .push(1, &observations(&track, truth, 40 + window * 60, 60))
+            .unwrap();
+        drifting.estimate(1).unwrap();
+        edited
+            .push(
+                2,
+                &observations(
+                    &track,
+                    Correction {
+                        anchor_us: 0,
+                        offset_us: (window % 2) * 4_000_000,
+                        scale: 1.0,
+                    },
+                    40 + window * 60,
+                    60,
+                ),
+            )
+            .unwrap();
+        edited.estimate(2).unwrap();
+    }
+    let result = drifting.estimate(1).unwrap();
+    assert!(
+        (result.correction.unwrap().scale - truth.scale).abs() < 0.0002,
+        "{result:?}"
+    );
+    let evidence = result.correction_evidence.unwrap();
+    assert!(evidence.anchor_span_us >= 600_000_000);
+    assert!(evidence.scale_uncertainty_ppm.unwrap() <= 500.0);
+    let result = edited.estimate(2).unwrap();
+    assert_eq!(result.correction.unwrap().scale, 1.0);
+    assert_eq!(result.revision, 1);
+}
+
+#[test]
+fn old_anchors_expire_across_large_observed_gap() {
+    let first = cues(180, 42);
+    let base = 4_000_000_000_000;
+    let later: Vec<_> = first
+        .iter()
+        .map(|c| CueInterval {
+            start_us: base + c.start_us,
+            end_us: base + c.end_us,
+        })
+        .collect();
+    let mut track = first.clone();
+    track.extend(later.iter().copied());
+    let map = Correction {
+        anchor_us: 0,
+        offset_us: 0,
+        scale: 1.0,
+    };
+    let mut estimator = Estimator::new(1, track).unwrap();
+    estimator
+        .push(1, &observations(&first, map, 40, 60))
+        .unwrap();
+    let accepted = estimator.estimate(1).unwrap();
+    estimator
+        .push(
+            1,
+            &[Observation {
+                start_us: 100_000_000,
+                end_us: base,
+                activity: Activity::Gap,
+            }],
+        )
+        .unwrap();
+    assert_eq!(estimator.estimate(1).unwrap().evidence.anchors, 0);
+    estimator
+        .push(1, &observations(&later, map, base / 1_000_000 + 40, 60))
+        .unwrap();
+    let result = estimator.estimate(1).unwrap();
+    assert_eq!(result.evidence.anchors, 1);
+    assert_eq!(result.revision, accepted.revision);
 }

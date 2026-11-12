@@ -46,6 +46,9 @@ impl Correction {
         if !self.scale.is_finite() || self.scale <= 0.0 {
             return None;
         }
+        if self.scale == 1.0 {
+            return subtitle_us.checked_add(self.offset_us);
+        }
         let delta = i128::from(subtitle_us) - i128::from(self.anchor_us);
         rounded_time(
             i128::from(self.anchor_us) + i128::from(self.offset_us),
@@ -56,6 +59,12 @@ impl Correction {
     pub fn subtitle_time_us(self, title_us: i64, manual_delay_us: i64) -> Option<i64> {
         if !self.scale.is_finite() || self.scale <= 0.0 {
             return None;
+        }
+        if self.scale == 1.0 {
+            return i64::try_from(
+                i128::from(title_us) - i128::from(self.offset_us) - i128::from(manual_delay_us),
+            )
+            .ok();
         }
         let delta = i128::from(title_us)
             - i128::from(self.anchor_us)
@@ -113,6 +122,9 @@ pub struct Evidence {
     pub score: f64,
     pub peak_margin: f64,
     pub anchors: usize,
+    pub anchor_span_us: i64,
+    pub max_residual_us: Option<i64>,
+    pub scale_uncertainty_ppm: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -121,6 +133,7 @@ pub struct Estimate {
     pub algorithm_version: String,
     pub epoch: u64,
     pub revision: u64,
+    pub observation_revision: u64,
     pub state: State,
     pub correction: Option<Correction>,
     pub evidence: Evidence,
@@ -145,7 +158,7 @@ struct Anchor {
 
 pub struct Estimator {
     epoch: u64,
-    cues: Vec<CueInterval>,
+    cues: Box<[CueInterval]>,
     bins: VecDeque<(u32, u32)>,
     first_bin: i64,
     last_end_us: Option<i64>,
@@ -164,7 +177,7 @@ impl Estimator {
         }
         Ok(Self {
             epoch,
-            cues,
+            cues: cues.into_boxed_slice(),
             bins: VecDeque::new(),
             first_bin: 0,
             last_end_us: None,
@@ -174,6 +187,7 @@ impl Estimator {
                 algorithm_version: ALGORITHM_VERSION.into(),
                 epoch,
                 revision: 0,
+                observation_revision: 0,
                 state: State::Observing,
                 correction: None,
                 evidence: Evidence::default(),
@@ -202,18 +216,30 @@ impl Estimator {
             }
             last = Some(o.end_us);
         }
+        let retain_from = observations
+            .last()
+            .map(|o| (o.end_us - 1).div_euclid(BIN_US) + 1 - HISTORY);
         for o in observations {
             let end = (o.end_us - 1).div_euclid(BIN_US) + 1;
+            if retain_from.is_some_and(|retain| end <= retain) {
+                continue;
+            }
             let start = o.start_us.div_euclid(BIN_US);
             if self.bins.is_empty() {
-                self.first_bin = start.max(end - HISTORY);
+                self.first_bin = start.max(end - HISTORY).max(retain_from.unwrap_or(0));
             }
-            let keep_from = (end - HISTORY).max(self.first_bin);
+            let keep_from = (end - HISTORY)
+                .max(self.first_bin)
+                .max(retain_from.unwrap_or(0));
             let drop = (keep_from - self.first_bin).min(self.bins.len() as i64) as usize;
             self.bins.drain(..drop);
             self.first_bin = keep_from;
             while self.first_bin + (self.bins.len() as i64) < end {
                 self.bins.push_back((0, 0));
+            }
+            if o.activity == Activity::Gap {
+                self.last_end_us = Some(o.end_us);
+                continue;
             }
             for bin in start.max(self.first_bin)..end {
                 let index = (bin - self.first_bin) as usize;
@@ -228,6 +254,7 @@ impl Estimator {
             }
             self.last_end_us = Some(o.end_us);
         }
+        self.last_end_us = last;
         Ok(())
     }
 
@@ -247,6 +274,14 @@ impl Estimator {
             return Ok(self.output.clone());
         }
         self.analyzed_end = Some(end_bin);
+        let retained_start_us = (end_bin - HISTORY) * BIN_US;
+        while self
+            .anchors
+            .front()
+            .is_some_and(|a| a.evidence.end_us < retained_start_us)
+        {
+            self.anchors.pop_front();
+        }
         let start_bin = end_bin - WINDOW as i64;
         let skip = (start_bin - self.first_bin).max(0) as usize;
         let samples: Vec<_> = self
@@ -265,6 +300,7 @@ impl Estimator {
         if samples.len() < WINDOW {
             return Ok(self.output.clone());
         }
+        self.output.observation_revision += 1;
         let observed = samples.iter().flatten().count();
         let speech = samples.iter().filter(|x| **x == Some(true)).count();
         let mut evidence = Evidence {
@@ -314,9 +350,21 @@ impl Estimator {
                 .enumerate()
                 .max_by(|a, b| a.1.total_cmp(b.1))
                 .unwrap();
-            *score >= 0.55 && index.abs_diff(best_index) <= 2
+            let observed = part.iter().flatten().count();
+            let speech = part.iter().filter(|x| **x == Some(true)).count();
+            observed >= WINDOW * 3 / 8
+                && speech >= 30
+                && observed - speech >= 30
+                && transitions(part) >= 4
+                && *score >= 0.55
+                && index.abs_diff(best_index) <= 2
         });
-        if *best < 0.65 || evidence.peak_margin < 0.08 || !split_consistent {
+        if *best < 0.65
+            || evidence.peak_margin < 0.08
+            || !split_consistent
+            || best_index < 4
+            || best_index + 4 >= scores.len()
+        {
             self.output.state = State::Ambiguous;
             self.output.evidence = evidence;
             return Ok(self.output.clone());
@@ -333,15 +381,18 @@ impl Estimator {
         }
         evidence.anchors = self.anchors.len();
         let candidate = if self.output.correction.is_none() {
-            Some(Correction {
-                anchor_us: title_center - offset_us,
-                offset_us,
-                scale: 1.0,
-            })
+            Some((
+                Correction {
+                    anchor_us: title_center - offset_us,
+                    offset_us,
+                    scale: 1.0,
+                },
+                evidence.clone(),
+            ))
         } else {
             self.drift()
         };
-        if let Some(candidate) = candidate {
+        if let Some((candidate, accepted_evidence)) = candidate {
             let changed = self.output.correction.is_none_or(|old| {
                 let old_time = old
                     .title_time_us(candidate.anchor_us)
@@ -356,31 +407,21 @@ impl Estimator {
             if changed {
                 self.output.correction = Some(candidate);
                 self.output.revision += 1;
-                let mut accepted_evidence = evidence.clone();
-                if candidate.scale != 1.0 {
-                    accepted_evidence.start_us = self.anchors.front().unwrap().evidence.start_us;
-                    accepted_evidence.observed_us =
-                        self.anchors.iter().map(|a| a.evidence.observed_us).sum();
-                    accepted_evidence.speech_us =
-                        self.anchors.iter().map(|a| a.evidence.speech_us).sum();
-                    accepted_evidence.coverage = accepted_evidence.observed_us as f64
-                        / (self.anchors.len() * WINDOW) as f64
-                        / BIN_US as f64;
-                    accepted_evidence.score = self
-                        .anchors
-                        .iter()
-                        .map(|a| a.evidence.score)
-                        .fold(1.0, f64::min);
-                    accepted_evidence.peak_margin = self
-                        .anchors
-                        .iter()
-                        .map(|a| a.evidence.peak_margin)
-                        .fold(1.0, f64::min);
-                }
                 self.output.correction_evidence = Some(accepted_evidence);
             }
         }
-        self.output.state = State::Accepted;
+        let agrees_with_applied = self
+            .output
+            .correction
+            .and_then(|c| c.title_time_us(title_center - offset_us))
+            .is_some_and(|predicted| {
+                (i128::from(predicted) - i128::from(title_center)).abs() <= 250_000
+            });
+        self.output.state = if agrees_with_applied {
+            State::Accepted
+        } else {
+            State::Observing
+        };
         self.output.evidence = evidence;
         Ok(self.output.clone())
     }
@@ -395,7 +436,7 @@ impl Estimator {
         bins
     }
 
-    fn drift(&self) -> Option<Correction> {
+    fn drift(&self) -> Option<(Correction, Evidence)> {
         if self.anchors.len() < 5 {
             return None;
         }
@@ -438,11 +479,41 @@ impl Estimator {
         {
             return None;
         }
-        Some(Correction {
-            anchor_us: origin,
-            offset_us: offset.round() as i64,
-            scale: 1.0 + slope,
-        })
+        let anchor_span_us = inliers.last()?.subtitle_us - inliers.first()?.subtitle_us;
+        let max_residual = inliers
+            .iter()
+            .map(|a| (a.offset_us as f64 - offset - slope * (a.subtitle_us - origin) as f64).abs())
+            .fold(0.0_f64, f64::max);
+        let uncertainty_ppm =
+            2.0 * (max_residual + BIN_US as f64 / 2.0) / anchor_span_us as f64 * 1_000_000.0;
+        if uncertainty_ppm > 500.0 {
+            return None;
+        }
+        let observed_us = inliers.iter().map(|a| a.evidence.observed_us).sum();
+        let evidence = Evidence {
+            start_us: inliers.first()?.evidence.start_us,
+            end_us: inliers.last()?.evidence.end_us,
+            observed_us,
+            speech_us: inliers.iter().map(|a| a.evidence.speech_us).sum(),
+            coverage: observed_us as f64 / (inliers.len() * WINDOW) as f64 / BIN_US as f64,
+            score: inliers.iter().map(|a| a.evidence.score).fold(1.0, f64::min),
+            peak_margin: inliers
+                .iter()
+                .map(|a| a.evidence.peak_margin)
+                .fold(1.0, f64::min),
+            anchors: inliers.len(),
+            anchor_span_us,
+            max_residual_us: Some(max_residual.ceil() as i64),
+            scale_uncertainty_ppm: Some(uncertainty_ppm),
+        };
+        Some((
+            Correction {
+                anchor_us: origin,
+                offset_us: offset.round() as i64,
+                scale: 1.0 + slope,
+            },
+            evidence,
+        ))
     }
 
     fn check_epoch(&self, epoch: u64) -> Result<(), SyncError> {
