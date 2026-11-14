@@ -508,3 +508,51 @@ fn declared_facts_and_binge_group_win_and_stay_bounded() {
     let fallback = facts(json!({"title":"Movie.2024.1080p.x265-GRP","video_codec":"unknown"}));
     assert_eq!(fallback.video_codec.as_deref(), Some("hevc"));
 }
+
+// The row prints a Dubbed chip from `audio_flags`, so only an explicit dub
+// marker may set it: `DUAL` and `MULTI` count audio tracks.
+#[test]
+fn dub_markers_set_dubbed_and_dual_or_multi_never_do() {
+    for (line, expected) in [
+        ("Movie.2024.1080p.BluRay.x264.DUAL.5.1-GRP", &["dual"][..]),
+        ("The Movie (1994) 1080p BluRay [Dual Audio] [ENG HINDI] ESubs", &["dual"][..]),
+        ("Cowboy Bebop (1998) (Dual Audio) [1080p]", &["dual"][..]),
+        ("Show.S01E01.1080p.WEB.h264-GRP\nMulti Subs / 🇬🇧", &[][..]),
+        ("Show.S01E01.1080p.WEB.h264-GRP\nDual Subs", &[][..]),
+        ("Game of Thrones - Integrale MULTI HDTV 2160p x265", &["multi"][..]),
+        ("Show.S01E01.1080p.BluRay.MULTi.DTS-HD.Master.H264-GRP", &["multi"][..]),
+        ("[Salieri] Show S1 BD (1080p) (HDR) [Dual Audio]", &["dual"][..]),
+        ("[Hybrid] Dub + Original (Eng)+ Sub (Rus Eng)", &["dubbed"][..]),
+        ("Show.S01E01.1080p.BDRip.Dub-GRP", &["dubbed"][..]),
+        ("Show 1994 1080p [Dubbed]", &["dubbed"][..]),
+        ("Show 1994 1080p DUBLADO", &["dubbed"][..]),
+        ("Paczka filmow | Dubbing Lektor", &["dubbed"][..]),
+        ("[Dubs-Empire] Show (2020) S01 [2160p][Multi-Dub][Multi-Sub]", &["multi", "dubbed"][..]),
+        ("Show.S01E01.720p.WEB-DL.Tamil.Dub.Dual-Audio.x264", &["dual", "dubbed"][..]),
+        ("Show.S01E01.1080p.BluRay\nDubbed / Multi Audio / Multi Subs", &["multi", "dubbed"][..]),
+        ("Show.S01E01.1080p.BluRay\nDubbed / Dual Audio", &["dual", "dubbed"][..]),
+    ] {
+        assert_eq!(facts(json!({"title":line})).audio_flags, strings(expected), "{line}");
+    }
+}
+
+// Real public add-on responses: the flags the app's Dubbed chip reads.
+#[test]
+fn captured_addon_responses_report_the_dub_marker_they_write() {
+    let corpus: Value = serde_json::from_str(include_str!("../../../tests/source-audio-markers-captured.json"))
+        .expect("captured audio marker corpus");
+    for row in corpus["rows"].as_array().expect("rows") {
+        let expected: Vec<String> = row["expect"]["audio_flags"]
+            .as_array()
+            .expect("audio_flags")
+            .iter()
+            .filter_map(|v| v.as_str().map(str::to_owned))
+            .collect();
+        assert_eq!(
+            facts(row["stream"].clone()).audio_flags,
+            expected,
+            "{}",
+            row["id"]
+        );
+    }
+}
