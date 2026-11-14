@@ -1,0 +1,265 @@
+{
+  "description": "Public Stremio stream responses captured with no account or debrid key: Torrentio (movie and series episode), TorrentsDB (movie), Peerflix (movie and series episode) and an unconfigured Jackettio. Only the descriptive text is kept (name, title, description, behaviorHints.filename); infoHash, url, tracker and source arrays, binge groups and provider hosts are removed, and the site named after the stats markers and inside Peerflix filenames is replaced by 'Site' and 'release'. expect.audio_flags is what source_release_facts must report for that stream.",
+  "rows": [
+    {
+      "id": "torrentio-movie-4k-hdr",
+      "addon": "Torrentio",
+      "captured": "movie stream response, first row",
+      "stream": {
+        "name": "Torrentio\n4k HDR",
+        "title": "The Shawshank Redemption 1994 2160p BluRay\n👤 199 💾 6.91 GB ⚙️ Site",
+        "behaviorHints": {
+          "filename": "The.Shawshank.Redemption.1994.2160p.4K.BluRay.x265.10bit.HDR.AAC5.1-[YTS.MX].mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "torrentio-movie-bdremux-dv",
+      "addon": "Torrentio",
+      "captured": "movie stream response, hybrid remux row",
+      "stream": {
+        "name": "Torrentio\n4k DV | HDR",
+        "title": "Побег из Шоушенка / The Shawshank Redemption [1994 UHD BDRemux 2160p HDR10 Dolby Vision] [Hybrid] 2x Dub + 6x MVO + 4x DVO + 9x AVO + Original (Eng) + Sub (Rus Eng)\n👤 96 💾 78.61 GB"
+      },
+      "expect": {
+        "audio_flags": [
+          "dubbed"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-episode-flags",
+      "addon": "Torrentio",
+      "captured": "series episode stream response, Rutracker row with a flag line",
+      "stream": {
+        "name": "Torrentio\n4k DV | HDR",
+        "title": "Игра престолов / Game of Thrones / Сезон: 1 / Серии: 1-10 из 10 [2011 HEVC HDR10 Dolby Vision WEB-DL 2160p 4k] [Hybrid] Dub + Original (Eng)+ Sub (Rus Eng)\nИгра престолов.S01E01.WEB-DL.2160p.mkv\n👤 120 💾 9.52 GB ⚙️ Site\n🇬🇧 / 🇷🇺",
+        "behaviorHints": {
+          "filename": "Игра престолов.S01E01.WEB-DL.2160p.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": [
+          "dubbed"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-episode-multi",
+      "addon": "Torrentio",
+      "captured": "series episode stream response, MULTi VFI row",
+      "stream": {
+        "name": "Torrentio\n4k HDR",
+        "title": "Game of Thrones - Integrale MULTI HDTV 2160p x265 2011-2019\nGame of Thrones S01 (2011) MULTi VFI 2160p 10bit 4KLight HDR BluRay TrueHD Atmos 7.1 x265-QTZ/Game of Thrones S01E01 MULTi VFI 2160p 10bit 4KLight HDR BluRay TrueHD Atmos 7.1 x265-QTZ.mkv\n👤 14 💾 4.78 GB ⚙️ Site\nMulti Audio / 🇫🇷",
+        "behaviorHints": {
+          "filename": "Game of Thrones S01E01 MULTi VFI 2160p 10bit 4KLight HDR BluRay TrueHD Atmos 7.1 x265-QTZ.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": [
+          "multi"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-anime-multidub",
+      "addon": "Torrentio",
+      "captured": "anime series episode stream response, Multi-Dub row",
+      "stream": {
+        "name": "Torrentio\n4k",
+        "title": "[Dubs-Empire] Jujutsu Kaisen (2020) S01 v3 [2160p][B-Global][H.264][Multi-Dub][Multi-Sub][Frixy-Subs]\nJujutsu Kaisen (2020) S01E01.4k.h264.mkv\n👤 63 💾 1.26 GB ⚙️ Site\nDubbed / Multi Audio / Multi Subs",
+        "behaviorHints": {
+          "filename": "Jujutsu Kaisen (2020) S01E01.4k.h264.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": [
+          "multi",
+          "dubbed"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-anime-dual-audio",
+      "addon": "Torrentio",
+      "captured": "anime series episode stream response, Dual Audio row",
+      "stream": {
+        "name": "Torrentio\n1080p HDR",
+        "title": "[Salieri] Jujutsu Kaisen S1 BD (1080p) (HDR) [Dual Audio]\n[Salieri] Jujutsu Kaisen S1 - 01 (BDRip 1080p) (HDR) [Dual Audio].mkv\n👤 7 💾 1.33 GB ⚙️ Site\nDubbed / Dual Audio",
+        "behaviorHints": {
+          "filename": "[Salieri] Jujutsu Kaisen S1 - 01 (BDRip 1080p) (HDR) [Dual Audio].mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": [
+          "dual",
+          "dubbed"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-episode-3d",
+      "addon": "Torrentio",
+      "captured": "series episode stream response, 3D SBS row",
+      "stream": {
+        "name": "Torrentio\n1080p 3D SBS",
+        "title": "Game.of.Thrones.S01.1080p.3D.FULL-SBS.HEVC.SBS-SUB.ENG-HUN.iFA-AI3D\nGame.of.Thrones.S01E01.Winter.is.Coming.1080p.3D.FULL-SBS.HEVC.SBS-SUB.ENG-HUN.iFA-AI3D.mkv\n👤 10 💾 7.3 GB ⚙️ Site\n🇬🇧 / 🇭🇺",
+        "behaviorHints": {
+          "filename": "Game.of.Thrones.S01E01.Winter.is.Coming.1080p.3D.FULL-SBS.HEVC.SBS-SUB.ENG-HUN.iFA-AI3D.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "torrentsdb-remux",
+      "addon": "TorrentsDB",
+      "captured": "movie stream response, REMUX row",
+      "stream": {
+        "name": "TorrentsDB\n2160p",
+        "title": "The.Shawshank.Redemption.1994.2160p.BluRay.REMUX.HEVC.DTS-HD.MA.5.1-FGT\n👤 93 💾 57.98 GB ⚙️ Site",
+        "behaviorHints": {
+          "filename": "The.Shawshank.Redemption.1994.2160p.BluRay.REMUX.HEVC.DTS-HD.MA.5.1-FGT.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "peerflix-movie-hdr",
+      "addon": "Peerflix",
+      "captured": "movie stream response, Spanish 4K row (declared quality/languages/size)",
+      "stream": {
+        "name": "Peerflix 4K",
+        "description": "Cadena perpetua [4Kreescaldo][2160p][HDR10][AC3 5.1 Castellano-AC3 5.1-Ingles+Subs][ES-EN]\nCadena perpetua 4Kreescalado2160.release.mkv\n🇪🇸\n👤 8 💾 59.61 GB 🌐 Peerflix"
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "peerflix-episode-bdremux",
+      "addon": "Peerflix",
+      "captured": "series episode stream response, Spanish BDremux row",
+      "stream": {
+        "name": "Peerflix 1080p",
+        "description": "Juego de tronos Temporada 1 completa [BDremux 1080p][DTS 5.1 Castellano-DTS 5.1 Ingles+Subs][ES-EN]\nJuego de tronos 1x01 Se acerca el invierno BDR1080.release.mkv\n🇪🇸\n👤 3 💾 12.18 GB 🌐 Peerflix"
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "jackettio-unconfigured",
+      "addon": "Jackettio",
+      "captured": "stream response from an add-on that is not configured",
+      "stream": {
+        "name": "Jackettio | ElfHosted",
+        "title": "ℹ Kindly configure this addon to access streams."
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "torrentio-debrid-tagged",
+      "addon": "Torrentio",
+      "captured": "movie stream response, name carrying a debrid tag as Torrentio writes it for a configured service",
+      "stream": {
+        "name": "[TB+] Torrentio\n4k HDR",
+        "title": "The Shawshank Redemption 1994 2160p BluRay\n👤 199 💾 6.91 GB ⚙️ Site",
+        "behaviorHints": {
+          "filename": "The.Shawshank.Redemption.1994.2160p.4K.BluRay.x265.10bit.HDR.AAC5.1-[YTS.MX].mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "torrentio-eng-ita-languages",
+      "addon": "Torrentio",
+      "captured": "movie stream response whose release name spells ENG and ITA and whose add-on line lists both flags",
+      "stream": {
+        "name": "Torrentio\n1080p",
+        "title": "Oak Street 2024 1080p WEB-DL DL.ENG.Atmos.ITA.DDP5.1.H264-TBK\nOak.Street.2024.1080p.mkv\n👤 42 💾 1.9 GB ⚙️ Site\n🇬🇧 / 🇮🇹",
+        "behaviorHints": {
+          "filename": "Oak.Street.2024.1080p.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": []
+      }
+    },
+    {
+      "id": "torrentio-movie-dual-only",
+      "addon": "Torrentio",
+      "captured": "movie stream response, a [Dual Audio] release whose flag line names no dub",
+      "stream": {
+        "name": "Torrentio\n1080p",
+        "title": "The Shawshank Redemption (1994) 1080p BluRay [Dual Audio] [ENG HINDI] ESubs\n👤 5 💾 2.2 GB ⚙️ Site\nDual Audio / 🇬🇧 / 🇮🇳"
+      },
+      "expect": {
+        "audio_flags": [
+          "dual"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-movie-dub-original",
+      "addon": "Torrentio",
+      "captured": "movie stream response, Russian dub beside the original",
+      "stream": {
+        "name": "Torrentio\nBDRip",
+        "title": "Побег из Шоушенка / The Shawshank Redemption [1994 BDRip-AVC] Dub (IVI) + Original Eng\n👤 19 💾 1.45 GB ⚙️ Site\n🇬🇧 / 🇷🇺",
+        "behaviorHints": {
+          "filename": "Побег из Шоушенка.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": [
+          "dubbed"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-movie-dublado",
+      "addon": "Torrentio",
+      "captured": "movie stream response, Portuguese dublado",
+      "stream": {
+        "name": "Torrentio\n720p",
+        "title": "Um Sonho de Liberdade 1994 (720p) [DUBLADO] Acesse o ORIGINAL WWW.BLUDV.TV\nUm.Sonho.De.Liberdade.1994.720p.BluRay.x264.DUBLADO-WWW.BLUDV.TV.mp4\n👤 0 💾 917.44 MB ⚙️ Site\n🇬🇧 / 🇵🇹",
+        "behaviorHints": {
+          "filename": "Um.Sonho.De.Liberdade.1994.720p.BluRay.x264.DUBLADO-WWW.BLUDV.TV.mp4"
+        }
+      },
+      "expect": {
+        "audio_flags": [
+          "dubbed"
+        ]
+      }
+    },
+    {
+      "id": "torrentio-movie-multi-audio",
+      "addon": "Torrentio",
+      "captured": "movie stream response, MULTi release with a multi-audio flag line",
+      "stream": {
+        "name": "Torrentio\n1080p",
+        "title": "The.Shawshank.Redemption.1994.1080p.Bluray.MULTi.DTS-HD.Master.H264-BEN.THE.MEN\n👤 17 💾 19.56 GB ⚙️ Site\nMulti Audio / 🇬🇧 / 🇮🇹 / 🇪🇸 / 🇲🇽 / 🇫🇷 / 🇩🇪 / 🇮🇳",
+        "behaviorHints": {
+          "filename": "The.Shawshank.Redemption.1994.1080p.Bluray.ENG.LATINO.CASTELLANO.FRE.GER.ITA.HINDI.DTS-HD.Master.H264-BEN.THE.MEN.mkv"
+        }
+      },
+      "expect": {
+        "audio_flags": [
+          "multi"
+        ]
+      }
+    }
+  ]
+}
