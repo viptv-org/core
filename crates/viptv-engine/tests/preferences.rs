@@ -113,7 +113,8 @@ fn subtitle_mode_derives_from_legacy_rows_and_decides_enabled() {
 fn playback_preferences_keep_designed_defaults_and_migrate_legacy_rows() {
     let defaults = ProfilePreferences::default();
     assert!(defaults.next_episode_button);
-    assert!(!defaults.skip_intros);
+    assert!(defaults.skip_intros);
+    assert!(defaults.skip_credits);
     assert!(defaults.match_frame_rate);
     let legacy = serde_json::json!({"preferred_audio_language":null,"preferred_subtitle_language":null,"subtitles_enabled":true,"source_selection":"ask","max_quality_height":null});
     let migrated: ProfilePreferences = serde_json::from_value(legacy).unwrap();
@@ -121,26 +122,30 @@ fn playback_preferences_keep_designed_defaults_and_migrate_legacy_rows() {
         (
             migrated.next_episode_button,
             migrated.skip_intros,
+            migrated.skip_credits,
             migrated.match_frame_rate
         ),
-        (true, false, true)
+        (true, true, true, true)
     );
     let wire = serde_json::to_value(&migrated).unwrap();
     assert_eq!(wire["next_episode_button"], true);
-    assert_eq!(wire["skip_intros"], false);
+    assert_eq!(wire["skip_intros"], true);
+    assert_eq!(wire["skip_credits"], true);
     assert_eq!(wire["match_frame_rate"], true);
     let mut chosen = wire;
     chosen["next_episode_button"] = serde_json::json!(false);
-    chosen["skip_intros"] = serde_json::json!(true);
+    chosen["skip_intros"] = serde_json::json!(false);
+    chosen["skip_credits"] = serde_json::json!(false);
     chosen["match_frame_rate"] = serde_json::json!(false);
     let chosen: ProfilePreferences = serde_json::from_value(chosen).unwrap();
     assert_eq!(
         (
             chosen.next_episode_button,
             chosen.skip_intros,
+            chosen.skip_credits,
             chosen.match_frame_rate
         ),
-        (false, true, false)
+        (false, false, false, false)
     );
     assert!(chosen.validate().is_ok());
     assert_eq!(
@@ -148,11 +153,43 @@ fn playback_preferences_keep_designed_defaults_and_migrate_legacy_rows() {
             .unwrap(),
         chosen
     );
-    for key in ["next_episode_button", "skip_intros", "match_frame_rate"] {
+    for key in ["next_episode_button", "skip_intros", "skip_credits", "match_frame_rate"] {
         let mut invalid = serde_json::json!({"preferred_audio_language":null,"preferred_subtitle_language":null,"subtitles_enabled":true,"source_selection":"ask","max_quality_height":null});
         invalid[key] = serde_json::json!("on");
         assert!(serde_json::from_value::<ProfilePreferences>(invalid).is_err(), "{key}");
     }
+}
+#[test]
+fn rows_saved_before_skip_credits_read_with_both_skips_on() {
+    let mut stored = serde_json::to_value(ProfilePreferences::default()).unwrap();
+    stored.as_object_mut().unwrap().remove("skip_credits");
+    stored["skip_intros"] = serde_json::json!(false);
+    let migrated: ProfilePreferences = serde_json::from_value(stored).unwrap();
+    assert!(migrated.skip_intros && migrated.skip_credits);
+    let mut intros_only = serde_json::to_value(&migrated).unwrap();
+    intros_only["skip_credits"] = serde_json::json!(false);
+    let intros_only: ProfilePreferences = serde_json::from_value(intros_only).unwrap();
+    assert!(intros_only.skip_intros && !intros_only.skip_credits);
+}
+#[test]
+fn updates_without_skip_credits_keep_the_stored_credits_choice() {
+    let previous = ProfilePreferences {
+        skip_credits: false,
+        ..Default::default()
+    };
+    let mut older_client = serde_json::to_value(&previous).unwrap();
+    older_client.as_object_mut().unwrap().remove("skip_credits");
+    older_client["skip_intros"] = serde_json::json!(false);
+    let updated = ProfilePreferences::from_update(older_client.clone(), &previous).unwrap();
+    assert!(!updated.skip_intros && !updated.skip_credits);
+    older_client.as_object_mut().unwrap().remove("skip_intros");
+    let updated = ProfilePreferences::from_update(older_client, &previous).unwrap();
+    assert!(updated.skip_intros && !updated.skip_credits);
+    let mut current = serde_json::to_value(&previous).unwrap();
+    current["skip_credits"] = serde_json::json!(true);
+    current["skip_intros"] = serde_json::json!(false);
+    let updated = ProfilePreferences::from_update(current, &previous).unwrap();
+    assert!(!updated.skip_intros && updated.skip_credits);
 }
 #[test]
 fn remembered_source_reuse_defaults_true_round_trips_and_survives_older_clients() {
