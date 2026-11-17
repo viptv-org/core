@@ -527,6 +527,7 @@ data class SourceCandidate(
     val video_codec: String? = null,
     val dv_base_layer: String? = null,
     val binge_group: String? = null,
+    val source_fingerprint: String? = null,
 )
 
 @Serializable

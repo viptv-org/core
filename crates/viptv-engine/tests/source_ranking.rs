@@ -341,6 +341,7 @@ fn new_fields_are_omitted_when_unknown_and_old_payloads_parse() {
             && parsed.video_codec.is_none()
             && parsed.dv_base_layer.is_none()
             && parsed.binge_group.is_none()
+            && parsed.source_fingerprint.is_none()
             && !parsed.subbed
             && parsed.subtitle_languages.is_empty()
     );
@@ -357,6 +358,7 @@ fn new_fields_are_omitted_when_unknown_and_old_payloads_parse() {
         c.video_codec = Some("hevc".into());
         c.dv_base_layer = Some("hdr10".into());
         c.binge_group = Some("netflix".into());
+        c.source_fingerprint = Some("addon:1\u{0}movie.mkv".into());
     });
     let wire = serde_json::to_value(&full).unwrap();
     for (key, value) in [
@@ -371,6 +373,7 @@ fn new_fields_are_omitted_when_unknown_and_old_payloads_parse() {
         ("video_codec", serde_json::json!("hevc")),
         ("dv_base_layer", serde_json::json!("hdr10")),
         ("binge_group", serde_json::json!("netflix")),
+        ("source_fingerprint", serde_json::json!("addon:1\u{0}movie.mkv")),
     ] {
         assert_eq!(wire[key], value, "{key}");
     }
